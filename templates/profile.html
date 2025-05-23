@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            width: 100%;
+            background: linear-gradient(to bottom right, #2c2f48, #5D3FD3);
+            display: flex;
+            color: #fff;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.4);
+            padding-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar img {
+            width: 80px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: #fff;
+            padding: 12px 20px;
+            margin: 5px 0;
+            width: 100%;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .profile-container {
+            position: relative;
+            background: rgba(255, 255, 255, 0.95);
+            width: 90%;
+            max-width: 800px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 0;
+            margin: 0 auto;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #4facfe, #5D3FD3);
+            padding: 30px;
+            text-align: center;
+            color: #fff;
+            position: relative;
+        }
+
+        .profile-photo {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto;
+            border: 4px solid #fff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            background-color: #f0f0f0;
+        }
+
+        .profile-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-photo .edit-photo {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 30px;
+            height: 30px;
+            background: #5D3FD3;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .profile-photo .edit-photo:hover {
+            background: #4a32a8;
+            transform: scale(1.1);
+        }
+
+        .profile-photo .edit-photo i {
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .profile-info {
+            margin-top: 15px;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .profile-department {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .profile-content {
+            padding: 30px;
+            color: #333;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: #5D3FD3;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+        }
+
+        .interests-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .interest-tag {
+            background: rgba(93, 63, 211, 0.1);
+            border: 1px solid rgba(93, 63, 211, 0.5);
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            transition: 0.3s;
+            color: #5D3FD3;
+        }
+
+        .interest-tag:hover {
+            background: rgba(93, 63, 211, 0.2);
+        }
+
+        .edit-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #5D3FD3;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: #333;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #5D3FD3;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(93, 63, 211, 0.2);
+        }
+
+        .interests-input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .interest-checkbox {
+            display: none;
+        }
+
+        .interest-label {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+            color: #333;
+        }
+
+        .interest-checkbox:checked+.interest-label {
+            background: rgba(93, 63, 211, 0.6);
+            border-color: rgba(93, 63, 211, 0.8);
+            color: #fff;
+        }
+
+        .interest-label:hover {
+            background: rgba(93, 63, 211, 0.1);
+        }
+
+        .custom-interests-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .custom-interest-tag {
+            background: rgba(93, 63, 211, 0.15);
+            border-radius: 50px;
+            padding: 5px 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            color: #4a32a8;
+        }
+
+        .custom-interest-tag .remove-interest {
+            margin-left: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            font-size: 14px;
+            color: #4a32a8;
+            transition: color 0.2s;
+        }
+
+        .custom-interest-tag .remove-interest:hover {
+            color: #e74c3c;
+        }
+
+        .add-interest-btn {
+            background: rgba(93, 63, 211, 0.1);
+            border: 1px dashed rgba(93, 63, 211, 0.5);
+            color: #5D3FD3;
+            padding: 6px 12px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .add-interest-btn i {
+            margin-right: 5px;
+        }
+
+        .add-interest-btn:hover {
+            background: rgba(93, 63, 211, 0.2);
+        }
+
+        .custom-interest-input {
+            display: none;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .custom-interest-input.active {
+            display: flex;
+        }
+
+        .custom-interest-input input {
+            flex: 1;
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px 0 0 8px;
+            padding: 10px 15px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .custom-interest-input input:focus {
+            outline: none;
+            border-color: #5D3FD3;
+        }
+
+        .custom-interest-input button {
+            background: #5D3FD3;
+            border: none;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .custom-interest-input button:hover {
+            background: #4a32a8;
+        }
+
+        .photo-input {
+            display: none;
+        }
+
+        .btn {
+            background: #4facfe;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #5D3FD3;
+        }
+
+        .photo-preview {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 100%;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .photo-preview img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+
+            .sidebar a {
+                padding: 12px 5px;
+                text-align: center;
+            }
+
+            .sidebar i {
+                font-size: 20px;
+            }
+
+            .sidebar span {
+                display: none;
+            }
+
+            .profile-container {
+                width: 95%;
+            }
+
+            .profile-header {
+                padding: 20px;
+            }
+
+            .profile-photo {
+                width: 100px;
+                height: 100px;
+            }
+
+            .profile-name {
+                font-size: 20px;
+            }
+
+            .profile-content {
+                padding: 20px;
+            }
+
+            .edit-section {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" />
+        <a href="/student"><i class='bx bxs-dashboard'></i> <span>Dashboard</span></a>
+        <a href="/student/profile"><i class='bx bxs-user'></i> <span>Profile</span></a>
+        <a href="/student/events_to_join"><i class='bx bxs-calendar-event'></i> <span>Events</span></a>
+        <a href="/student/academic_schedule"><i class='bx bxs-book'></i> <span>Academic Schedule</span></a>
+        <a href="/logout"><i class='bx bx-log-out'></i> <span>Logout</span></a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="profile-container">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-photo">
+                    <img
+                        src="{{ url_for('static', filename='uploads/' + User.photo) if User.photo not in [None, 'null', ''] else url_for('static', filename='default_avatar.png') }}">
+                    alt="Profile Photo" id="profilePhoto">
+                    <div class="edit-photo" onclick="document.getElementById('profilePhotoInput').click()">
+                        <i class='bx bxs-camera'></i>
+                    </div>
+                </div>
+                <div class="profile-info">
+                    <h2 class="profile-name">{{ User.name }}</h2>
+                    <div class="profile-department">{{ User.department if User.department != 'null' else 'Department not
+                        set' }}</div>
+                </div>
+            </div>
+
+            <!-- Profile Content -->
+            <div class="profile-content">
+                <!-- Interests Section -->
+                <div class="section-title">
+                    <i class='bx bx-star'></i> Your Interests
+                </div>
+                <div class="interests-container">
+                    {% for interest in current_interests %} <div class="interest-tag">{{ interest }}</div>
+                    {% endfor %}
+                    {% if not current_interests %} <p>No interests added yet.</p>
+                    {% endif %}
+                </div>
+                <!-- Edit Profile Form -->
+                <form action="/student/profile" method="POST" enctype="multipart/form-data">
+                    <div class="edit-section">
+                        <div class="section-title">
+                            <i class='bx bx-edit-alt'></i> Edit Profile
+                        </div>
+
+                        <!-- Hidden file input for photo -->
+                        <input type="file" name="photo" accept="image/*" id="profilePhotoInput" class="photo-input">
+
+                        <div class="photo-preview" id="photoPreview">
+                            <img src="" alt="Preview" id="photoPreviewImg">
+                        </div>
+
+                        <!-- Department Input -->
+                        <div class="form-group">
+                            <label for="profileNameInput">Name</label>
+                            <input type="text" name="name" id="profileNameInput" class="form-control"
+                                placeholder="Enter your name" value="{{ User.name }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="profileDepartmentInput">Department</label>
+                            <input type="text" name="department" id="profileDepartmentInput" class="form-control"
+                                placeholder="Enter your department"
+                                value="{{ User.department if User.department != 'null' else '' }}">
+                        </div>
+
+                        <!-- Predefined Interests -->
+                        <div class="form-group">
+                            <label>Select Interests</label>
+                            <div class="interests-input-group">
+                                {% for interest in all_possible_interests %}
+                                <input type="checkbox" id="interest-{{ interest|lower }}" name="interests"
+                                    value="{{ interest }}" class="interest-checkbox" {% if interest in current_interests
+                                    %}checked{% endif %}>
+                                <label for="interest-{{ interest|lower }}" class="interest-label">{{ interest }}</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Custom Interests -->
+                        <div class="form-group">
+                            <label>Custom Interests</label>
+                            <div class="custom-interests-container" id="customInterestsContainer">
+                                {% for interest in current_interests %}
+                                {% if interest not in all_possible_interests %}
+                                <div class="custom-interest-tag">
+                                    <span>{{ interest }}</span>
+                                    <input type="hidden" name="interests" value="{{ interest }}">
+                                    <div class="remove-interest" onclick="removeCustomInterest(this)">
+                                        <i class='bx bx-x'></i>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+
+                            <div class="add-interest-btn" onclick="toggleCustomInterestInput()">
+                                <i class='bx bx-plus'></i> Add Custom Interest
+                            </div>
+
+                            <div class="custom-interest-input" id="customInterestInput">
+                                <input type="text" id="newInterestInput" placeholder="Enter a new interest">
+                                <button type="button" onclick="addCustomInterest()">Add</button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show file input when edit photo icon is clicked
+        document.querySelector('.edit-photo').addEventListener('click', function () {
+            document.getElementById('profilePhotoInput').click();
+        });
+
+        // Preview the selected image
+        document.getElementById('profilePhotoInput').addEventListener('change', function (e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('profilePhoto').src = e.target.result;
+                    document.getElementById('photoPreviewImg').src = e.target.result;
+                    document.getElementById('photoPreview').style.display = 'block';
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+
+        // Toggle custom interest input
+        function toggleCustomInterestInput() {
+            const inputDiv = document.getElementById('customInterestInput');
+            inputDiv.classList.toggle('active');
+            if (inputDiv.classList.contains('active')) {
+                document.getElementById('newInterestInput').focus();
+            }
+        }
+
+        // Add custom interest
+        function addCustomInterest() {
+            const inputField = document.getElementById('newInterestInput');
+            const interestValue = inputField.value.trim();
+
+            if (interestValue) {
+                const container = document.getElementById('customInterestsContainer');
+                const interestTag = document.createElement('div');
+                interestTag.className = 'custom-interest-tag';
+
+                interestTag.innerHTML = `
+                    <span>${interestValue}</span>
+                    <input type="hidden" name="interests" value="${interestValue}">
+                    <div class="remove-interest" onclick="removeCustomInterest(this)">
+                        <i class='bx bx-x'></i>
+                    </div>
+                `;
+
+                container.appendChild(interestTag);
+                inputField.value = '';
+                inputField.focus();
+            }
+        }
+
+        // Remove custom interest
+        function removeCustomInterest(element) {
+            element.parentNode.remove();
+        }
+
+        // Handle Enter key in custom interest input
+        document.getElementById('newInterestInput').addEventListener('keyup', function (e) {
+            if (e.key === 'Enter') {
+                addCustomInterest();
+            }
+        });
+    </script>
+</body>
+
+</html>

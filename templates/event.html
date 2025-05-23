@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Events</title>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(to bottom right, #2c2f48, #5D3FD3);
+      display: flex;
+      min-height: 100vh;
+      color: #fff;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: rgba(0, 0, 0, 0.4);
+      padding-top: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .sidebar img {
+      width: 80px;
+      margin-bottom: 30px;
+    }
+
+    .sidebar a {
+      text-decoration: none;
+      color: #fff;
+      padding: 12px 20px;
+      margin: 5px 0;
+      width: 100%;
+      text-align: center;
+      transition: 0.3s;
+    }
+
+    .sidebar a:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+
+    .main-content h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 30px;
+      color: #fff;
+      text-align: center;
+    }
+
+    /* Event Cards */
+    .event-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+      justify-content: center;
+      padding: 10px;
+    }
+
+    .event-card {
+      height: 380px;
+      perspective: 1000px;
+      margin-bottom: 15px;
+    }
+
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .event-card:hover .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front,
+    .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .card-front {
+      display: flex;
+      flex-direction: column;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card-back {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(6px);
+      color: #fff;
+      padding: 25px;
+      transform: rotateY(180deg);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-front img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+    }
+
+    .card-info {
+      text-align: center;
+      padding: 15px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .card-info h3 {
+      font-size: 20px;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+
+    .card-info p {
+      font-size: 14px;
+      margin: 5px 0;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .card-back .description {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .card-back h4 {
+      font-size: 16px;
+      margin: 15px 0 8px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .card-back p {
+      margin-bottom: 12px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .card-back button {
+      background: #5D3FD3;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 5px;
+      transition: all 0.3s ease;
+      width: 100%;
+      font-weight: 500;
+    }
+
+    .card-back button:hover {
+      background: #4a32a8;
+      transform: translateY(-2px);
+    }
+
+    .card-back a {
+      text-decoration: none;
+      color: #fff;
+      display: block;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        height: auto;
+        padding-bottom: 20px;
+      }
+
+      .main-content {
+        padding: 20px;
+      }
+
+      .event-cards {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" />
+    <a href="/student"><i class='bx bxs-dashboard'></i> Dashboard</a>
+    <a href="/student/profile"><i class='bx bxs-user'></i> Profile</a>
+    <a href="{{ url_for('student_events_to_join') }}"><i class='bx bxs-calendar-event'></i> Events</a> <a
+      href="/student/academic_schedule"><i class='bx bxs-book'></i> Academic Schedule</a>
+    <a href="/logout"><i class='bx bx-log-out'></i> Logout</a>
+  </div>
+
+  <!-- Main Content (Event Cards) -->
+  <div class="main-content">
+    <h1>Upcoming Events</h1>
+
+    <div class="event-cards">
+      <!-- Event Cards will be dynamically generated here using Jinja2 templating -->
+      {% for event in Events %}
+      <div class="event-card">
+        <div class="card-inner">
+          <div class="card-front">
+            <img src="{{ url_for('static', filename='uploads/' + event.photo) }}" alt="{{ event.name }}">
+            <div class="card-info">
+              <h3>{{ event.name }}</h3>
+              {% if event.starttime %}
+              <p><i class='bx bx-time'></i> {{ event.starttime }} to {{ event.endtime }}</p>
+              {% endif %}
+              <p><i class='bx bx-calendar'></i> {{ event.date }}</p>
+              <p><i class='bx bx-map'></i> {{ event.venue }}</p>
+            </div>
+          </div>
+          <div class="card-back">
+            <div class="description">
+              <h4>Event Description</h4>
+              <p>{{ event.description }}</p>
+              <h4>Organized by</h4>
+              <p>{{ event.organiser }}</p>
+            </div>
+            <div class="action-buttons">
+              {% if event.link %}
+              <a href="{{ event.link }}" target="_blank"><button type="button"><i class='bx bx-link-external'></i> More
+                  Info</button></a>
+              {% endif %}
+              <a href="{{ url_for('register_student_for_event', event_name=event.name) }}"><button type="button"><i
+                    class='bx bx-plus'></i> Register for Event</button></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</body>
+
+</html>

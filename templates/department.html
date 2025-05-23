@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Department Management Portal</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(to bottom right, #2c483e, #3F5D53); /* Department Theme */
+            display: flex;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.4);
+            padding-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar img { /* Assuming you have a logo.png in static */
+            width: 80px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: #fff;
+            padding: 12px 20px;
+            margin: 5px 0;
+            width: 90%;
+            text-align: left;
+            transition: 0.3s;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar a i {
+            font-size: 18px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .main-content h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        /* Tab Content Areas */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+        
+        .primary-btn-action { /* Differentiated from form primary-btn */
+            background: #4CAF50; /* Department theme color */
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .primary-btn-action:hover {
+            background: #388E3C; /* Darker shade for hover */
+        }
+
+
+        /* Dashboard Stats */
+        .dashboard-overview {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(6px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: rgba(76, 175, 80, 0.2); /* Department theme color */
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .stat-card p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Activities Section */
+        .my-activities-section { /* Renamed from my-events-section */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(6px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            font-size: 24px;
+            color: #fff;
+        }
+
+        /* Activity Cards */
+        .activities-grid { /* Renamed from events-grid */
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .activity-card { /* Renamed from event-card */
+            height: 380px;
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .activity-card:hover .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .card-front {
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-back {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(6px);
+            color: #fff;
+            padding: 25px;
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-front img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+
+        .card-info {
+            text-align: center;
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-info h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .card-info p {
+            font-size: 14px;
+            margin: 5px 0;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .card-back .description {
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-y: auto;
+            max-height: 180px;
+        }
+
+        .card-back h4 {
+            font-size: 16px;
+            margin: 15px 0 8px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .card-back p {
+            margin-bottom: 12px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .card-back .action-buttons {
+            margin-top: auto;
+            padding-top: 10px;
+        }
+
+
+        .card-back button {
+            background: #4CAF50; /* Department theme color */
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 3px 0;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-weight: 500;
+        }
+
+        .card-back button:hover {
+            background: #388E3C; /* Darker shade for hover */
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary-card {
+            background: rgba(255, 255, 255, 0.2) !important;
+        }
+        .btn-secondary-card:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+        }
+
+
+        /* Modal Styling */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: rgba(44, 72, 60, 0.95); /* Department theme modal background */
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal h2 {
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .form-actions button {
+            flex: 0 0 48%;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .primary-btn {
+            background: #4CAF50; /* Department theme color */
+            color: white;
+            border: none;
+        }
+
+        .primary-btn:hover {
+            background: #388E3C; /* Darker shade */
+        }
+
+        .secondary-btn {
+            background: transparent;
+            color: #fff;
+            border: 1px solid #fff;
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Settings Tab */
+        .settings-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(6px);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        
+        /* Registrations Table */
+        .registrations-table {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .registrations-table th,
+        .registrations-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .registrations-table th {
+            background: rgba(0, 0, 0, 0.2);
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .registrations-table td {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        @media (max-width: 900px) {
+             body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; padding-bottom: 20px; flex-direction: row; justify-content: space-around; overflow-x: auto; }
+            .sidebar a { min-width: 120px; margin: 0 5px; text-align: center; }
+            .main-content { padding: 20px; }
+            .activities-grid { grid-template-columns: 1fr; }
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" />
+        <a href="#" onclick="showTab('dashboard')" id="dashboard-tab" class="active">
+            <i class='bx bxs-dashboard'></i> Dashboard
+        </a>
+        <a href="#" onclick="showTab('activities')" id="activities-tab"> <i class='bx bxs-chalkboard'></i> Activities </a>
+        <a href="#" onclick="showTab('settings')" id="settings-tab">
+            <i class='bx bxs-cog'></i> Settings
+        </a>
+        <a href="{{ url_for('logout') }}">
+            <i class='bx bx-log-out'></i> Logout
+        </a>
+    </div>
+
+    <div class="main-content">
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-overview">
+                <h1>{{ department_name }} Department Portal</h1>
+                <p>Welcome back, {{ department_manager_name }}</p>
+
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <h3 id="totalManagedActivities">{{ stats.managed_activities_count if stats else 0 }}</h3>
+                        <p>My Dept. Activities</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="upcomingActivities">{{ stats.upcoming_activities_count if stats else 0 }}</h3>
+                        <p>Upcoming Activities</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="totalActivityRegistrations">{{ stats.total_registrations_count if stats else 0 }}</h3>
+                        <p>Total Registrations</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="my-activities-section">
+                <div class="section-header">
+                    <h2>My Managed Department Activities</h2>
+                    <button class="primary-btn-action" onclick="showAddActivityModal()">
+                        <i class='bx bx-plus'></i> Add Dept. Activity
+                    </button>
+                </div>
+
+                {% if managed_activities %}
+                <div class="activities-grid">
+                    {% for activity in managed_activities %}
+                    <div class="activity-card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <img src="{{ url_for('uploaded_file', filename=activity.photo) if activity.photo else url_for('static', filename='default_activity.jpg') }}" alt="{{ activity.name }}">
+                                <div class="card-info">
+                                    <h3>{{ activity.name }}</h3>
+                                    {% if activity.starttime and activity.endtime %}
+                                    <p><i class='bx bx-time'></i> {{ activity.starttime }} - {{ activity.endtime }}</p>
+                                    {% endif %}
+                                    <p><i class='bx bx-calendar'></i> {{ activity.date }}</p>
+                                    <p><i class='bx bx-map-pin'></i> {{ activity.venue }}</p> </div>
+                            </div>
+                            <div class="card-back">
+                                <div class="description">
+                                    <h4>Activity Description</h4>
+                                    <p>{{ activity.description }}</p>
+                                    <h4>Type/Category</h4> <p>{{ activity.activity_type if activity.activity_type else 'General' }}</p>
+                                    <h4>Tags</h4>
+                                    <p>{{ activity.tags }}</p>
+                                </div>
+                                <div class="action-buttons">
+                                    <button type="button" onclick="editDepartmentActivity('{{ activity.name }}')">
+                                        <i class='bx bx-edit'></i> Edit Activity
+                                    </button>
+                                    <button type="button" class="btn-secondary-card" onclick="viewDepartmentActivityRegistrations('{{ activity.name }}')">
+                                        <i class='bx bx-group'></i> View Registrations
+                                    </button>
+                                     {% if activity.link %}
+                                    <a href="{{ activity.link }}" target="_blank" style="text-decoration: none;">
+                                        <button type="button"><i class='bx bx-link-external'></i> Info/Reg. Link</button>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class='bx bx-calendar-minus'></i> <h3>No Department Activities Created Yet</h3>
+                    <p>Create your first department activity (seminar, workshop, etc.).</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div id="activities" class="tab-content"> <div class="my-activities-section">
+                <div class="section-header">
+                    <h2>All {{ department_name }} Department Activities</h2>
+                     <button class="primary-btn-action" onclick="showAddActivityModal()">
+                        <i class='bx bx-plus'></i> Add Dept. Activity
+                    </button>
+                </div>
+                 {% if all_department_activities %}
+                <div class="activities-grid">
+                    {% for activity in all_department_activities %}
+                     <div class="activity-card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <img src="{{ url_for('uploaded_file', filename=activity.photo) if activity.photo else url_for('static', filename='default_activity.jpg') }}" alt="{{ activity.name }}">
+                                <div class="card-info">
+                                    <h3>{{ activity.name }}</h3>
+                                    {% if activity.starttime and activity.endtime %}
+                                    <p><i class='bx bx-time'></i> {{ activity.starttime }} - {{ activity.endtime }}</p>
+                                    {% endif %}
+                                    <p><i class='bx bx-calendar'></i> {{ activity.date }}</p>
+                                    <p><i class='bx bx-map-pin'></i> {{ activity.venue }}</p>
+                                </div>
+                            </div>
+                           <div class="card-back">
+                                <div class="description">
+                                    <h4>Activity Description</h4>
+                                    <p>{{ activity.description }}</p>
+                                    <h4>Type/Category</h4>
+                                    <p>{{ activity.activity_type if activity.activity_type else 'General' }}</p>
+                                    <h4>Tags</h4>
+                                    <p>{{ activity.tags }}</p>
+                                </div>
+                                 <div class="action-buttons">
+                                     {% if activity.event_manager == department_manager_name %} <button type="button" onclick="editDepartmentActivity('{{ activity.name }}')">
+                                        <i class='bx bx-edit'></i> Edit
+                                    </button>
+                                    <button type="button" class="btn-secondary-card" onclick="viewDepartmentActivityRegistrations('{{ activity.name }}')">
+                                        <i class='bx bx-group'></i> Registrations
+                                    </button>
+                                    {% endif %}
+                                    {% if activity.link %}
+                                    <a href="{{ activity.link }}" target="_blank" style="text-decoration: none;">
+                                        <button type="button"><i class='bx bx-link-external'></i> Info/Reg. Link</button>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                 <div class="empty-state">
+                    <i class='bx bx-calendar-minus'></i>
+                    <h3>No Activities Scheduled for {{ department_name }}</h3>
+                    <p>There are currently no department activities listed.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div id="settings" class="tab-content">
+            <div class="settings-section">
+                <h2>Department Settings</h2>
+                <p>Department-specific settings and approvals will be available here.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="addActivityModal" class="modal hidden"> <div class="modal-content">
+            <h2>Add New Department Activity</h2>
+            <form id="addActivityForm" action="{{ url_for('create_department_activity') }}" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Activity Name (e.g., Seminar Title, Workshop Name)</label>
+                    <input type="text" name="activityName" required>
+                </div>
+                <div class="form-group">
+                    <label>Activity Photo/Banner</label>
+                    <input type="file" name="photo" accept="image/*" required>
+                </div>
+                <input type="hidden" name="organiser" value="{{ department_name }}">
+                
+                <div class="form-group">
+                    <label>Activity Type (e.g., Seminar, Workshop, Guest Lecture)</label>
+                    <input type="text" name="activity_type" required placeholder="Seminar, Workshop, Guest Lecture">
+                </div>
+                 <div class="form-group">
+                    <label>Tags (comma-separated, e.g., AI, Robotics, Career)</label>
+                    <input type="text" name="tags" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" name="date" required>
+                </div>
+                <div class="form-group">
+                    <label>Start Time</label>
+                    <input type="time" name="starttime" required>
+                </div>
+                <div class="form-group">
+                    <label>End Time</label>
+                    <input type="time" name="endtime" required>
+                </div>
+                <div class="form-group">
+                    <label>Venue/Platform (e.g., LH-101, Online via Zoom)</label>
+                    <input type="text" name="venue" required>
+                </div>
+                <div class="form-group">
+                    <label>Information/Registration Link (Optional)</label>
+                    <input type="url" name="link" placeholder="https://example.com/info">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="primary-btn">Add Activity</button>
+                    <button type="button" class="secondary-btn" onclick="closeAddActivityModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="registrationsModal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="registrationsTitle">Activity Registrations</h2>
+            <div id="registrationsContent">
+                </div>
+            <div class="form-actions" style="justify-content: flex-end;">
+                <button type="button" class="secondary-btn" onclick="closeRegistrationsModal()" style="flex: 0 0 auto; padding: 10px 20px;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+            const sidebarLinks = document.querySelectorAll('.sidebar a');
+            sidebarLinks.forEach(link => link.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+
+        function showAddActivityModal() {
+            document.getElementById('addActivityModal').classList.remove('hidden');
+        }
+
+        function closeAddActivityModal() {
+            document.getElementById('addActivityModal').classList.add('hidden');
+            document.getElementById('addActivityForm').reset();
+        }
+
+        function editDepartmentActivity(activityName) {
+            window.location.href = '/department/edit-activity/' + encodeURIComponent(activityName);
+        }
+
+        function viewDepartmentActivityRegistrations(activityName) {
+            document.getElementById('registrationsModal').classList.remove('hidden');
+            document.getElementById('registrationsTitle').textContent = activityName + ' - Registrations';
+            document.getElementById('registrationsContent').innerHTML = '<p>Loading registrations...</p>';
+            
+            fetch('/api/department-activity/' + encodeURIComponent(activityName) + '/registrations')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('registrationsContent').innerHTML = 
+                            '<p style="color: #ff8a80;">Error: ' + data.error + '</p>'; // Adjusted error color for theme
+                        return;
+                    }
+                    let content = '<div style="margin-bottom: 20px;">';
+                    content += '<h3>Total Registrations: ' + data.total_registrations + '</h3>';
+                    content += '</div>';
+                    if (data.registrations && data.registrations.length > 0) {
+                        content += '<table class="registrations-table">';
+                        content += '<thead><tr><th>Name</th><th>Email</th><th>Entry No</th><th>Feedback</th></tr></thead>';
+                        content += '<tbody>';
+                        data.registrations.forEach(reg => {
+                            content += '<tr>';
+                            content += '<td>' + (reg.name || 'N/A') + '</td>';
+                            content += '<td>' + (reg.email || 'N/A') + '</td>';
+                            content += '<td>' + (reg.entryno || 'N/A') + '</td>';
+                            // Department field might be less relevant here if all are from the same dept.
+                            content += '<td>' + (reg.feedback !== null && reg.feedback !== undefined ? reg.feedback : 'Not provided') + '</td>';
+                            content += '</tr>';
+                        });
+                        content += '</tbody></table>';
+                    } else {
+                        content += '<div class="empty-state" style="padding: 20px;">';
+                        content += '<i class="bx bx-user-x"></i>';
+                        content += '<h3>No Registrations Yet</h3>';
+                        content += '<p>No one has registered for this department activity yet.</p>';
+                        content += '</div>';
+                    }
+                    document.getElementById('registrationsContent').innerHTML = content;
+                })
+                .catch(error => {
+                    console.error('Error fetching registrations:', error);
+                    document.getElementById('registrationsContent').innerHTML = 
+                        '<p style="color: #ff8a80;">Failed to load registrations. Please try again.</p>';
+                });
+        }
+
+        function closeRegistrationsModal() {
+            document.getElementById('registrationsModal').classList.add('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentTab = '{{ current_tab | default("dashboard") }}';
+            showTab(currentTab);
+            const activityImages = document.querySelectorAll('.card-front img');
+            activityImages.forEach(img => {
+                img.onerror = function() {
+                    this.src = "{{ url_for('static', filename='default_activity.jpg') }}"; // Default for dept activities
+                };
+            });
+        });
+    </script>
+</body>
+</html>

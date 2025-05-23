@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Coordinator Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            background-color: #ffffff;
+        }
+
+        .side-panel {
+            width: 250px;
+            background-color: #5D3FD3;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+        }
+
+        .side-panel .logo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: white;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5D3FD3;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .side-panel nav {
+            width: 100%;
+        }
+
+        .side-panel nav a {
+            display: block;
+            text-decoration: none;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .side-panel nav a:hover {
+            background-color: #4b32b3;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content h1 {
+            color: #5D3FD3;
+            margin-bottom: 20px;
+        }
+
+        .course-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .course-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            border: 1px solid #5D3FD3;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .course-list li button {
+            background-color: #5D3FD3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .course-list li button:hover {
+            background-color: #4b32b3;
+        }
+
+        .add-course {
+            display: flex;
+            margin-top: 20px;
+        }
+
+        .add-course input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #5D3FD3;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .add-course button {
+            background-color: #5D3FD3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .add-course button:hover {
+            background-color: #4b32b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="side-panel">
+        <div class="logo">LOGO</div>
+        <nav>
+            <a href="#">Edit Schedule</a>
+            <a href="#">Logout</a>
+        </nav>
+    </div>
+    <div class="content">
+        <h1>Course Coordinator Dashboard</h1>
+        <ul class="course-list" id="courseList">
+            <!-- Courses will appear here -->
+        </ul>
+        <div class="add-course">
+            <input type="text" id="courseInput" placeholder="Enter course name">
+            <button onclick="addCourse()">Add Course</button>
+        </div>
+    </div>
+
+    <script>
+        const courseList = document.getElementById('courseList');
+
+        function addCourse() {
+            const courseInput = document.getElementById('courseInput');
+            const courseName = courseInput.value.trim();
+
+            if (courseName) {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `${courseName} <button onclick="removeCourse(this)">Remove</button>`;
+                courseList.appendChild(listItem);
+                courseInput.value = '';
+            }
+        }
+
+        function removeCourse(button) {
+            const listItem = button.parentElement;
+            courseList.removeChild(listItem);
+        }
+    </script>
+</body>
+</html>

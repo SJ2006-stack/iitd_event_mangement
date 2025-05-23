@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Portal</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(to bottom right, #2c2f48, #5D3FD3);
+            display: flex;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.4);
+            padding-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar img {
+            width: 80px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: #fff;
+            padding: 12px 20px;
+            margin: 5px 0;
+            width: 100%;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .calendar,
+        .recommended-events {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(6px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .calendar h2,
+        .recommended-events h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        #calendar {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            color: #000;
+        }
+
+        .events-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .events-list li {
+            background: rgba(93, 63, 211, 0.1);
+            border-left: 4px solid #5D3FD3;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            color: #fff;
+        }
+
+        .event-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .event-details {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .feedback {
+            margin-top: 30px;
+        }
+
+        .feedback h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .feedback form {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .feedback label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .feedback input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .feedback button {
+            background: #5D3FD3;
+            color: #fff;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .feedback button:hover {
+            background: #4a32a8;
+        }
+
+        /* Calendar Export Button */
+        .calendar-export {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .export-btn {
+            background: #5D3FD3;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: 0.3s;
+        }
+
+        .export-btn:hover {
+            background: #4a32a8;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" />
+        <a href="/student"><i class='bx bxs-dashboard'></i> Dashboard</a>
+        <a href="/student/profile"><i class='bx bxs-user'></i> Profile</a>
+        <a href="/student/events_to_join"><i class='bx bxs-calendar-event'></i> Events</a>
+        <a href="/student/academic_schedule"><i class='bx bxs-book'></i> Academic Schedule</a>
+        <a href="/logout"><i class='bx bx-log-out'></i> Logout</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Calendar -->
+        <div class="calendar">
+            <h2>Your Calendar</h2>
+            <div id="calendar"></div>
+            <div class="calendar-export">
+                <button class="export-btn" onclick="exportCalendar()">
+                    <i class='bx bx-download'></i> Export Calendar (.ics)
+                </button>
+                <button class="export-btn" onclick="syncWithGoogleCalendar()" style="margin-left: 10px;">
+                    <i class='bx bxl-google'></i> Sync with Google
+                </button>
+                <button class="export-btn" onclick="generateShareLink()" style="margin-left: 10px;">
+                    <i class='bx bx-share'></i> Share Calendar
+                </button>
+                <button class="export-btn" onclick="emailCalendar()" style="margin-left: 10px;">
+                    <i class='bx bx-envelope'></i> Email to Me
+                </button>
+            </div>
+
+            <!-- Share Modal -->
+            <div id="shareModal"
+                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+                <div
+                    style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 30px; border-radius: 15px; color: #333; max-width: 500px; width: 90%;">
+                    <h3 style="margin-bottom: 20px; color: #5D3FD3;">Share Your Calendar</h3>
+                    <p style="margin-bottom: 15px;">Share your calendar with others or subscribe to it in external
+                        calendar apps:</p>
+
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <label style="font-weight: bold; display: block; margin-bottom: 5px;">Shareable Link:</label>
+                        <input type="text" id="shareLink" readonly
+                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <button onclick="copyShareLink()"
+                            style="margin-top: 5px; background: #5D3FD3; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Copy
+                            Link</button>
+                    </div>
+
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <label style="font-weight: bold; display: block; margin-bottom: 5px;">Subscription URL (for
+                            calendar apps):</label>
+                        <input type="text" id="icsLink" readonly
+                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <button onclick="copyIcsLink()"
+                            style="margin-top: 5px; background: #5D3FD3; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Copy
+                            URL</button>
+                    </div>
+
+                    <div style="margin-top: 20px; text-align: right;">
+                        <button onclick="revokeAccess()"
+                            style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-right: 10px;">Revoke
+                            Access</button>
+                        <button onclick="closeShareModal()"
+                            style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events + Feedback -->
+        <div class="recommended-events">
+            <h2>Recommended Events</h2>
+            <ul class="events-list">
+                {% for event in recommend_events %}
+                <li>
+                    <div class="event-title">{{ event.name }}</div>
+                    <div class="event-details">
+                        📅 {{ event.date }} at {{ event.starttime }}<br>
+                        📍 {{ event.venue }}<br>
+                        🏢 {{ event.organiser }}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+
+            <div class="feedback">
+                <h3>Give Feedback</h3>
+                {% for feedback in feedback_remaining %}
+                <form action="/student/submit_feedback/{{ feedback.event }}" method="post">
+                    <label for="{{ feedback.event }}-feedback">Rate {{ feedback.event }} (1-10):</label>
+                    <input type="number" id="{{ feedback.event }}-feedback" name="{{ feedback.event }}-feedback" min="1"
+                        max="10" required>
+                    <button type="submit">Submit Feedback</button>
+                </form>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- FullCalendar Script -->
+    <script>
+        let calendar;
+
+        // document.addEventListener('DOMContentLoaded', function () {
+        //     const calendarEl = document.getElementById('calendar');
+        //     if (!calendarEl) return;
+
+        //     calendar = new FullCalendar.Calendar(calendarEl, {
+        //         initialView: 'dayGridMonth',
+        //         headerToolbar: {
+        //             left: 'prev,next today',
+        //             center: 'title',
+        //             right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        //         },
+        //         events: JSON.parse('{{ calendar_events|safe }}'),
+        //         eventClick: function (info) {
+        //             if (!info.event) return;
+
+        //             let startTime = 'N/A';
+        //             let endTime = 'N/A';
+
+        //             if (info.event.start) {
+        //                 startTime = info.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        //             }
+
+        //             if (info.event.end) {
+        //                 endTime = info.event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        //             }
+
+        //             alert(
+        //                 'Event: ' + info.event.title + '\n' +
+        //                 'Start Time: ' + startTime + '\n' +
+        //                 'End Time: ' + endTime + '\n' +
+        //                 'Description: ' + (info.event.extendedProps.description || 'N/A') + '\n' +
+        //                 'Location: ' + (info.event.extendedProps.location || 'N/A')
+        //             );
+        //         },
+        //         height: 'auto',
+        //         eventDidMount: function (info) {
+        //             // Add tooltip on hover
+        //             info.el.title = info.event.title + ' - ' + (info.event.extendedProps.location || 'No location');
+        //         }
+        //     });
+        //     calendar.render();
+        // });
+
+        // Export calendar as ICS file
+        function exportCalendar() {
+            fetch('/api/student/calendar-events')
+                .then(response => response.json())
+                .then(data => {
+                    const events = data.events;
+                    let icsContent = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Student Portal//EN\n';
+
+                    events.forEach(event => {
+                        const startDate = new Date(event.start).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                        const endDate = new Date(event.end).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+                        icsContent += 'BEGIN:VEVENT\n';
+                        icsContent += `DTSTART:${startDate}\n`;
+                        icsContent += `DTEND:${endDate}\n`;
+                        icsContent += `SUMMARY:${event.title}\n`;
+                        icsContent += `DESCRIPTION:${event.description || ''}\n`;
+                        icsContent += `LOCATION:${event.location || ''}\n`;
+                        icsContent += `UID:${Date.now()}-${Math.random()}@studentportal.com\n`;
+                        icsContent += 'END:VEVENT\n';
+                    });
+
+                    icsContent += 'END:VCALENDAR';
+
+                    // Download the file
+                    const blob = new Blob([icsContent], { type: 'text/calendar' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'my_events.ics';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    console.error('Error exporting calendar:', error);
+                    alert('Error exporting calendar. Please try again.');
+                });
+        }
+
+        // Generate shareable calendar link
+        function generateShareLink() {
+            fetch('/student/calendar/generate-link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+
+                    document.getElementById('shareLink').value = data.calendar_url;
+                    document.getElementById('icsLink').value = data.ics_url;
+                    document.getElementById('shareModal').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error generating share link:', error);
+                    alert('Error generating share link. Please try again.');
+                });
+        }
+
+        function copyShareLink() {
+            const shareLink = document.getElementById('shareLink');
+            shareLink.select();
+            document.execCommand('copy');
+            alert('Share link copied to clipboard!');
+        }
+
+        function copyIcsLink() {
+            const icsLink = document.getElementById('icsLink');
+            icsLink.select();
+            document.execCommand('copy');
+            alert('Subscription URL copied to clipboard!\n\nYou can paste this in your calendar app to subscribe.');
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').style.display = 'none';
+        }
+
+        function revokeAccess() {
+            if (confirm('Are you sure you want to revoke calendar sharing access? This will disable all existing shared links.')) {
+                fetch('/student/calendar/revoke-link', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message || 'Calendar sharing access revoked successfully.');
+                        closeShareModal();
+                    })
+                    .catch(error => {
+                        console.error('Error revoking access:', error);
+                        alert('Error revoking access. Please try again.');
+                    });
+            }
+        }
+
+        // Email calendar to user
+        function emailCalendar() {
+            if (confirm('Send your calendar to your registered email address?')) {
+                fetch('/student/calendar/email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Error: ' + data.error);
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error sending calendar email:', error);
+                        alert('Error sending calendar email. Please try again.');
+                    });
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarEl = document.getElementById('calendar');
+            if (!calendarEl) {
+                console.error("Calendar element not found!"); // Add this for debugging
+                return;
+            }
+
+            let calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                // This line is crucial
+                events: JSON.parse('{{ calendar_events|safe }}'),
+                // Add a console.log here to see the parsed data in the browser's console
+                // console.log("Parsed events for FullCalendar:", JSON.parse('{{ calendar_events|safe }}'));
+
+                eventClick: function (info) {
+                    if (!info.event) return;
+
+                    let startTime = 'N/A';
+                    let endTime = 'N/A';
+
+                    // FullCalendar provides Date objects for start/end if valid
+                    if (info.event.start) {
+                        startTime = info.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    }
+
+                    if (info.event.end) {
+                        endTime = info.event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    }
+
+                    // Accessing extendedProps for description and location
+                    alert(
+                        'Event: ' + info.event.title + '\n' +
+                        'Start Time: ' + startTime + '\n' +
+                        'End Time: ' + endTime + '\n' +
+                        'Description: ' + (info.event.extendedProps.description || 'N/A') + '\n' +
+                        'Location: ' + (info.event.extendedProps.location || 'N/A') + '\n' +
+                        'Organiser: ' + (info.event.extendedProps.organiser || info.event.extendedProps.course || 'N/A') // Access new custom props
+                    );
+                },
+                height: 'auto',
+                eventDidMount: function (info) {
+                    // Add tooltip on hover
+                    info.el.title = info.event.title + ' - ' + (info.event.extendedProps.location || 'No location');
+                }
+            });
+            calendar.render();
+        });
+    </script>
+</body>
+
+</html>
