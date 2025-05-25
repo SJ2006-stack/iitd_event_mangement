@@ -49,10 +49,15 @@ class Registration(db.Model):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), nullable=False, unique=True)
     password = db.Column(db.String(128), nullable=False) # Store hashed passwords
+    hostel = db.Column(db.String(30), nullable=True)
     role = db.Column(db.String(255), nullable=False)  # JSON string of roles
     department = db.Column(db.String(100))
     photo = db.Column(db.String(255)) # Path to photo
     interest = db.Column(db.String(500)) # JSON string of interests
+    entryyear=db.Column(db.Integer,nullable=False)
+    exityear=db.Column(db.Integer,nullable=False)
+    currentyear=db.Column(db.Integer,nullable=True)
+    course=db.Column(db.String(30), nullable=True)
 
 class CalendarShare(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -151,6 +156,67 @@ def send_otp_email(receiver_email, otp_code):
         print(f"Error sending OTP email: {e}")
         return False
 
+def to_entryno(username):
+    return "20"+username[3:5]+username[:3].upper()+username[5:]
+
+def find_department(entryno):
+    departmentID=entryno[4:7]
+    department_codes = {
+        "AM1": "Applied Mechanics",
+        "BB1": "Biochemical Engineering and Biotechnology",
+        "BB5": "Biochemical Engineering and Biotechnology (Dual/M.Tech)",
+        "CH1": "Chemical Engineering",
+        "CH5": "Chemical Engineering (Dual/M.Tech)",
+        "CY1": "Chemistry",
+        "CE1": "Civil Engineering",
+        "CE5": "Civil Engineering (Dual/M.Tech)",
+        "CS1": "Computer Science and Engineering",
+        "CS5": "Computer Science and Engineering (Dual/M.Tech)",
+        "DS1": "Design",
+        "EE1": "Electrical Engineering",
+        "EE3": "Electrical Engineering (M.Tech)",
+        "EE5": "Electrical Engineering (Dual Degree)",
+        "EN1": "Energy Science and Engineering",
+        "EN5": "Energy Science and Engineering (Dual/M.Tech)",
+        "HS1": "Humanities and Social Sciences",
+        "MS1": "Management Studies",
+        "MT1": "Materials Science and Engineering",
+        "MT5": "Materials Science and Engineering (Dual/M.Tech)",
+        "MA1": "Mathematics",
+        "ME1": "Mechanical Engineering",
+        "ME5": "Mechanical Engineering (Dual/M.Tech)",
+        "PH1": "Physics",
+        "TT1": "Textile and Fibre Engineering",
+        "TT5": "Textile and Fibre Engineering (Dual/M.Tech)"
+    }
+    return department_codes.get(departmentID)
+
+def cousre_duration(course):
+    """
+    Returns the course duration in years based on course type.
+
+    Returns:
+        int: Duration of the course in years (returns 0 if unknown)
+    """
+
+    # Normalize input
+    course = course.strip().lower()
+
+    # Duration mapping
+    duration_by_course = {
+        "btech": 4,
+        "dual-degree": 5,
+        "mtech": 2,
+        "msc": 2,
+        "mba": 2,
+        "ma": 2,
+        "mdes": 2,
+        "phd": 5  # varies, but assume 5
+    }
+
+    return duration_by_course.get(course, 0)
+
+
 # --- Routes ---
 @app.route('/uploads/<path:filename>') # Use path converter for flexibility
 def uploaded_file(filename):
@@ -165,19 +231,19 @@ def kars_registration_or_login(): # Combined landing page
     if request.method == 'POST':
         # This form should distinguish between login and registration actions
         # For simplicity, assuming it's a registration attempt if certain fields are present
+        print(request.form)
         if 'name' in request.form and 'confirm_password' in request.form: # Registration
             name = request.form['name']
+            hostel = request.form['hostel']
             email = request.form['email'].lower()
             entryno_parts = email.split('@')
+            course=request.form['course']
             if len(entryno_parts) > 0 and entryno_parts[0]:
-                entryno = entryno_parts[0] # Using email prefix as entryno
+                entryno = to_entryno(entryno_parts[0]) # Using email prefix as entryno
             else:
                 return "Invalid email format for entry number generation.", 400
-
             password = request.form['password']
-            confirm_password = request.form['confirm_password']
-            role_list = request.form.getlist('roles') # e.g., ['student', 'club_aspirant']
-            
+            confirm_password = request.form['confirm_password']            
             if password != confirm_password:
                 return "Passwords do not match.", 400
             if not email.endswith("@iitd.ac.in"): # Example domain
@@ -186,15 +252,14 @@ def kars_registration_or_login(): # Combined landing page
                 return "Email already registered.", 400
             if Registration.query.filter_by(entryno=entryno).first():
                  return "Entry number already registered (derived from email).", 400
-
-
             hashed_password = hashlib.sha256(password.encode()).hexdigest() # Basic hashing, consider bcrypt
-            role_json = json.dumps(role_list)
+            role_json = json.dumps(['student'])
 
             session['registration_data'] = {
-                'entryno': entryno, 'name': name, 'email': email,
+                'entryno': entryno, 'name': name,'hostel':hostel, 'email': email,
                 'password': hashed_password, 'role': role_json,
-                'interest': json.dumps([]), 'photo': None, 'department': None
+                'interest': json.dumps([]), 'photo': None, 'department': find_department(entryno),
+                'entryyear':int(entryno[:4]),'course':course,'exityear':int(entryno[:4])+cousre_duration(course)
             }
             
             otp = "".join([str(random.randint(0,9)) for _ in range(6)])
@@ -308,7 +373,7 @@ def kars_student():
     if not user_id:
         return redirect(url_for('kars_registration_or_login'))
     
-    user = Registration.query.get(user_id)
+    user = db.session.get(Registration, user_id)
     if not user:
         session.clear() # Clear invalid session
         return redirect(url_for('kars_registration_or_login'))
@@ -395,7 +460,7 @@ def kars_profile():
     user_id = session.get('user_id')
     if not user_id:
         return redirect(url_for('kars_registration_or_login'))
-    user = Registration.query.get(user_id)
+    user = db.session.get(Registration, user_id)
     if not user:
         session.clear()
         return redirect(url_for('kars_registration_or_login'))

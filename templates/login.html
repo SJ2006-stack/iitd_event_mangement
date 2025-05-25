@@ -514,6 +514,239 @@
         .input-box input {
             background-color: transparent !important;
         }
+
+        /* Hostel Selector Dropdown Styles */
+        .hostel-selector-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .hostel-display {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.3s;
+        }
+
+        .hostel-display:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .hostel-display i {
+            margin-right: 10px;
+        }
+
+        .hostel-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: rgba(40, 40, 40, 0.95);
+            border-radius: 0 0 5px 5px;
+            z-index: 10;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .hostel-options.show {
+            max-height: 350px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-top: none;
+            overflow-y: auto;
+        }
+
+        /* Custom scrollbar for hostel options */
+        .hostel-options::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .hostel-options::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .hostel-options::-webkit-scrollbar-thumb {
+            background: rgba(93, 63, 211, 0.8);
+            border-radius: 3px;
+        }
+
+        .hostel-options::-webkit-scrollbar-thumb:hover {
+            background: rgba(93, 63, 211, 1);
+        }
+
+        .hostel-option-item {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .hostel-option-item:hover {
+            background: rgba(93, 63, 211, 0.3);
+        }
+
+        .hostel-option-item:last-child {
+            border-bottom: none;
+        }
+
+        .hostel-option-item i {
+            margin-right: 10px;
+            font-size: 18px;
+            min-width: 20px;
+        }
+
+        .hostel-category-header {
+            padding: 8px 15px;
+            background: rgba(93, 63, 211, 0.2);
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Special styling for Day Scholar option */
+        .hostel-option-item[data-value="day-scholar"] {
+            background: rgba(93, 63, 211, 0.1);
+            font-weight: 500;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hostel-option-item[data-value="day-scholar"]:hover {
+            background: rgba(93, 63, 211, 0.4);
+        }
+
+        /* Different icons for different hostel types */
+        .hostel-option-item[data-value*="day-scholar"] i {
+            color: #4ade80;
+        }
+
+        .hostel-option-item[data-value*="boys"] i,
+        .hostel-option-item[data-value="aravali"] i,
+        .hostel-option-item[data-value="girnar"] i,
+        .hostel-option-item[data-value="jwalamukhi"] i,
+        .hostel-option-item[data-value="karakoram"] i,
+        .hostel-option-item[data-value="kumaon"] i,
+        .hostel-option-item[data-value="nilgiri"] i,
+        .hostel-option-item[data-value="shivalik"] i,
+        .hostel-option-item[data-value="satpura"] i,
+        .hostel-option-item[data-value="udaigiri"] i,
+        .hostel-option-item[data-value="vindhyachal"] i,
+        .hostel-option-item[data-value="zanskar"] i {
+            color: #60a5fa;
+        }
+
+        .hostel-option-item[data-value*="girls"] i,
+        .hostel-option-item[data-value="kailash"] i,
+        .hostel-option-item[data-value="himadri"] i {
+            color: #f472b6;
+        }
+
+        .hostel-option-item[data-value*="pg"] i,
+        .hostel-option-item[data-value="dronagiri"] i,
+        .hostel-option-item[data-value="sahyadri"] i,
+        .hostel-option-item[data-value*="saptagiri"] i {
+            color: #fbbf24;
+        }
+
+        .hostel-option-item[data-value="nalanda"] i {
+            color: #a78bfa;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .hostel-options.show {
+                max-height: 250px;
+            }
+
+            .hostel-option-item {
+                padding: 12px 15px;
+            }
+
+            .hostel-category-header {
+                padding: 6px 15px;
+                font-size: 12px;
+            }
+        }
+
+        .course-selector-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .course-display {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.3s;
+        }
+
+        .course-display:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .course-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: rgba(40, 40, 40, 0.95);
+            border-radius: 0 0 5px 5px;
+            z-index: 10;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .course-options.show {
+            max-height: 300px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-top: none;
+            overflow-y: auto;
+        }
+
+        /* Use hostel-option-item styles for reusability */
+        .course-options .hostel-option-item i {
+            color: #c084fc;
+        }
+
+        .course-options .hostel-category-header {
+            background: rgba(93, 63, 211, 0.2);
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 8px 15px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 480px) {
+            .course-options.show {
+                max-height: 250px;
+            }
+        }
     </style>
 </head>
 
@@ -625,27 +858,157 @@
                         <label>Confirm Password</label>
                         <span class="error-message" id="signup-confirm-password-error">Passwords do not match</span>
                     </div>
+                    <!-- Hostel Selector Form Group -->
                     <div class="form-group">
-                        <label>Select Roles</label>
-                        <div class="role-selector">
-                            <input type="checkbox" id="role-student" class="role-option" name="roles" value="student">
-                            <label for="role-student"><i class='bx bxs-user'></i> Student</label>
+                        <label>Hostel/Accommodation</label>
+                        <div class="hostel-selector-dropdown">
+                            <div class="hostel-display" id="selected-hostel" onclick="toggleHostelOptions()">
+                                <span><i class='bx bxs-home'></i> Select your hostel</span>
+                                <i class='bx bx-chevron-down'></i>
+                            </div>
+                            <div class="hostel-options" id="hostel-options">
+                                <!-- Day Scholar Option -->
+                                <div class="hostel-option-item" data-value="day-scholar"
+                                    onclick="selectHostel('day-scholar', 'Day Scholar', 'bxs-car')">
+                                    <i class='bx bxs-car'></i> Day Scholar
+                                </div>
 
-                            <input type="checkbox" id="role-club" class="role-option" name="roles" value="club">
-                            <label for="role-club"><i class='bx bxs-group'></i> Club Executive</label>
+                                <!-- Boys Hostels -->
+                                <div class="hostel-category-header">Boys Hostels</div>
+                                <div class="hostel-option-item" data-value="aravali"
+                                    onclick="selectHostel('aravali', 'Aravali', 'bxs-building')">
+                                    <i class='bx bxs-building'></i> Aravali
+                                </div>
+                                <div class="hostel-option-item" data-value="girnar"
+                                    onclick="selectHostel('girnar', 'Girnar', 'bxs-building')">
+                                    <i class='bx bxs-building'></i> Girnar
+                                </div>
+                                <div class="hostel-option-item" data-value="jwalamukhi"
+                                    onclick="selectHostel('jwalamukhi', 'Jwalamukhi', 'bxs-building')">
+                                    <i class='bx bxs-building'></i> Jwalamukhi
+                                </div>
+                                <div class="hostel-option-item" data-value="karakoram"
+                                    onclick="selectHostel('karakoram', 'Karakoram', 'bxs-building')">
+                                    <i class='bx bxs-building'></i> Karakoram
+                                </div>
+                                <div class="hostel-option-item" data-value="kumaon"
+                                    onclick="selectHostel('kumaon', 'Kumaon', 'bxs-building')">
+                                    <i class='bx bxs-building'></i> Kumaon
+                                </div>
+                                <div class="hostel-option-item" data-value="nilgiri"
+                                    onclick="selectHostel('nilgiri', 'Nilgiri', 'bxs-building')">
+                                    <i class='bx bxs-building'></i> Nilgiri
+                                </div>
+                                <div class="hostel-option-item" data-value="shivalik"
+                                    onclick="selectHostel('shivalik', 'Shivalik', 'bxs-building')">
+                                    <i class='bx bxs-building'></i> Shivalik
+                                </div>
+                                <div class="hostel-option-item" data-value="satpura"
+                                    onclick="selectHostel('satpura', 'Satpura', 'bxs-building')">
+                                    <i class='bx bxs-building'></i> Satpura
+                                </div>
+                                <div class="hostel-option-item" data-value="udaigiri"
+                                    onclick="selectHostel('udaigiri', 'Udaigiri', 'bxs-building')">
+                                    <i class='bx bxs-building'></i> Udaigiri
+                                </div>
+                                <div class="hostel-option-item" data-value="vindhyachal"
+                                    onclick="selectHostel('vindhyachal', 'Vindhyachal', 'bxs-building')">
+                                    <i class='bx bxs-building'></i> Vindhyachal
+                                </div>
+                                <div class="hostel-option-item" data-value="zanskar"
+                                    onclick="selectHostel('zanskar', 'Zanskar', 'bxs-building')">
+                                    <i class='bx bxs-building'></i> Zanskar
+                                </div>
+                                <div class="hostel-option-item" data-value="dronagiri"
+                                    onclick="selectHostel('dronagiri', 'Dronagiri (PG only)', 'bxs-graduation')">
+                                    <i class='bx bxs-graduation'></i> Dronagiri (PG only)
+                                </div>
+                                <div class="hostel-option-item" data-value="saptagiri-boys"
+                                    onclick="selectHostel('saptagiri-boys', 'Saptagiri Boys (PG only)', 'bxs-graduation')">
+                                    <i class='bx bxs-graduation'></i> Saptagiri Boys (PG only)
+                                </div>
 
-                            <input type="checkbox" id="role-department" class="role-option" name="roles"
-                                value="department">
-                            <label for="role-department"><i class='bx bxs-building'></i> Department Head</label>
-
-                            <input type="checkbox" id="role-fest" class="role-option" name="roles" value="fest">
-                            <label for="role-fest"><i class='bx bx-calendar-event'></i> Fest Executive</label>
-
-                            <input type="checkbox" id="role-coordinator" class="role-option" name="roles"
-                                value="course-coordinator">
-                            <label for="role-coordinator"><i class='bx bxs-book'></i> Course Coordinator</label>
+                                <!-- Girls Hostels -->
+                                <div class="hostel-category-header">Girls Hostels</div>
+                                <div class="hostel-option-item" data-value="kailash"
+                                    onclick="selectHostel('kailash', 'Kailash', 'bxs-home-heart')">
+                                    <i class='bx bxs-home-heart'></i> Kailash
+                                </div>
+                                <div class="hostel-option-item" data-value="himadri"
+                                    onclick="selectHostel('himadri', 'Himadri', 'bxs-home-heart')">
+                                    <i class='bx bxs-home-heart'></i> Himadri
+                                </div>
+                                <div class="hostel-option-item" data-value="sahyadri"
+                                    onclick="selectHostel('sahyadri', 'Sahyadri (PG only)', 'bxs-graduation')">
+                                    <i class='bx bxs-graduation'></i> Sahyadri (PG only)
+                                </div>
+                                <div class="hostel-option-item" data-value="saptagiri-girls"
+                                    onclick="selectHostel('saptagiri-girls', 'Saptagiri Girls (PG only)', 'bxs-graduation')">
+                                    <i class='bx bxs-graduation'></i> Saptagiri Girls (PG only)
+                                </div>
+                                <div class="hostel-option-item" data-value="nalanda"
+                                    onclick="selectHostel('nalanda', 'Nalanda (Transit)', 'bxs-time')">
+                                    <i class='bx bxs-time'></i> Nalanda (Transit)
+                                </div>
+                            </div>
+                            <input type="hidden" name="hostel" id="hostel-input" required>
+                            <span class="error-message" id="hostel-error">Please select a hostel or day scholar
+                                option</span>
                         </div>
-                        <span class="error-message" id="roles-error">Please select at least one role</span>
+                    </div>
+                    <!-- Course / Program Selector Form Group -->
+                    <div class="form-group">
+                        <label>Course / Program</label>
+                        <div class="course-selector-dropdown">
+                            <div class="course-display" id="selected-course" onclick="toggleCourseOptions()">
+                                <span><i class='bx bxs-graduation'></i> Select your course</span>
+                                <i class='bx bx-chevron-down'></i>
+                            </div>
+                            <div class="course-options" id="course-options">
+                                <!-- UG -->
+                                <div class="hostel-category-header">Undergraduate</div>
+                                <div class="hostel-option-item" data-value="btech"
+                                    onclick="selectCourse('btech', 'B.Tech', 'bxs-graduation')">
+                                    <i class='bx bxs-graduation'></i> B.Tech
+                                </div>
+                                <div class="hostel-option-item" data-value="dual-degree"
+                                    onclick="selectCourse('dual-degree', 'Dual Degree (B.Tech + M.Tech)', 'bxs-layer')">
+                                    <i class='bx bxs-layer'></i> Dual Degree (B.Tech + M.Tech)
+                                </div>
+
+                                <!-- PG -->
+                                <div class="hostel-category-header">Postgraduate</div>
+                                <div class="hostel-option-item" data-value="mtech"
+                                    onclick="selectCourse('mtech', 'M.Tech', 'bxs-briefcase-alt-2')">
+                                    <i class='bx bxs-briefcase-alt-2'></i> M.Tech
+                                </div>
+                                <div class="hostel-option-item" data-value="mba"
+                                    onclick="selectCourse('mba', 'MBA', 'bxs-business')">
+                                    <i class='bx bxs-business'></i> MBA
+                                </div>
+                                <div class="hostel-option-item" data-value="msc"
+                                    onclick="selectCourse('msc', 'M.Sc', 'bxs-flask')">
+                                    <i class='bx bxs-flask'></i> M.Sc
+                                </div>
+                                <div class="hostel-option-item" data-value="mdes"
+                                    onclick="selectCourse('mdes', 'M.Des', 'bxs-palette')">
+                                    <i class='bx bxs-palette'></i> M.Des
+                                </div>
+                                <div class="hostel-option-item" data-value="ma"
+                                    onclick="selectCourse('ma', 'M.A.', 'bxs-book-heart')">
+                                    <i class='bx bxs-book-heart'></i> M.A.
+                                </div>
+
+                                <!-- Doctoral -->
+                                <div class="hostel-category-header">Doctoral</div>
+                                <div class="hostel-option-item" data-value="phd"
+                                    onclick="selectCourse('phd', 'Ph.D', 'bxs-medal')">
+                                    <i class='bx bxs-medal'></i> Ph.D
+                                </div>
+                            </div>
+                            <input type="hidden" name="course" id="course-input" required>
+                            <span class="error-message" id="course-error">Please select a course</span>
+                        </div>
                     </div>
                     <button type="submit" class="btn" id="signup-btn">Send OTP</button>
                     <div class="bottom-text">
@@ -722,6 +1085,10 @@
         const loginForm = document.getElementById('login-form');
         const signupForm = document.getElementById('signup-form');
 
+        if (!validateCourseSelection()) {
+            isValid = false;
+        }
+
         if (loginForm) {
             loginForm.addEventListener('submit', function (e) {
                 let isValid = true;
@@ -791,19 +1158,6 @@
                     hideError(password, 'signup-password-error');
                 }
 
-                // Roles validation
-                const roles = document.querySelectorAll('input[name="roles"]:checked');
-                if (roles.length === 0) {
-                    document.getElementById('roles-error').style.display = 'block';
-                    isValid = false;
-                } else {
-                    document.getElementById('roles-error').style.display = 'none';
-                }
-
-                if (!isValid) {
-                    e.preventDefault(); // Only prevent submission if invalid
-                }
-                // Otherwise allow form to submit naturally
             });
         }
 
@@ -883,7 +1237,151 @@
                 });
             });
         });
+        // Hostel selector dropdown functions
+        function toggleHostelOptions() {
+            const hostelOptions = document.getElementById('hostel-options');
+            hostelOptions.classList.toggle('show');
+        }
+
+        function selectHostel(value, text, iconClass) {
+            const selectedHostel = document.getElementById('selected-hostel');
+            const hostelInput = document.getElementById('hostel-input');
+
+            selectedHostel.innerHTML = `<span><i class='bx ${iconClass}'></i> ${text}</span><i class='bx bx-chevron-down'></i>`;
+            hostelInput.value = value;
+
+            document.getElementById('hostel-options').classList.remove('show');
+            document.getElementById('hostel-error').style.display = 'none';
+        }
+
+        // Close hostel dropdown when clicking outside
+        window.addEventListener('click', function (e) {
+            const hostelDropdown = document.querySelector('.hostel-selector-dropdown');
+            if (hostelDropdown && !hostelDropdown.contains(e.target)) {
+                const hostelOptions = document.getElementById('hostel-options');
+                if (hostelOptions) {
+                    hostelOptions.classList.remove('show');
+                }
+            }
+        });
+
+        // Hostel validation function
+        function validateHostelSelection() {
+            const hostelInput = document.getElementById('hostel-input');
+            const hostelError = document.getElementById('hostel-error');
+
+            if (!hostelInput || hostelInput.value === '') {
+                if (hostelError) {
+                    hostelError.style.display = 'block';
+                }
+                return false;
+            } else {
+                if (hostelError) {
+                    hostelError.style.display = 'none';
+                }
+                return true;
+            }
+        }
+
+        // Add hostel validation to form submission
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add hostel validation to signup form if it exists
+            const signupForm = document.getElementById('signup-form');
+            if (signupForm) {
+                signupForm.addEventListener('submit', function (e) {
+                    let isValid = true;
+
+                    // Existing validations...
+                    const name = document.getElementById('signup-name');
+                    if (name && name.value.trim() === '') {
+                        showError(name, 'name-error');
+                        isValid = false;
+                    } else if (name) {
+                        hideError(name, 'name-error');
+                    }
+
+                    const email = document.getElementById('signup-email');
+                    if (email && !validateEmail(email.value)) {
+                        showError(email, 'signup-email-error');
+                        isValid = false;
+                    } else if (email) {
+                        hideError(email, 'signup-email-error');
+                    }
+
+                    const password = document.getElementById('signup-password');
+                    if (password && password.value.length < 8) {
+                        showError(password, 'signup-password-error');
+                        isValid = false;
+                    } else if (password) {
+                        hideError(password, 'signup-password-error');
+                    }
+
+                    const confirmPassword = document.getElementById('signup-confirm-password');
+                    if (confirmPassword && password && confirmPassword.value !== password.value) {
+                        showError(confirmPassword, 'signup-confirm-password-error');
+                        isValid = false;
+                    } else if (confirmPassword) {
+                        hideError(confirmPassword, 'signup-confirm-password-error');
+                    }
+
+
+                    // Add hostel validation
+                    if (!validateHostelSelection()) {
+                        isValid = false;
+                    }
+
+                    if (!isValid) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
+        // Course selector dropdown
+        function toggleCourseOptions() {
+            const courseOptions = document.getElementById('course-options');
+            courseOptions.classList.toggle('show');
+        }
+
+        function selectCourse(value, text, iconClass) {
+            const selectedCourse = document.getElementById('selected-course');
+            const courseInput = document.getElementById('course-input');
+
+            selectedCourse.innerHTML = `<span><i class='bx ${iconClass}'></i> ${text}</span><i class='bx bx-chevron-down'></i>`;
+            courseInput.value = value;
+
+            document.getElementById('course-options').classList.remove('show');
+            document.getElementById('course-error').style.display = 'none';
+        }
+
+        // Close course dropdown when clicking outside
+        window.addEventListener('click', function (e) {
+            const courseDropdown = document.querySelector('.course-selector-dropdown');
+            if (courseDropdown && !courseDropdown.contains(e.target)) {
+                const courseOptions = document.getElementById('course-options');
+                if (courseOptions) {
+                    courseOptions.classList.remove('show');
+                }
+            }
+        });
+
+        // Course validation
+        function validateCourseSelection() {
+            const courseInput = document.getElementById('course-input');
+            const courseError = document.getElementById('course-error');
+
+            if (!courseInput || courseInput.value === '') {
+                if (courseError) courseError.style.display = 'block';
+                return false;
+            } else {
+                if (courseError) courseError.style.display = 'none';
+                return true;
+            }
+        }
+        // Helper function to get selected hostel value
+        function getSelectedHostel() {
+            const hostelInput = document.getElementById('hostel-input');
+            return hostelInput ? hostelInput.value : '';
+        }
     </script>
 </body>
-
 </html>
