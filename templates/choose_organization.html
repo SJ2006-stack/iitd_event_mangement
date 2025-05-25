@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Choose Organization - KARS</title>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: #121212;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 40px 30px;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-weight: 500;
+      color: #fff;
+    }
+    .org-option {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      margin: 10px 0;
+      padding: 12px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+    .org-option:hover {
+      background: rgba(93, 63, 211, 0.1);
+      border-color: #5d3fd3;
+    }
+    /* Added styles for selected state */
+    .org-option.selected {
+      background: rgba(93, 63, 211, 0.2);
+      border-color: #5d3fd3;
+      box-shadow: 0 0 0 1px rgba(93, 63, 211, 0.3);
+    }
+    .org-option.selected i {
+      color: #7c5ce0;
+    }
+    .org-option input[type="radio"] {
+      display: none;
+    }
+    .org-option i {
+      font-size: 22px;
+      margin-right: 12px;
+      color: #5d3fd3;
+      transition: color 0.3s ease;
+    }
+    .org-option label {
+      flex: 1;
+      cursor: pointer;
+    }
+    .btn {
+      margin-top: 25px;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background: #5d3fd3;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .btn:hover {
+      background: #4a32a8;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo img {
+      width: 60px;
+      margin-bottom: 10px;
+    }
+    .logo span {
+      font-size: 22px;
+      font-weight: 600;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="KARS Logo" />
+      <span>KARS</span>
+    </div>
+    <h2>Select an Organization to Manage</h2>
+    <form method="POST">
+      {% for item in roles %}
+        <div class="org-option" onclick="selectOption(this)">
+          <input type="radio" name="organization" id="{{ item.organization }}-{{ loop.index }}" value="{{ item.organization }}" required>
+          <label for="{{ item.organization }}-{{ loop.index }}">
+            <i class='bx bxs-briefcase'></i>
+            {{ item.organization }} ({{ item.role.replace('_', ' ').title() }})
+          </label>
+          <input type="hidden" name="role" value="{{ item.role }}" />
+        </div>
+      {% endfor %}
+      
+      <button type="submit" class="btn">Continue</button>
+    </form>
+  </div>
+
+  <script>
+    function selectOption(optionDiv) {
+      const all = document.querySelectorAll('.org-option');
+      all.forEach(opt => opt.classList.remove('selected'));
+
+      const radio = optionDiv.querySelector('input[type="radio"]');
+      if (radio) {
+        radio.checked = true;
+        optionDiv.classList.add('selected');
+      }
+    }
+  </script>
+</body>
+</html>

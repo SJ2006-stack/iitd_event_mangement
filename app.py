@@ -69,7 +69,7 @@ class CalendarShare(db.Model):
 
 class EventAuthorization(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), nullable=False, unique=True) # Should match a Registration email
+    email = db.Column(db.String(120), nullable=False) # Should match a Registration email
     name = db.Column(db.String(100), nullable=False) # Name of the authorized person
     role = db.Column(db.String(50), nullable=False)  # 'club_head', 'fest_head', 'department_head', 'admin'
     organization = db.Column(db.String(100), nullable=False)  # Club name, Fest name, or Department name
@@ -129,14 +129,20 @@ def json_to_list(json_str):
         return []
 
 
-def get_user_authorization(email, expected_role_prefix):
-    auth_record = EventAuthorization.query.filter(
+def get_all_user_authorizations(email, expected_role_prefix):
+    return EventAuthorization.query.filter(
         EventAuthorization.email == email,
         EventAuthorization.role.startswith(expected_role_prefix),
         EventAuthorization.is_active == True
-    ).first()
-    return auth_record
+    ).all()
 
+def get_user_authorization(user_email, expected_role_prefix, organisation):
+    return EventAuthorization.query.filter(
+        EventAuthorization.email == user_email,
+        EventAuthorization.role.startswith(expected_role_prefix),
+        EventAuthorization.organization==organisation,
+        EventAuthorization.is_active == True
+    ).first()
 def send_otp_email(receiver_email, otp_code):
     my_email = os.getenv("email")
     app_pass = os.getenv("app_pass")
@@ -310,7 +316,21 @@ def kars_registration_or_login(): # Combined landing page
                     auth_role_prefix = role_prefix_map.get(login_role_selection)
 
                     if auth_role_prefix:
-                        auth_record = get_user_authorization(user.email, auth_role_prefix)
+                        auth_records = get_all_user_authorizations(user.email, auth_role_prefix)
+                        if len(auth_records) == 1:
+                            auth_record = auth_records[0]
+                            session['user_organization'] = auth_record.organization
+                            session['auth_role'] = auth_record.role
+                            # redirect based on role
+                        elif len(auth_records) > 1:
+                            session['multi_auth_roles'] = [
+                                {
+                                    'organization': a.organization,
+                                    'role': a.role
+                                } for a in auth_records
+                            ]
+                            return redirect(url_for('choose_organization'))
+
 
                 if auth_record:
                     session['user_organization'] = auth_record.organization # Store club/fest/dept name
@@ -331,6 +351,29 @@ def kars_registration_or_login(): # Combined landing page
             else:
                 return "Invalid email or password.", 401
     return render_template('login.html') # Your main login/registration page
+
+@app.route('/choose_organization', methods=['GET', 'POST'])
+def choose_organization():
+    if 'multi_auth_roles' not in session:
+        return redirect(url_for('kars_registration_or_login'))
+    if request.method == 'POST':
+        selected_org = request.form['organization']
+        selected_role = request.form['role']
+        session['user_organization'] = selected_org
+        session['auth_role'] = selected_role
+        if selected_role.startswith("fest_head"):
+            return redirect(url_for('fest_dashboard'))
+        elif selected_role.startswith("club_head"):
+            return redirect(url_for('club_dashboard'))
+        elif selected_role.startswith("department_head"):
+            return redirect(url_for('department_dashboard'))
+        else:
+            return "Invalid role selected", 403
+
+    return render_template("choose_organization.html", roles=session['multi_auth_roles'])
+
+
+
 
 @app.route('/verify-otp', methods=['GET', 'POST'])
 def verify_otp():
@@ -635,7 +678,7 @@ def kars_schedule():
 def fest_dashboard():
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "fest_head")
+    auth = get_user_authorization(user_email, "fest_head",session['user_organization'])
     if not auth: return "Not authorized as Fest Head.", 403
 
     fest_name = auth.organization
@@ -655,7 +698,7 @@ def fest_dashboard():
 def fest_all_events():
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "fest_head")
+    auth = get_user_authorization(user_email, "fest_head",session['user_organization'])
     if not auth: return "Not authorized.", 403
 
     fest_name = auth.organization
@@ -676,7 +719,7 @@ def fest_all_events():
 def fest_settings():
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "fest_head")
+    auth = get_user_authorization(user_email, "fest_head",session['user_organization'])
     if not auth: return "Not authorized.", 403
     return render_template('fest.html', fest_name=auth.organization, event_manager=auth.name, events=[], upcoming_events=0, total_registrations=0, current_tab='settings')
 
@@ -684,7 +727,7 @@ def fest_settings():
 def create_fest_event():
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "fest_head")
+    auth = get_user_authorization(user_email, "fest_head",session['user_organization'])
     if not auth: return "Not authorized to create fest events.", 403
 
     fest_name_org = auth.organization
@@ -734,7 +777,7 @@ def create_fest_event():
 def edit_fest_event(event_name):
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "fest_head")
+    auth = get_user_authorization(user_email, "fest_head",session['user_organization'])
     if not auth: return "Not authorized.", 403
 
     event_to_edit = events.query.filter_by(name=event_name, organiser=auth.organization, event_type='fest').first_or_404()
@@ -776,7 +819,7 @@ def get_event_registrations(event_name):
     
     # More robust auth: check if user is fest_head of the event's fest OR the event_manager
     event_obj = events.query.filter_by(name=event_name, event_type='fest').first_or_404()
-    auth = get_user_authorization(user_email, "fest_head")
+    auth = get_user_authorization(user_email, "fest_head",session['user_organization'])
     
     is_authorized = False
     if auth and auth.organization == event_obj.organiser: # Is head of the fest
@@ -808,7 +851,7 @@ def get_event_registrations(event_name):
 def club_dashboard():
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "club_head")
+    auth = get_user_authorization(user_email, "club_head",session['user_organization'])
     if not auth: return "Not authorized as Club Head.", 403
 
     club_name = auth.organization
@@ -827,7 +870,7 @@ def club_dashboard():
 def club_all_events():
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "club_head")
+    auth = get_user_authorization(user_email, "club_head",session['user_organization'])
     if not auth: return "Not authorized.", 403
 
     club_name = auth.organization
@@ -845,7 +888,7 @@ def club_all_events():
 def club_settings():
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "club_head")
+    auth = get_user_authorization(user_email, "club_head",session['user_organization'])
     if not auth: return "Not authorized.", 403
     return render_template('club.html', club_name=auth.organization, club_manager_name=auth.name, stats={}, current_tab='settings')
 
@@ -854,7 +897,7 @@ def club_settings():
 def create_club_event():
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "club_head")
+    auth = get_user_authorization(user_email, "club_head",session['user_organization'])
     if not auth: return "Not authorized to create club events.", 403
 
     club_name_org = auth.organization
@@ -905,7 +948,7 @@ def create_club_event():
 def edit_club_event(event_name):
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "club_head")
+    auth = get_user_authorization(user_email, "club_head",session['user_organization'])
     if not auth: return "Not authorized.", 403
 
     event_to_edit = events.query.filter_by(name=event_name, organiser=auth.organization, event_type='club').first_or_404()
@@ -944,7 +987,7 @@ def get_club_event_registrations(event_name):
     if not user_email: return jsonify({'error': 'Not authenticated'}), 401
     
     event_obj = events.query.filter_by(name=event_name, event_type='club').first_or_404()
-    auth = get_user_authorization(user_email, "club_head")
+    auth = get_user_authorization(user_email, "club_head",session['user_organization'])
     
     is_authorized = False
     if auth and auth.organization == event_obj.organiser: is_authorized = True
@@ -974,7 +1017,7 @@ def get_club_event_registrations(event_name):
 def department_dashboard():
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "department_head")
+    auth = get_user_authorization(user_email, "department_head",session['user_organization'])
     if not auth: return "Not authorized as Department Head.", 403
 
     department_name = auth.organization
@@ -993,7 +1036,7 @@ def department_dashboard():
 def department_all_activities():
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "department_head")
+    auth = get_user_authorization(user_email, "department_head",session['user_organization'])
     if not auth: return "Not authorized.", 403
 
     department_name = auth.organization
@@ -1011,7 +1054,7 @@ def department_all_activities():
 def department_settings():
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "department_head")
+    auth = get_user_authorization(user_email, "department_head",session['user_organization'])
     if not auth: return "Not authorized.", 403
     return render_template('department.html', department_name=auth.organization, department_manager_name=auth.name, stats={}, current_tab='settings')
 
@@ -1020,7 +1063,7 @@ def department_settings():
 def create_department_activity():
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "department_head")
+    auth = get_user_authorization(user_email, "department_head",session['user_organization'])
     if not auth: return "Not authorized to create department activities.", 403
 
     department_name_org = auth.organization
@@ -1069,7 +1112,7 @@ def create_department_activity():
 def edit_department_activity(activity_name):
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "department_head")
+    auth = get_user_authorization(user_email, "department_head",session['user_organization'])
     if not auth: return "Not authorized.", 403
 
     activity_to_edit = events.query.filter_by(name=activity_name, organiser=auth.organization, event_type='department_activity').first_or_404()
@@ -1108,7 +1151,7 @@ def get_department_activity_registrations(activity_name):
     if not user_email: return jsonify({'error': 'Not authenticated'}), 401
     
     activity_obj = events.query.filter_by(name=activity_name, event_type='department_activity').first_or_404()
-    auth = get_user_authorization(user_email, "department_head")
+    auth = get_user_authorization(user_email, "department_head",session['user_organization'])
     
     is_authorized = False
     if auth and auth.organization == activity_obj.organiser: is_authorized = True
