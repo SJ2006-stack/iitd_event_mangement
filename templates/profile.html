@@ -492,12 +492,22 @@
                                 placeholder="Enter your name" value="{{ User.name }}">
                         </div>
                         <div class="form-group">
-                            <label for="profileDepartmentInput">Department</label>
-                            <input type="text" name="department" id="profileDepartmentInput" class="form-control"
-                                placeholder="Enter your department"
-                                value="{{ User.department if User.department != 'null' else '' }}">
+                            <label for="currentYearInput">Current Year</label>
+                            <input type="number" name="currentyear" id="currentYearInput" class="form-control"
+                                placeholder="Enter your current year" value="{{ User.currentyear }}">
                         </div>
 
+                        <div class="form-group">
+                            <label for="hostelInput">Hostel</label>
+                            <input type="text" name="hostel" id="hostelInput" class="form-control"
+                                placeholder="Enter your hostel" value="{{ User.hostel }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="exitYearInput">Exit Year</label>
+                            <input type="number" name="exityear" id="exitYearInput" class="form-control"
+                                placeholder="Enter your expected exit year" value="{{ User.exityear }}">
+                        </div>
                         <!-- Predefined Interests -->
                         <div class="form-group">
                             <label>Select Interests</label>

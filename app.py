@@ -467,10 +467,11 @@ def kars_profile():
 
     if request.method == 'POST':
         user.name = request.form.get('name', user.name) # Allow name update
-        user.department = request.form.get('department', user.department)
+        user.currentyear = int(request.form.get('currentyear', user.currentyear))
+        user.hostel = request.form.get('hostel', user.hostel)
+        user.exityear = int(request.form.get('exityear', user.exityear))
         interests_list = request.form.getlist('interests') # Assuming checkboxes or multi-select
         user.interest = json.dumps(interests_list) if interests_list else json.dumps([])
-
         if 'photo' in request.files:
             photo_file = request.files['photo']
             if photo_file.filename:
