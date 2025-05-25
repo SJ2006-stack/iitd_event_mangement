@@ -16,7 +16,8 @@
         }
 
         body {
-            background: linear-gradient(to bottom right, #2c483e, #3F5D53); /* Department Theme */
+            background: linear-gradient(to bottom right, #2c483e, #3F5D53);
+            /* Department Theme */
             display: flex;
             min-height: 100vh;
             color: #fff;
@@ -33,7 +34,8 @@
             backdrop-filter: blur(10px);
         }
 
-        .sidebar img { /* Assuming you have a logo.png in static */
+        .sidebar img {
+            /* Assuming you have a logo.png in static */
             width: 80px;
             margin-bottom: 30px;
         }
@@ -52,7 +54,8 @@
             gap: 10px;
         }
 
-        .sidebar a:hover, .sidebar a.active {
+        .sidebar a:hover,
+        .sidebar a.active {
             background: rgba(255, 255, 255, 0.1);
         }
 
@@ -84,9 +87,11 @@
         .tab-content.active {
             display: block;
         }
-        
-        .primary-btn-action { /* Differentiated from form primary-btn */
-            background: #4CAF50; /* Department theme color */
+
+        .primary-btn-action {
+            /* Differentiated from form primary-btn */
+            background: #4CAF50;
+            /* Department theme color */
             color: white;
             border: none;
             padding: 10px 15px;
@@ -101,7 +106,8 @@
         }
 
         .primary-btn-action:hover {
-            background: #388E3C; /* Darker shade for hover */
+            background: #388E3C;
+            /* Darker shade for hover */
         }
 
 
@@ -123,7 +129,8 @@
         }
 
         .stat-card {
-            background: rgba(76, 175, 80, 0.2); /* Department theme color */
+            background: rgba(76, 175, 80, 0.2);
+            /* Department theme color */
             padding: 20px;
             border-radius: 12px;
             text-align: center;
@@ -148,7 +155,8 @@
         }
 
         /* Activities Section */
-        .my-activities-section { /* Renamed from my-events-section */
+        .my-activities-section {
+            /* Renamed from my-events-section */
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(6px);
             border-radius: 16px;
@@ -169,13 +177,15 @@
         }
 
         /* Activity Cards */
-        .activities-grid { /* Renamed from events-grid */
+        .activities-grid {
+            /* Renamed from events-grid */
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 25px;
         }
 
-        .activity-card { /* Renamed from event-card */
+        .activity-card {
+            /* Renamed from event-card */
             height: 380px;
             perspective: 1000px;
         }
@@ -268,7 +278,7 @@
             margin-bottom: 12px;
             color: rgba(255, 255, 255, 0.8);
         }
-        
+
         .card-back .action-buttons {
             margin-top: auto;
             padding-top: 10px;
@@ -276,7 +286,8 @@
 
 
         .card-back button {
-            background: #4CAF50; /* Department theme color */
+            background: #4CAF50;
+            /* Department theme color */
             color: #fff;
             border: none;
             padding: 10px 15px;
@@ -289,13 +300,15 @@
         }
 
         .card-back button:hover {
-            background: #388E3C; /* Darker shade for hover */
+            background: #388E3C;
+            /* Darker shade for hover */
             transform: translateY(-2px);
         }
 
         .btn-secondary-card {
             background: rgba(255, 255, 255, 0.2) !important;
         }
+
         .btn-secondary-card:hover {
             background: rgba(255, 255, 255, 0.3) !important;
         }
@@ -316,7 +329,8 @@
         }
 
         .modal-content {
-            background: rgba(44, 72, 60, 0.95); /* Department theme modal background */
+            background: rgba(44, 72, 60, 0.95);
+            /* Department theme modal background */
             border-radius: 16px;
             padding: 30px;
             width: 90%;
@@ -384,13 +398,15 @@
         }
 
         .primary-btn {
-            background: #4CAF50; /* Department theme color */
+            background: #4CAF50;
+            /* Department theme color */
             color: white;
             border: none;
         }
 
         .primary-btn:hover {
-            background: #388E3C; /* Darker shade */
+            background: #388E3C;
+            /* Darker shade */
         }
 
         .secondary-btn {
@@ -416,7 +432,7 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             text-align: center;
         }
-        
+
         /* Registrations Table */
         .registrations-table {
             width: 100%;
@@ -462,13 +478,33 @@
         }
 
         @media (max-width: 900px) {
-             body { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; padding-bottom: 20px; flex-direction: row; justify-content: space-around; overflow-x: auto; }
-            .sidebar a { min-width: 120px; margin: 0 5px; text-align: center; }
-            .main-content { padding: 20px; }
-            .activities-grid { grid-template-columns: 1fr; }
-        }
+            body {
+                flex-direction: column;
+            }
 
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding-bottom: 20px;
+                flex-direction: row;
+                justify-content: space-around;
+                overflow-x: auto;
+            }
+
+            .sidebar a {
+                min-width: 120px;
+                margin: 0 5px;
+                text-align: center;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .activities-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -478,7 +514,8 @@
         <a href="#" onclick="showTab('dashboard')" id="dashboard-tab" class="active">
             <i class='bx bxs-dashboard'></i> Dashboard
         </a>
-        <a href="#" onclick="showTab('activities')" id="activities-tab"> <i class='bx bxs-chalkboard'></i> Activities </a>
+        <a href="#" onclick="showTab('activities')" id="activities-tab"> <i class='bx bxs-chalkboard'></i> Activities
+        </a>
         <a href="#" onclick="showTab('settings')" id="settings-tab">
             <i class='bx bxs-cog'></i> Settings
         </a>
@@ -523,20 +560,23 @@
                     <div class="activity-card">
                         <div class="card-inner">
                             <div class="card-front">
-                                <img src="{{ url_for('uploaded_file', filename=activity.photo) if activity.photo else url_for('static', filename='default_activity.jpg') }}" alt="{{ activity.name }}">
+                                <img src="{{ url_for('uploaded_file', filename=activity.photo) if activity.photo else url_for('static', filename='default_activity.jpg') }}"
+                                    alt="{{ activity.name }}">
                                 <div class="card-info">
                                     <h3>{{ activity.name }}</h3>
                                     {% if activity.starttime and activity.endtime %}
                                     <p><i class='bx bx-time'></i> {{ activity.starttime }} - {{ activity.endtime }}</p>
                                     {% endif %}
                                     <p><i class='bx bx-calendar'></i> {{ activity.date }}</p>
-                                    <p><i class='bx bx-map-pin'></i> {{ activity.venue }}</p> </div>
+                                    <p><i class='bx bx-map-pin'></i> {{ activity.venue }}</p>
+                                </div>
                             </div>
                             <div class="card-back">
                                 <div class="description">
                                     <h4>Activity Description</h4>
                                     <p>{{ activity.description }}</p>
-                                    <h4>Type/Category</h4> <p>{{ activity.activity_type if activity.activity_type else 'General' }}</p>
+                                    <h4>Type/Category</h4>
+                                    <p>{{ activity.activity_type if activity.activity_type else 'General' }}</p>
                                     <h4>Tags</h4>
                                     <p>{{ activity.tags }}</p>
                                 </div>
@@ -544,12 +584,14 @@
                                     <button type="button" onclick="editDepartmentActivity('{{ activity.name }}')">
                                         <i class='bx bx-edit'></i> Edit Activity
                                     </button>
-                                    <button type="button" class="btn-secondary-card" onclick="viewDepartmentActivityRegistrations('{{ activity.name }}')">
+                                    <button type="button" class="btn-secondary-card"
+                                        onclick="viewDepartmentActivityRegistrations('{{ activity.name }}')">
                                         <i class='bx bx-group'></i> View Registrations
                                     </button>
-                                     {% if activity.link %}
+                                    {% if activity.link %}
                                     <a href="{{ activity.link }}" target="_blank" style="text-decoration: none;">
-                                        <button type="button"><i class='bx bx-link-external'></i> Info/Reg. Link</button>
+                                        <button type="button"><i class='bx bx-link-external'></i> Info/Reg.
+                                            Link</button>
                                     </a>
                                     {% endif %}
                                 </div>
@@ -560,27 +602,30 @@
                 </div>
                 {% else %}
                 <div class="empty-state">
-                    <i class='bx bx-calendar-minus'></i> <h3>No Department Activities Created Yet</h3>
+                    <i class='bx bx-calendar-minus'></i>
+                    <h3>No Department Activities Created Yet</h3>
                     <p>Create your first department activity (seminar, workshop, etc.).</p>
                 </div>
                 {% endif %}
             </div>
         </div>
 
-        <div id="activities" class="tab-content"> <div class="my-activities-section">
+        <div id="activities" class="tab-content">
+            <div class="my-activities-section">
                 <div class="section-header">
                     <h2>All {{ department_name }} Department Activities</h2>
-                     <button class="primary-btn-action" onclick="showAddActivityModal()">
+                    <button class="primary-btn-action" onclick="showAddActivityModal()">
                         <i class='bx bx-plus'></i> Add Dept. Activity
                     </button>
                 </div>
-                 {% if all_department_activities %}
+                {% if all_department_activities %}
                 <div class="activities-grid">
                     {% for activity in all_department_activities %}
-                     <div class="activity-card">
+                    <div class="activity-card">
                         <div class="card-inner">
                             <div class="card-front">
-                                <img src="{{ url_for('uploaded_file', filename=activity.photo) if activity.photo else url_for('static', filename='default_activity.jpg') }}" alt="{{ activity.name }}">
+                                <img src="{{ url_for('uploaded_file', filename=activity.photo) if activity.photo else url_for('static', filename='default_activity.jpg') }}"
+                                    alt="{{ activity.name }}">
                                 <div class="card-info">
                                     <h3>{{ activity.name }}</h3>
                                     {% if activity.starttime and activity.endtime %}
@@ -590,7 +635,7 @@
                                     <p><i class='bx bx-map-pin'></i> {{ activity.venue }}</p>
                                 </div>
                             </div>
-                           <div class="card-back">
+                            <div class="card-back">
                                 <div class="description">
                                     <h4>Activity Description</h4>
                                     <p>{{ activity.description }}</p>
@@ -599,17 +644,20 @@
                                     <h4>Tags</h4>
                                     <p>{{ activity.tags }}</p>
                                 </div>
-                                 <div class="action-buttons">
-                                     {% if activity.event_manager == department_manager_name %} <button type="button" onclick="editDepartmentActivity('{{ activity.name }}')">
+                                <div class="action-buttons">
+                                    {% if activity.event_manager == department_manager_name %} <button type="button"
+                                        onclick="editDepartmentActivity('{{ activity.name }}')">
                                         <i class='bx bx-edit'></i> Edit
                                     </button>
-                                    <button type="button" class="btn-secondary-card" onclick="viewDepartmentActivityRegistrations('{{ activity.name }}')">
+                                    <button type="button" class="btn-secondary-card"
+                                        onclick="viewDepartmentActivityRegistrations('{{ activity.name }}')">
                                         <i class='bx bx-group'></i> Registrations
                                     </button>
                                     {% endif %}
                                     {% if activity.link %}
                                     <a href="{{ activity.link }}" target="_blank" style="text-decoration: none;">
-                                        <button type="button"><i class='bx bx-link-external'></i> Info/Reg. Link</button>
+                                        <button type="button"><i class='bx bx-link-external'></i> Info/Reg.
+                                            Link</button>
                                     </a>
                                     {% endif %}
                                 </div>
@@ -619,7 +667,7 @@
                     {% endfor %}
                 </div>
                 {% else %}
-                 <div class="empty-state">
+                <div class="empty-state">
                     <i class='bx bx-calendar-minus'></i>
                     <h3>No Activities Scheduled for {{ department_name }}</h3>
                     <p>There are currently no department activities listed.</p>
@@ -627,7 +675,7 @@
                 {% endif %}
             </div>
         </div>
-        
+
         <div id="settings" class="tab-content">
             <div class="settings-section">
                 <h2>Department Settings</h2>
@@ -636,9 +684,11 @@
         </div>
     </div>
 
-    <div id="addActivityModal" class="modal hidden"> <div class="modal-content">
+    <div id="addActivityModal" class="modal hidden">
+        <div class="modal-content">
             <h2>Add New Department Activity</h2>
-            <form id="addActivityForm" action="{{ url_for('create_department_activity') }}" method="POST" enctype="multipart/form-data">
+            <form id="addActivityForm" action="{{ url_for('create_department_activity') }}" method="POST"
+                enctype="multipart/form-data">
                 <div class="form-group">
                     <label>Activity Name (e.g., Seminar Title, Workshop Name)</label>
                     <input type="text" name="activityName" required>
@@ -648,12 +698,12 @@
                     <input type="file" name="photo" accept="image/*" required>
                 </div>
                 <input type="hidden" name="organiser" value="{{ department_name }}">
-                
+
                 <div class="form-group">
                     <label>Activity Type (e.g., Seminar, Workshop, Guest Lecture)</label>
                     <input type="text" name="activity_type" required placeholder="Seminar, Workshop, Guest Lecture">
                 </div>
-                 <div class="form-group">
+                <div class="form-group">
                     <label>Tags (comma-separated, e.g., AI, Robotics, Career)</label>
                     <input type="text" name="tags" required>
                 </div>
@@ -681,7 +731,88 @@
                     <label>Information/Registration Link (Optional)</label>
                     <input type="url" name="link" placeholder="https://example.com/info">
                 </div>
-                
+                <div class="form-group">
+                    <label>Select Target Departments</label>
+                    <select name="target_departments" multiple id="department-select" onchange="handleSelectAll(this)">
+                        <option value="__all__">-- Select All Departments --</option>
+                        <option value="Applied Mechanics">Applied Mechanics</option>
+                        <option value="Biochemical Engineering and Biotechnology">Biochemical Engineering and
+                            Biotechnology</option>
+                        <option value="Biochemical Engineering and Biotechnology (Dual/M.Tech)">Biochemical Engineering
+                            and Biotechnology (Dual/M.Tech)</option>
+                        <option value="Chemical Engineering">Chemical Engineering</option>
+                        <option value="Chemical Engineering (Dual/M.Tech)">Chemical Engineering (Dual/M.Tech)</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Civil Engineering">Civil Engineering</option>
+                        <option value="Civil Engineering (Dual/M.Tech)">Civil Engineering (Dual/M.Tech)</option>
+                        <option value="Computer Science and Engineering">Computer Science and Engineering</option>
+                        <option value="Computer Science and Engineering (Dual/M.Tech)">Computer Science and Engineering
+                            (Dual/M.Tech)</option>
+                        <option value="Design">Design</option>
+                        <option value="Electrical Engineering">Electrical Engineering</option>
+                        <option value="Electrical Engineering (M.Tech)">Electrical Engineering (M.Tech)</option>
+                        <option value="Electrical Engineering (Dual Degree)">Electrical Engineering (Dual Degree)
+                        </option>
+                        <option value="Energy Science and Engineering">Energy Science and Engineering</option>
+                        <option value="Energy Science and Engineering (Dual/M.Tech)">Energy Science and Engineering
+                            (Dual/M.Tech)</option>
+                        <option value="Humanities and Social Sciences">Humanities and Social Sciences</option>
+                        <option value="Management Studies">Management Studies</option>
+                        <option value="Materials Science and Engineering">Materials Science and Engineering</option>
+                        <option value="Materials Science and Engineering (Dual/M.Tech)">Materials Science and
+                            Engineering (Dual/M.Tech)</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Mechanical Engineering">Mechanical Engineering</option>
+                        <option value="Mechanical Engineering (Dual/M.Tech)">Mechanical Engineering (Dual/M.Tech)
+                        </option>
+                        <option value="Physics">Physics</option>
+                        <option value="Textile and Fibre Engineering">Textile and Fibre Engineering</option>
+                        <option value="Textile and Fibre Engineering (Dual/M.Tech)">Textile and Fibre Engineering
+                            (Dual/M.Tech)</option>
+                    </select>
+                    <small style="color: rgba(255,255,255,0.6); font-size: 13px;">Hold Ctrl/Cmd to select
+                        multiple.</small>
+                </div>
+                <div class="form-group">
+                    <label>Select Target Years</label>
+                    <div id="year-checkboxes">
+                        <label><input type="checkbox" onclick="toggleAll(this, 'target_years')" value="__all__"> Select
+                            All</label><br>
+                        <label><input type="checkbox" name="target_years" value="1"> 1st Year</label><br>
+                        <label><input type="checkbox" name="target_years" value="2"> 2nd Year</label><br>
+                        <label><input type="checkbox" name="target_years" value="3"> 3rd Year</label><br>
+                        <label><input type="checkbox" name="target_years" value="4"> 4th Year</label><br>
+                        <label><input type="checkbox" name="target_years" value="5"> 5th Year</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Select Target Hostels</label>
+                    <select name="target_hostels" multiple id="hostel-select" onchange="handleSelectAll(this)">
+                        <option value="__all__">-- Select All Hostels --</option>
+                        <option value="day-scholar">Day Scholar</option>
+                        <option value="aravali">Aravali</option>
+                        <option value="girnar">Girnar</option>
+                        <option value="jwalamukhi">Jwalamukhi</option>
+                        <option value="karakoram">Karakoram</option>
+                        <option value="kumaon">Kumaon</option>
+                        <option value="nilgiri">Nilgiri</option>
+                        <option value="shivalik">Shivalik</option>
+                        <option value="satpura">Satpura</option>
+                        <option value="udaigiri">Udaigiri</option>
+                        <option value="vindhyachal">Vindhyachal</option>
+                        <option value="zanskar">Zanskar</option>
+                        <option value="dronagiri">Dronagiri (PG only)</option>
+                        <option value="saptagiri-boys">Saptagiri Boys (PG only)</option>
+                        <option value="kailash">Kailash</option>
+                        <option value="himadri">Himadri</option>
+                        <option value="sahyadri">Sahyadri (PG only)</option>
+                        <option value="saptagiri-girls">Saptagiri Girls (PG only)</option>
+                        <option value="nalanda">Nalanda (Transit)</option>
+                    </select>
+                    <small style="color: rgba(255,255,255,0.6); font-size: 13px;">Hold Ctrl/Cmd to select
+                        multiple.</small>
+                </div>
+
                 <div class="form-actions">
                     <button type="submit" class="primary-btn">Add Activity</button>
                     <button type="button" class="secondary-btn" onclick="closeAddActivityModal()">Cancel</button>
@@ -694,9 +825,10 @@
         <div class="modal-content">
             <h2 id="registrationsTitle">Activity Registrations</h2>
             <div id="registrationsContent">
-                </div>
+            </div>
             <div class="form-actions" style="justify-content: flex-end;">
-                <button type="button" class="secondary-btn" onclick="closeRegistrationsModal()" style="flex: 0 0 auto; padding: 10px 20px;">Close</button>
+                <button type="button" class="secondary-btn" onclick="closeRegistrationsModal()"
+                    style="flex: 0 0 auto; padding: 10px 20px;">Close</button>
             </div>
         </div>
     </div>
@@ -729,12 +861,12 @@
             document.getElementById('registrationsModal').classList.remove('hidden');
             document.getElementById('registrationsTitle').textContent = activityName + ' - Registrations';
             document.getElementById('registrationsContent').innerHTML = '<p>Loading registrations...</p>';
-            
+
             fetch('/api/department-activity/' + encodeURIComponent(activityName) + '/registrations')
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
-                        document.getElementById('registrationsContent').innerHTML = 
+                        document.getElementById('registrationsContent').innerHTML =
                             '<p style="color: #ff8a80;">Error: ' + data.error + '</p>'; // Adjusted error color for theme
                         return;
                     }
@@ -766,7 +898,7 @@
                 })
                 .catch(error => {
                     console.error('Error fetching registrations:', error);
-                    document.getElementById('registrationsContent').innerHTML = 
+                    document.getElementById('registrationsContent').innerHTML =
                         '<p style="color: #ff8a80;">Failed to load registrations. Please try again.</p>';
                 });
         }
@@ -775,16 +907,33 @@
             document.getElementById('registrationsModal').classList.add('hidden');
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const currentTab = '{{ current_tab | default("dashboard") }}';
             showTab(currentTab);
             const activityImages = document.querySelectorAll('.card-front img');
             activityImages.forEach(img => {
-                img.onerror = function() {
+                img.onerror = function () {
                     this.src = "{{ url_for('static', filename='default_activity.jpg') }}"; // Default for dept activities
                 };
             });
         });
+        function handleSelectAll(selectElement) {
+            const isAll = Array.from(selectElement.selectedOptions).some(opt => opt.value === "__all__");
+            if (isAll) {
+                for (let option of selectElement.options) {
+                    option.selected = true;
+                }
+            }
+        }
+
+        function toggleAll(sourceCheckbox, name) {
+            const checkboxes = document.querySelectorAll(`input[name="${name}"]`);
+            for (let box of checkboxes) {
+                box.checked = sourceCheckbox.checked;
+            }
+        }
+
     </script>
 </body>
+
 </html>

@@ -92,8 +92,9 @@ class events(db.Model): # Represents all types of events/activities
     tags = db.Column(db.String(300), nullable=True)  # Comma-separated
     event_type = db.Column(db.String(50), nullable=False) # 'fest', 'club', 'department_activity'
     category = db.Column(db.String(50), nullable=True) # e.g., 'Workshop', 'Seminar', 'RDV', 'Tryst', 'Cultural', 'Technical'
-                                                      # For fests, this stores what fest_type was for.
-    # fest_type = db.Column(db.String(50), nullable=True) # Can be removed if 'category' handles it for fests too
+    target_departments = db.Column(db.String(500), nullable=True)  # JSON or comma-separated
+    target_years = db.Column(db.String(100), nullable=True)  # JSON or comma-separated integers
+    target_hostels= db.Column(db.String(500), nullable=True)
 
 class students_events(db.Model): # Tracks student registrations for events/activities
     srno = db.Column(db.Integer, primary_key=True)
@@ -495,29 +496,48 @@ def kars_profile():
     all_possible_interests = ["Coding", "Music", "Sports", "Dance", "Literature", "Gaming", "Art", "Photography"]
     return render_template('profile.html', User=user, current_interests=current_interests, all_possible_interests=all_possible_interests)
 
-
-@app.route('/student/events_to_join') # Renamed from kars_event for clarity
+@app.route('/student/events_to_join')
 def student_events_to_join():
     user_id = session.get('user_id')
-    if not user_id: return redirect(url_for('kars_registration_or_login'))
+    if not user_id:
+        return redirect(url_for('kars_registration_or_login'))
     
-    user_registered_event_names = [reg.event_name for reg in students_events.query.filter_by(entryno=user_id).all()]
+    user = db.session.get(Registration, user_id)
+    if not user:
+        session.clear()
+        return redirect(url_for('kars_registration_or_login'))
+
+    registered_event_names = [reg.event_name for reg in students_events.query.filter_by(entryno=user.entryno).all()]
     
     current_time = datetime.now()
     available_activities = []
-    all_upcoming_activities = events.query.filter(events.name.notin_(user_registered_event_names)).order_by(events.date, events.starttime).all()
+
+    all_upcoming_activities = events.query.filter(
+        ~events.name.in_(registered_event_names)
+    ).order_by(events.date, events.starttime).all()
 
     for activity in all_upcoming_activities:
         if activity.date and activity.starttime:
             try:
                 activity_datetime = datetime.strptime(f"{activity.date} {activity.starttime}", "%Y-%m-%d %H:%M")
                 if activity_datetime >= current_time:
-                    available_activities.append(activity)
-            except (ValueError, TypeError):
-                continue # Skip if date/time is invalid
-                
-    return render_template('event.html', Events=available_activities) # event.html shows available events
+                    # Load target filters
+                    try:
+                        target_depts = json.loads(activity.target_departments or "[]")
+                        target_yrs = json.loads(activity.target_years or "[]")
+                        target_hostels = json.loads(activity.target_hostels or "[]")
+                    except json.JSONDecodeError:
+                        target_depts, target_yrs, target_hostels = [], [], []
 
+                    # Match eligibility
+                    if (not target_depts or user.department in target_depts) and \
+                       (not target_yrs or user.currentyear in target_yrs) and \
+                       (not target_hostels or user.hostel in target_hostels):
+                        available_activities.append(activity)
+            except (ValueError, TypeError):
+                continue  # Skip if date/time is invalid
+
+    return render_template('event.html', Events=available_activities)
 @app.route('/student/register_event/<string:event_name>')
 def register_student_for_event(event_name):
     user_id = session.get('user_id')
@@ -669,7 +689,9 @@ def create_fest_event():
 
     fest_name_org = auth.organization
     event_manager_name = auth.name
-
+    target_departments = request.form.getlist("target_departments")
+    target_years = request.form.getlist("target_years")
+    target_hostels = request.form.getlist("target_hostels")
     name = request.form['eventName']
     description = request.form['description']
     date = request.form['date']
@@ -694,7 +716,10 @@ def create_fest_event():
         name=name, photo=filename, event_manager=event_manager_name,
         organiser=fest_name_org, description=description, date=date, venue=venue,
         starttime=starttime, endtime=endtime, link=link, tags=tags,
-        event_type='fest', category=category_from_form
+        event_type='fest', category=category_from_form,
+        target_departments=json.dumps(target_departments),
+        target_years=json.dumps([int(y) for y in target_years]),
+        target_hostels=json.dumps(target_hostels)
     )
     try:
         db.session.add(new_event)
@@ -843,6 +868,9 @@ def create_club_event():
     venue = request.form['venue']
     link = request.form.get("link")
     tags = request.form.get("tags")
+    target_departments = request.form.getlist("target_departments")
+    target_years = request.form.getlist("target_years")
+    target_hostels = request.form.getlist("target_hostels")
     event_category = request.form.get('event_category') # From club.html modal
 
     photo_file = request.files.get("photo")
@@ -859,7 +887,10 @@ def create_club_event():
         name=name, photo=filename, event_manager=event_manager_name,
         organiser=club_name_org, description=description, date=date, venue=venue,
         starttime=starttime, endtime=endtime, link=link, tags=tags,
-        event_type='club', category=event_category
+        event_type='club', category=event_category,
+        target_departments=json.dumps(target_departments),
+        target_years=json.dumps([int(y) for y in target_years]),
+        target_hostels=json.dumps(target_hostels)
     )
     try:
         db.session.add(new_event)
@@ -1004,7 +1035,9 @@ def create_department_activity():
     link = request.form.get("link")
     tags = request.form.get("tags")
     activity_category = request.form.get('activity_type') # e.g., Seminar, Workshop
-
+    target_departments = request.form.getlist("target_departments")
+    target_years = request.form.getlist("target_years")
+    target_hostels = request.form.getlist("target_hostels")
     photo_file = request.files.get("photo")
     filename = None
     if photo_file and photo_file.filename:
@@ -1019,7 +1052,10 @@ def create_department_activity():
         name=name, photo=filename, event_manager=event_manager_name,
         organiser=department_name_org, description=description, date=date, venue=venue,
         starttime=starttime, endtime=endtime, link=link, tags=tags,
-        event_type='department_activity', category=activity_category
+        event_type='department_activity', category=activity_category,
+        target_departments=json.dumps(target_departments),
+        target_years=json.dumps([int(y) for y in target_years]),
+        target_hostels=json.dumps(target_hostels)
     )
     try:
         db.session.add(new_activity)

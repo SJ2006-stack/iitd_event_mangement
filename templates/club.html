@@ -33,7 +33,8 @@
             backdrop-filter: blur(10px);
         }
 
-        .sidebar img { /* Assuming you have a logo.png in static */
+        .sidebar img {
+            /* Assuming you have a logo.png in static */
             width: 80px;
             margin-bottom: 30px;
         }
@@ -52,7 +53,8 @@
             gap: 10px;
         }
 
-        .sidebar a:hover, .sidebar a.active {
+        .sidebar a:hover,
+        .sidebar a.active {
             background: rgba(255, 255, 255, 0.1);
         }
 
@@ -147,8 +149,9 @@
             font-size: 24px;
             color: #fff;
         }
-        
-        .primary-btn-action { /* Differentiated from form primary-btn */
+
+        .primary-btn-action {
+            /* Differentiated from form primary-btn */
             background: #5D3FD3;
             color: white;
             border: none;
@@ -255,7 +258,8 @@
             font-size: 14px;
             line-height: 1.6;
             overflow-y: auto;
-            max-height: 180px; /* Adjusted height */
+            max-height: 180px;
+            /* Adjusted height */
         }
 
         .card-back h4 {
@@ -268,10 +272,12 @@
             margin-bottom: 12px;
             color: rgba(255, 255, 255, 0.8);
         }
-        
+
         .card-back .action-buttons {
-            margin-top: auto; /* Pushes buttons to the bottom */
-            padding-top: 10px; /* Add some space above buttons */
+            margin-top: auto;
+            /* Pushes buttons to the bottom */
+            padding-top: 10px;
+            /* Add some space above buttons */
         }
 
 
@@ -293,7 +299,8 @@
             transform: translateY(-2px);
         }
 
-        .btn-secondary-card { /* Differentiated for card buttons */
+        .btn-secondary-card {
+            /* Differentiated for card buttons */
             background: rgba(255, 255, 255, 0.2) !important;
         }
 
@@ -384,7 +391,8 @@
             transition: all 0.3s;
         }
 
-        .primary-btn { /* For form buttons */
+        .primary-btn {
+            /* For form buttons */
             background: #5D3FD3;
             color: white;
             border: none;
@@ -394,7 +402,8 @@
             background: #4a32a8;
         }
 
-        .secondary-btn { /* For form buttons */
+        .secondary-btn {
+            /* For form buttons */
             background: transparent;
             color: #fff;
             border: 1px solid #fff;
@@ -471,7 +480,7 @@
             margin-bottom: 10px;
             color: rgba(255, 255, 255, 0.8);
         }
-        
+
         @media (max-width: 900px) {
             body {
                 flex-direction: column;
@@ -497,16 +506,17 @@
             }
 
             .events-grid {
-                grid-template-columns: 1fr; /* Single column on smaller screens */
+                grid-template-columns: 1fr;
+                /* Single column on smaller screens */
             }
         }
-
     </style>
 </head>
 
 <body>
     <div class="sidebar">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" /> <a href="#" onclick="showTab('dashboard')" id="dashboard-tab" class="active">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" /> <a href="#" onclick="showTab('dashboard')"
+            id="dashboard-tab" class="active">
             <i class='bx bxs-dashboard'></i> Dashboard
         </a>
         <a href="#" onclick="showTab('events')" id="events-tab">
@@ -555,7 +565,8 @@
                     <div class="event-card">
                         <div class="card-inner">
                             <div class="card-front">
-                                <img src="{{ url_for('uploaded_file', filename=event.photo) if event.photo else url_for('static', filename='default_event.jpg') }}" alt="{{ event.name }}">
+                                <img src="{{ url_for('uploaded_file', filename=event.photo) if event.photo else url_for('static', filename='default_event.jpg') }}"
+                                    alt="{{ event.name }}">
                                 <div class="card-info">
                                     <h3>{{ event.name }}</h3>
                                     {% if event.starttime and event.endtime %}
@@ -570,14 +581,16 @@
                                     <h4>Event Description</h4>
                                     <p>{{ event.description }}</p>
                                     <h4>Organized by</h4>
-                                    <p>{{ event.organiser }}</p> <h4>Tags</h4>
+                                    <p>{{ event.organiser }}</p>
+                                    <h4>Tags</h4>
                                     <p>{{ event.tags }}</p>
                                 </div>
                                 <div class="action-buttons">
                                     <button type="button" onclick="editClubEvent('{{ event.name }}')">
                                         <i class='bx bx-edit'></i> Edit Event
                                     </button>
-                                    <button type="button" class="btn-secondary-card" onclick="viewClubRegistrations('{{ event.name }}')">
+                                    <button type="button" class="btn-secondary-card"
+                                        onclick="viewClubRegistrations('{{ event.name }}')">
                                         <i class='bx bx-group'></i> View Registrations
                                     </button>
                                     {% if event.link %}
@@ -612,13 +625,14 @@
                 {% if all_club_events %}
                 <div class="events-grid">
                     {% for event in all_club_events %}
-                     <div class="event-card">
+                    <div class="event-card">
                         <div class="card-inner">
                             <div class="card-front">
-                                <img src="{{ url_for('uploaded_file', filename=event.photo) if event.photo else url_for('static', filename='default_event.jpg') }}" alt="{{ event.name }}">
+                                <img src="{{ url_for('uploaded_file', filename=event.photo) if event.photo else url_for('static', filename='default_event.jpg') }}"
+                                    alt="{{ event.name }}">
                                 <div class="card-info">
                                     <h3>{{ event.name }}</h3>
-                                     {% if event.starttime and event.endtime %}
+                                    {% if event.starttime and event.endtime %}
                                     <p><i class='bx bx-time'></i> {{ event.starttime }} - {{ event.endtime }}</p>
                                     {% endif %}
                                     <p><i class='bx bx-calendar'></i> {{ event.date }}</p>
@@ -634,11 +648,13 @@
                                     <h4>Tags</h4>
                                     <p>{{ event.tags }}</p>
                                 </div>
-                                 <div class="action-buttons">
-                                    {% if event.event_manager == club_manager_name %} <button type="button" onclick="editClubEvent('{{ event.name }}')">
+                                <div class="action-buttons">
+                                    {% if event.event_manager == club_manager_name %} <button type="button"
+                                        onclick="editClubEvent('{{ event.name }}')">
                                         <i class='bx bx-edit'></i> Edit
                                     </button>
-                                    <button type="button" class="btn-secondary-card" onclick="viewClubRegistrations('{{ event.name }}')">
+                                    <button type="button" class="btn-secondary-card"
+                                        onclick="viewClubRegistrations('{{ event.name }}')">
                                         <i class='bx bx-group'></i> Registrations
                                     </button>
                                     {% endif %}
@@ -654,7 +670,7 @@
                     {% endfor %}
                 </div>
                 {% else %}
-                 <div class="empty-state">
+                <div class="empty-state">
                     <i class='bx bx-calendar-x'></i>
                     <h3>No Events Available for {{ club_name }}</h3>
                     <p>No club events have been created yet for this club.</p>
@@ -662,19 +678,20 @@
                 {% endif %}
             </div>
         </div>
-        
+
         <div id="settings" class="tab-content">
             <div class="settings-section">
                 <h2>Club Settings</h2>
                 <p>Club-specific settings and configuration options will be available here in future updates.</p>
-                </div>
+            </div>
         </div>
     </div>
 
     <div id="addEventModal" class="modal hidden">
         <div class="modal-content">
             <h2>Add New Club Event</h2>
-            <form id="addEventForm" action="{{ url_for('create_club_event') }}" method="POST" enctype="multipart/form-data">
+            <form id="addEventForm" action="{{ url_for('create_club_event') }}" method="POST"
+                enctype="multipart/form-data">
                 <div class="form-group">
                     <label>Event Name</label>
                     <input type="text" name="eventName" required>
@@ -684,7 +701,7 @@
                     <input type="file" name="photo" accept="image/*" required>
                 </div>
                 <input type="hidden" name="organiser" value="{{ club_name }}">
-                
+
                 <div class="form-group">
                     <label>Event Category (Optional)</label>
                     <input type="text" name="event_category" placeholder="e.g., Workshop, Competition, Talk">
@@ -717,7 +734,7 @@
                     <label>Registration Link (Optional)</label>
                     <input type="url" name="link" placeholder="https://example.com/register">
                 </div>
-                
+
                 <div class="form-actions">
                     <button type="submit" class="primary-btn">Add Club Event</button>
                     <button type="button" class="secondary-btn" onclick="closeAddEventModal()">Cancel</button>
@@ -730,11 +747,88 @@
         <div class="modal-content">
             <h2 id="registrationsTitle">Event Registrations</h2>
             <div id="registrationsContent">
-                </div>
+            </div>
             <div class="form-actions" style="justify-content: flex-end;">
-                <button type="button" class="secondary-btn" onclick="closeRegistrationsModal()" style="flex: 0 0 auto; padding: 10px 20px;">Close</button>
+                <button type="button" class="secondary-btn" onclick="closeRegistrationsModal()"
+                    style="flex: 0 0 auto; padding: 10px 20px;">Close</button>
             </div>
         </div>
+    </div>
+    <div class="form-group">
+        <label>Select Target Departments</label>
+        <select name="target_departments" multiple id="department-select" onchange="handleSelectAll(this)">
+            <option value="__all__">-- Select All Departments --</option>
+            <option value="Applied Mechanics">Applied Mechanics</option>
+            <option value="Biochemical Engineering and Biotechnology">Biochemical Engineering and Biotechnology</option>
+            <option value="Biochemical Engineering and Biotechnology (Dual/M.Tech)">Biochemical Engineering and
+                Biotechnology (Dual/M.Tech)</option>
+            <option value="Chemical Engineering">Chemical Engineering</option>
+            <option value="Chemical Engineering (Dual/M.Tech)">Chemical Engineering (Dual/M.Tech)</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Civil Engineering (Dual/M.Tech)">Civil Engineering (Dual/M.Tech)</option>
+            <option value="Computer Science and Engineering">Computer Science and Engineering</option>
+            <option value="Computer Science and Engineering (Dual/M.Tech)">Computer Science and Engineering
+                (Dual/M.Tech)</option>
+            <option value="Design">Design</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+            <option value="Electrical Engineering (M.Tech)">Electrical Engineering (M.Tech)</option>
+            <option value="Electrical Engineering (Dual Degree)">Electrical Engineering (Dual Degree)</option>
+            <option value="Energy Science and Engineering">Energy Science and Engineering</option>
+            <option value="Energy Science and Engineering (Dual/M.Tech)">Energy Science and Engineering (Dual/M.Tech)
+            </option>
+            <option value="Humanities and Social Sciences">Humanities and Social Sciences</option>
+            <option value="Management Studies">Management Studies</option>
+            <option value="Materials Science and Engineering">Materials Science and Engineering</option>
+            <option value="Materials Science and Engineering (Dual/M.Tech)">Materials Science and Engineering
+                (Dual/M.Tech)</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="Mechanical Engineering">Mechanical Engineering</option>
+            <option value="Mechanical Engineering (Dual/M.Tech)">Mechanical Engineering (Dual/M.Tech)</option>
+            <option value="Physics">Physics</option>
+            <option value="Textile and Fibre Engineering">Textile and Fibre Engineering</option>
+            <option value="Textile and Fibre Engineering (Dual/M.Tech)">Textile and Fibre Engineering (Dual/M.Tech)
+            </option>
+        </select>
+        <small style="color: rgba(255,255,255,0.6); font-size: 13px;">Hold Ctrl/Cmd to select multiple.</small>
+    </div>
+    <div class="form-group">
+        <label>Select Target Years</label>
+        <div id="year-checkboxes">
+            <label><input type="checkbox" onclick="toggleAll(this, 'target_years')" value="__all__"> Select
+                All</label><br>
+            <label><input type="checkbox" name="target_years" value="1"> 1st Year</label><br>
+            <label><input type="checkbox" name="target_years" value="2"> 2nd Year</label><br>
+            <label><input type="checkbox" name="target_years" value="3"> 3rd Year</label><br>
+            <label><input type="checkbox" name="target_years" value="4"> 4th Year</label><br>
+            <label><input type="checkbox" name="target_years" value="5"> 5th Year</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Select Target Hostels</label>
+        <select name="target_hostels" multiple id="hostel-select" onchange="handleSelectAll(this)">
+            <option value="__all__">-- Select All Hostels --</option>
+            <option value="day-scholar">Day Scholar</option>
+            <option value="aravali">Aravali</option>
+            <option value="girnar">Girnar</option>
+            <option value="jwalamukhi">Jwalamukhi</option>
+            <option value="karakoram">Karakoram</option>
+            <option value="kumaon">Kumaon</option>
+            <option value="nilgiri">Nilgiri</option>
+            <option value="shivalik">Shivalik</option>
+            <option value="satpura">Satpura</option>
+            <option value="udaigiri">Udaigiri</option>
+            <option value="vindhyachal">Vindhyachal</option>
+            <option value="zanskar">Zanskar</option>
+            <option value="dronagiri">Dronagiri (PG only)</option>
+            <option value="saptagiri-boys">Saptagiri Boys (PG only)</option>
+            <option value="kailash">Kailash</option>
+            <option value="himadri">Himadri</option>
+            <option value="sahyadri">Sahyadri (PG only)</option>
+            <option value="saptagiri-girls">Saptagiri Girls (PG only)</option>
+            <option value="nalanda">Nalanda (Transit)</option>
+        </select>
+        <small style="color: rgba(255,255,255,0.6); font-size: 13px;">Hold Ctrl/Cmd to select multiple.</small>
     </div>
 
     <script>
@@ -767,20 +861,20 @@
             document.getElementById('registrationsModal').classList.remove('hidden');
             document.getElementById('registrationsTitle').textContent = eventName + ' - Registrations';
             document.getElementById('registrationsContent').innerHTML = '<p>Loading registrations...</p>';
-            
+
             fetch('/api/club-event/' + encodeURIComponent(eventName) + '/registrations')
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
-                        document.getElementById('registrationsContent').innerHTML = 
+                        document.getElementById('registrationsContent').innerHTML =
                             '<p style="color: #ff6b6b;">Error: ' + data.error + '</p>';
                         return;
                     }
-                    
+
                     let content = '<div style="margin-bottom: 20px;">';
                     content += '<h3>Total Registrations: ' + data.total_registrations + '</h3>';
                     content += '</div>';
-                    
+
                     if (data.registrations && data.registrations.length > 0) {
                         content += '<table class="registrations-table">';
                         content += '<thead><tr><th>Name</th><th>Email</th><th>Entry No</th><th>Department</th><th>Feedback</th></tr></thead>';
@@ -806,7 +900,7 @@
                 })
                 .catch(error => {
                     console.error('Error fetching registrations:', error);
-                    document.getElementById('registrationsContent').innerHTML = 
+                    document.getElementById('registrationsContent').innerHTML =
                         '<p style="color: #ff6b6b;">Failed to load registrations. Please try again.</p>';
                 });
         }
@@ -815,18 +909,37 @@
             document.getElementById('registrationsModal').classList.add('hidden');
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const currentTab = '{{ current_tab | default("dashboard") }}';
             showTab(currentTab);
 
             // Optional: Add a default image for event cards if event.photo is missing
             const eventImages = document.querySelectorAll('.card-front img');
             eventImages.forEach(img => {
-                img.onerror = function() {
+                img.onerror = function () {
                     this.src = "{{ url_for('static', filename='default_event.jpg') }}"; // Path to your default image
                 };
             });
         });
+
+        function handleSelectAll(selectElement) {
+            const isAll = Array.from(selectElement.selectedOptions).some(opt => opt.value === "__all__");
+            if (isAll) {
+                for (let option of selectElement.options) {
+                    option.selected = true;
+                }
+            }
+        }
+
+        function toggleAll(sourceCheckbox, name) {
+            const checkboxes = document.querySelectorAll(`input[name="${name}"]`);
+            for (let box of checkboxes) {
+                box.checked = sourceCheckbox.checked;
+            }
+        }
+
+
     </script>
 </body>
+
 </html>
