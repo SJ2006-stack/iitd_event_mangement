@@ -1,164 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Coordinator Dashboard</title>
+    <title>Course Coordinator Portal</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        body {
+        * {
             margin: 0;
-            font-family: Arial, sans-serif;
-            display: flex;
-            height: 100vh;
-            background-color: #ffffff;
-        }
-
-        .side-panel {
-            width: 250px;
-            background-color: #5D3FD3;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 20px;
-        }
-
-        .side-panel .logo {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background-color: white;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #5D3FD3;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .side-panel nav {
-            width: 100%;
-        }
-
-        .side-panel nav a {
-            display: block;
-            text-decoration: none;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            transition: background-color 0.3s;
-        }
-
-        .side-panel nav a:hover {
-            background-color: #4b32b3;
-        }
-
-        .content {
-            flex: 1;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .content h1 {
-            color: #5D3FD3;
-            margin-bottom: 20px;
-        }
-
-        .course-list {
-            list-style: none;
             padding: 0;
-            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
         }
 
-        .course-list li {
+        body {
+            background: linear-gradient(to bottom right, #2c483e, #3F5D53);
+            display: flex;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.4);
+            padding-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar img {
+            width: 80px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: #fff;
+            padding: 12px 20px;
+            margin: 5px 0;
+            width: 90%;
+            text-align: left;
+            transition: 0.3s;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .main-content h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .courses-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(6px);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .course-item {
             display: flex;
             justify-content: space-between;
-            padding: 10px 15px;
-            border: 1px solid #5D3FD3;
-            border-radius: 5px;
-            margin-bottom: 10px;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border-left: 4px solid #4CAF50;
+            border-radius: 8px;
         }
 
-        .course-list li button {
-            background-color: #5D3FD3;
-            color: white;
+        .course-item h3 {
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+
+        .course-actions button {
             border: none;
-            border-radius: 5px;
-            padding: 5px 10px;
+            border-radius: 6px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        .add-event-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .manage-btn {
+            background-color: #f0ad4e;
+            color: white;
+        }
+
+        .no-courses {
+            text-align: center;
+            padding: 30px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-content {
+            background: #2c483e;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+        }
+
+        .close-btn {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
             cursor: pointer;
         }
 
-        .course-list li button:hover {
-            background-color: #4b32b3;
+        .form-group {
+            margin-bottom: 15px;
         }
 
-        .add-course {
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .form-actions {
             display: flex;
+            justify-content: flex-end;
+            gap: 10px;
             margin-top: 20px;
         }
 
-        .add-course input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #5D3FD3;
-            border-radius: 5px;
-            margin-right: 10px;
-        }
-
-        .add-course button {
-            background-color: #5D3FD3;
-            color: white;
+        .form-actions button {
+            padding: 10px 20px;
+            border-radius: 8px;
             border: none;
-            border-radius: 5px;
-            padding: 10px;
             cursor: pointer;
+            font-weight: 500;
         }
 
-        .add-course button:hover {
-            background-color: #4b32b3;
+        .btn-submit {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #777;
+            color: white;
         }
     </style>
 </head>
+
 <body>
-    <div class="side-panel">
-        <div class="logo">LOGO</div>
-        <nav>
-            <a href="#">Edit Schedule</a>
-            <a href="#">Logout</a>
-        </nav>
+    <div class="sidebar">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" />
+        <a href="{{ url_for('course_coordinator_dashboard') }}" class="active"><i class='bx bxs-dashboard'></i>
+            Dashboard</a>
+        <a href="{{ url_for('logout') }}"><i class='bx bx-log-out'></i> Logout</a>
     </div>
-    <div class="content">
-        <h1>Course Coordinator Dashboard</h1>
-        <ul class="course-list" id="courseList">
-            <!-- Courses will appear here -->
-        </ul>
-        <div class="add-course">
-            <input type="text" id="courseInput" placeholder="Enter course name">
-            <button onclick="addCourse()">Add Course</button>
+
+    <div class="main-content">
+        <h1>Course Coordinator Portal</h1>
+        <p style="margin-bottom: 20px;">Welcome, {{ coordinator_name }}. Manage your assigned courses below.</p>
+
+        <div class="courses-container">
+            <h2>Your Managed Courses</h2>
+            {% if managed_courses %}
+            {% for auth in managed_courses %}
+            <div class="course-item">
+                <h3>{{ auth.course_code }}</h3>
+                <div class="course-actions">
+                    <button class="manage-btn" data-course-code="{{ auth.course_code }}"
+                        data-groups-json="{{ auth.groups_json|tojson|safe }}" onclick="openManageModal(this)">
+                        <i class='bx bxs-cog'></i> Manage Structure
+                    </button>
+                    <button class="add-event-btn" data-course-code="{{ auth.course_code }}"
+                        data-groups-json="{{ auth.groups_json|tojson|safe }}" onclick="openAddEventModal(this)">
+                        <i class='bx bx-plus'></i> Add Event
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="no-courses">You have not been assigned to manage any courses.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="addEventModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="addEventModalTitle">Add Event</h2>
+                <span class="close-btn" onclick="closeModal('addEventModal')">×</span>
+            </div>
+            <form action="{{ url_for('create_academic_event') }}" method="POST">
+                <input type="hidden" name="course_code" id="addEventModalCourseCode">
+                <div class="form-group"><label for="eventName">Event Name</label><input type="text" id="eventName"
+                        name="name" required></div>
+                <div class="form-group"><label for="description">Description</label><textarea id="description"
+                        name="description" rows="3" required></textarea></div>
+                <div class="form-group"><label for="date">Date</label><input type="date" id="date" name="day" required>
+                </div>
+                <div class="form-group"><label for="starttime">Start Time</label><input type="time" id="starttime"
+                        name="starttime" required></div>
+                <div class="form-group"><label for="venue">Venue</label><input type="text" id="venue" name="venue"
+                        required></div>
+                <div class="form-group">
+                    <label for="targetGroupSelect">Target Group/Section</label>
+                    <select id="targetGroupSelect" name="target_group" required></select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal('addEventModal')">Cancel</button>
+                    <button type="submit" class="btn-submit">Create Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="manageStructureModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="manageModalTitle">Manage Structure</h2>
+                <span class="close-btn" onclick="closeModal('manageStructureModal')">×</span>
+            </div>
+            <form action="{{ url_for('update_course_structure') }}" method="POST">
+                <input type="hidden" name="course_code" id="manageModalCourseCode">
+                <div class="form-group">
+                    <label for="groupsInput">Group Names (comma-separated)</label>
+                    <textarea id="groupsInput" name="groups" rows="4" placeholder="e.g. 1, 2, 3, 4, 5a, 5b"></textarea>
+                    <small style="opacity: 0.7; margin-top: 5px; display: block;">Enter all possible group/section names
+                        for this course.</small>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel"
+                        onclick="closeModal('manageStructureModal')">Cancel</button>
+                    <button type="submit" class="btn-submit">Save Structure</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <script>
-        const courseList = document.getElementById('courseList');
-
-        function addCourse() {
-            const courseInput = document.getElementById('courseInput');
-            const courseName = courseInput.value.trim();
-
-            if (courseName) {
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `${courseName} <button onclick="removeCourse(this)">Remove</button>`;
-                courseList.appendChild(listItem);
-                courseInput.value = '';
+        function openModal(modalId) { document.getElementById(modalId).style.display = "block"; }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                closeModal(event.target.id);
             }
         }
 
-        function removeCourse(button) {
-            const listItem = button.parentElement;
-            courseList.removeChild(listItem);
+        function openAddEventModal(button) {
+            const courseCode = button.dataset.courseCode;
+            const groupsJson = button.dataset.groupsJson;
+
+            document.getElementById('addEventModalTitle').innerText = `Add Event for ${courseCode}`;
+            document.getElementById('addEventModalCourseCode').value = courseCode;
+
+            const select = document.getElementById('targetGroupSelect');
+            select.innerHTML = ''; // Clear existing options
+
+            const allOption = new Option('All Groups', 'All');
+            select.add(allOption);
+
+            if (groupsJson) {
+                try {
+                    // The JSON from the data attribute is already a valid JSON string
+                    const groups = JSON.parse(groupsJson);
+                    if (Array.isArray(groups)) {
+                        groups.forEach(group => {
+                            const option = new Option(`Group ${group}`, group);
+                            select.add(option);
+                        });
+                    }
+                } catch (e) { console.error("Could not parse groups JSON:", e); }
+            }
+            openModal('addEventModal');
+        }
+
+        function openManageModal(button) {
+            const courseCode = button.dataset.courseCode;
+            const groupsJson = button.dataset.groupsJson;
+
+            document.getElementById('manageModalTitle').innerText = `Manage Structure for ${courseCode}`;
+            document.getElementById('manageModalCourseCode').value = courseCode;
+
+            const textarea = document.getElementById('groupsInput');
+            if (groupsJson) {
+                try {
+                    const groups = JSON.parse(groupsJson);
+                    textarea.value = Array.isArray(groups) ? groups.join(', ') : '';
+                } catch (e) { textarea.value = ''; }
+            } else {
+                textarea.value = '';
+            }
+            openModal('manageStructureModal');
         }
     </script>
 </body>
+
 </html>

@@ -85,8 +85,9 @@
 <body>
   <div class="otp-container">
     <h2>Verify Your OTP</h2>
-    <p>Please enter the 6-digit code sent to your email or phone.</p>
-    <form action="/verify-otp" method="POST">
+    <p>Please enter the 6-digit code sent to <strong>{{ email }}</strong>.</p>
+    <form action="{{ url_for('verify_otp') }}" method="POST">
+      <input type="hidden" name="email" value="{{ email }}">
       <div class="otp-input-group">
         <input type="text" maxlength="1" class="otp-input" name="digit1" required>
         <input type="text" maxlength="1" class="otp-input" name="digit2" required>
@@ -97,9 +98,8 @@
       </div>
       <button type="submit" class="btn">Submit</button>
     </form>
-    <p class="note">Didn't receive the code? <a href="/">Resend OTP</a></p>
+    <p class="note">Didn't receive the code? <a href="{{ url_for('kars_registration_or_login') }}">Try signing up again</a></p>
   </div>
-
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const inputs = document.querySelectorAll('.otp-input');

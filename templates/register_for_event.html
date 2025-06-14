@@ -1,0 +1,179 @@
+<!-- START OF FILE templates/register_for_event.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register for {{ event.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(to bottom right, #2c2f48, #5D3FD3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 700px;
+            overflow: hidden;
+        }
+        .event-header {
+            padding: 30px;
+            background: #f7f7f7;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+        .event-header h1 {
+            color: #5D3FD3;
+            margin-bottom: 10px;
+        }
+        .event-header p {
+            color: #666;
+        }
+        .form-content {
+            padding: 30px;
+        }
+        .form-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .form-section h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #444;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .form-group input[readonly] {
+            background: #f0f0f0;
+            cursor: not-allowed;
+        }
+        .form-group .radio-group label,
+        .form-group .checkbox-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 400;
+        }
+        .required-star {
+            color: #e74c3c;
+            margin-left: 4px;
+        }
+        .submit-btn {
+            background: #5D3FD3;
+            color: #fff;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        .submit-btn:hover {
+            background: #4a32a8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="event-header">
+            <h1>{{ event.name }}</h1>
+            <p>Organized by {{ event.organiser }}</p>
+        </div>
+        <div class="form-content">
+            <form action="{{ url_for('register_for_event_page', event_name=event.name) }}" method="POST">
+
+                <!-- Section 1: Pre-filled User Details -->
+                <div class="form-section">
+                    <h2>Your Details</h2>
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" value="{{ user.name }}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="text" value="{{ user.email }}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Entry Number</label>
+                        <input type="text" value="{{ user.entryno }}" readonly>
+                    </div>
+                </div>
+
+                <!-- Section 2: Custom Questions -->
+                <div class="form-section">
+                    <h2>Event Questions</h2>
+                    {% for field in custom_fields %}
+                    <div class="form-group">
+                        <label>
+                            {{ field.question_text }}
+                            {% if field.is_required %}<span class="required-star">*</span>{% endif %}
+                        </label>
+
+                        {% if field.question_type == 'text' %}
+                            <input type="text" name="custom_field_{{ field.id }}" {% if field.is_required %}required{% endif %}>
+                        
+                        {% elif field.question_type == 'textarea' %}
+                            <textarea name="custom_field_{{ field.id }}" rows="4" {% if field.is_required %}required{% endif %}></textarea>
+                        
+                        {% elif field.question_type == 'radio' %}
+                            <div class="radio-group">
+                            {% for option in from_json(field.options_json) %}
+                                <label><input type="radio" name="custom_field_{{ field.id }}" value="{{ option }}" {% if field.is_required %}required{% endif %}> {{ option }}</label>
+                            {% endfor %}
+                            </div>
+
+                        {% elif field.question_type == 'checkbox' %}
+                            <div class="checkbox-group">
+                            {% for option in from_json(field.options_json) %}
+                                <label><input type="checkbox" name="custom_field_{{ field.id }}" value="{{ option }}"> {{ option }}</label>
+                            {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                        <p>There are no additional questions for this event.</p>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="submit-btn">Confirm Registration</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

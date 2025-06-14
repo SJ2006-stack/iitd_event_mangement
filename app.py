@@ -1,4 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, jsonify
+# --- START OF FILE app.py ---
+
+from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, jsonify, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_migrate import Migrate
@@ -13,7 +15,11 @@ from sqlalchemy import text # Keep if you have raw SQL, otherwise optional
 import hashlib # For token generation, though uuid is better for uniqueness
 import uuid # For truly unique tokens
 from flask import Response
-from datetime import datetime
+from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash, check_password_hash
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import pandas as pd
 
 load_dotenv()
 
@@ -58,6 +64,9 @@ class Registration(db.Model):
     exityear=db.Column(db.Integer,nullable=False)
     currentyear=db.Column(db.Integer,nullable=True)
     course=db.Column(db.String(30), nullable=True)
+    is_verified = db.Column(db.Boolean, default=False, nullable=False)
+    otp_token = db.Column(db.String(6), nullable=True)
+    otp_expiry = db.Column(db.DateTime, nullable=True)
 
 class CalendarShare(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -92,7 +101,7 @@ class events(db.Model): # Represents all types of events/activities
     tags = db.Column(db.String(300), nullable=True)  # Comma-separated
     event_type = db.Column(db.String(50), nullable=False) # 'fest', 'club', 'department_activity'
     category = db.Column(db.String(50), nullable=True) # e.g., 'Workshop', 'Seminar', 'RDV', 'Tryst', 'Cultural', 'Technical'
-    target_departments = db.Column(db.String(500), nullable=True)  # JSON or comma-separated
+    target_departments = db.Column(db.String(1500), nullable=True)  # JSON or comma-separated
     target_years = db.Column(db.String(100), nullable=True)  # JSON or comma-separated integers
     target_hostels= db.Column(db.String(500), nullable=True)
 
@@ -104,7 +113,6 @@ class students_events(db.Model): # Tracks student registrations for events/activ
     event = db.relationship('events', backref=db.backref('registrations', lazy='dynamic'))
     student = db.relationship('Registration', backref=db.backref('event_registrations', lazy='dynamic'))
 
-
 class course_events(db.Model): # Academic schedule items
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True) # e.g., "CSL303 Midsem"
@@ -113,8 +121,159 @@ class course_events(db.Model): # Academic schedule items
     day = db.Column(db.String(20), nullable=True) # YYYY-MM-DD
     venue = db.Column(db.String(100), nullable=True)
     starttime = db.Column(db.String(10), nullable=True) # HH:MM
+    target_group = db.Column(db.String(20), nullable=False, default='All') # e.g., 1, 2, or All
+
+class StudentCourseSubscription(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    student_entryno = db.Column(db.String(11), db.ForeignKey('registration.entryno'), nullable=False)
+    course_code = db.Column(db.String(20), nullable=False) # e.g., CSL303
+    course_group = db.Column(db.String(20), nullable=False, default='All') # e.g., 1, 2, or All
+    
+    # Add relationships for easier querying
+    student = db.relationship('Registration', backref=db.backref('course_subscriptions', lazy='dynamic'))
+    
+    # Ensure a student can only subscribe to a course once
+    __table_args__ = (db.UniqueConstraint('student_entryno', 'course_code', name='_student_course_uc'),)
+
+class CourseCoordinatorAuthorization(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    coordinator_email = db.Column(db.String(120), db.ForeignKey('registration.email'), nullable=False)
+    course_code = db.Column(db.String(20), nullable=False)
+    # --- ADD THIS NEW COLUMN ---
+    groups_json = db.Column(db.Text, nullable=True) # e.g., '["1", "2", "3", "4"]' or '["A1", "B2"]'
+    
+    coordinator = db.relationship('Registration', backref=db.backref('managed_courses', lazy='dynamic'))
+    __table_args__ = (db.UniqueConstraint('coordinator_email', 'course_code', name='_coordinator_course_uc'),)
+
+class CustomFormField(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    # Foreign key to link this question to a specific event
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'), nullable=False)
+    question_text = db.Column(db.String(300), nullable=False)
+    # 'text', 'textarea', 'radio', 'checkbox'
+    question_type = db.Column(db.String(50), nullable=False)
+    # For radio/checkbox, stores a JSON list of options: e.g., '["Small", "Medium", "Large"]'
+    options_json = db.Column(db.Text, nullable=True)
+    is_required = db.Column(db.Boolean, default=False, nullable=False)
+    # To maintain the order of questions in the form
+    order = db.Column(db.Integer, nullable=False)
+
+    # This relationship makes it easy to get all questions for an event
+    event = db.relationship('events', backref=db.backref('custom_form_fields', lazy='dynamic', cascade="all, delete-orphan"))
+
+class CustomFormResponse(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    # Foreign key to link this answer to a specific registration instance
+    registration_id = db.Column(db.Integer, db.ForeignKey('students_events.srno'), nullable=False)
+    # Foreign key to link this answer to a specific question
+    field_id = db.Column(db.Integer, db.ForeignKey('custom_form_field.id'), nullable=False)
+    # The actual answer provided by the student
+    response_text = db.Column(db.Text, nullable=False)
+    
+    # Relationships for easier querying
+    registration = db.relationship('students_events', backref=db.backref('custom_responses', lazy='dynamic', cascade="all, delete-orphan"))
+    field = db.relationship('CustomFormField', backref=db.backref('responses', lazy='dynamic'))
 
 # --- Helper Functions ---
+
+@app.context_processor
+def utility_processor():
+    def from_json(json_string):
+        if not json_string:
+            return []
+        try:
+            return json.loads(json_string)
+        except (json.JSONDecodeError, TypeError):
+            return []
+    return dict(from_json=from_json)
+
+def get_recommendations(user, all_events, registered_events, count=5):
+    """
+    Generates event recommendations for a user.
+
+    Args:
+        user (Registration): The user object for whom to generate recommendations.
+        all_events (list): A list of all event objects in the system.
+        registered_events (list): A list of event objects the user is already registered for.
+        count (int): The number of recommendations to return.
+
+    Returns:
+        list: A list of recommended event objects.
+    """
+    if not all_events:
+        return []
+
+    # --- Step 1: Build a "User Profile" based on their interests and rated events ---
+    user_profile_tags = set(json_to_list(user.interest))
+    
+    # Get events the user has attended and rated
+    rated_event_registrations = students_events.query.filter(
+        students_events.entryno == user.entryno,
+        students_events.feedback.isnot(None),
+        students_events.feedback > 0  # Assuming feedback is a 1-10 rating
+    ).all()
+
+    # Add tags from rated events, weighted by the rating
+    for reg in rated_event_registrations:
+        event = reg.event
+        if event and event.tags:
+            tags = [tag.strip() for tag in event.tags.split(',')]
+            # Add tags multiple times for higher rated events to give them more weight
+            # A rating of 6/10 adds tags twice, 8/10 three times, etc.
+            weight = int(reg.feedback / 3) 
+            for _ in range(weight):
+                user_profile_tags.update(tags)
+
+    if not user_profile_tags:
+        # If user has no interests or rated events, we can't recommend.
+        # Fallback: could return most popular or most recent events.
+        # For now, we return nothing.
+        return []
+
+    user_profile_str = " ".join(list(user_profile_tags))
+
+    # --- Step 2: Create a Feature Matrix of all available events ---
+    
+    # Filter out events the user is already registered for
+    registered_event_names = {e.name for e in registered_events}
+    available_events = [e for e in all_events if e.name not in registered_event_names]
+
+    if not available_events:
+        return []
+    
+    # Use event tags as the content for TF-IDF
+    event_tags_corpus = [event.tags.replace(",", " ") if event.tags else "" for event in available_events]
+    
+    # Include the user profile at the top of the corpus to compare against
+    corpus = [user_profile_str] + event_tags_corpus
+
+    # --- Step 3: Calculate Similarity ---
+    try:
+        tfidf = TfidfVectorizer(stop_words='english')
+        tfidf_matrix = tfidf.fit_transform(corpus)
+        
+        # Calculate cosine similarity between the user profile (first item) and all events
+        cosine_sim = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:])
+    except ValueError:
+        # This can happen if the corpus is empty after stopword removal.
+        return []
+
+    # --- Step 4: Rank and Return Top Recommendations ---
+    
+    # Get similarity scores for each event
+    sim_scores = list(enumerate(cosine_sim[0]))
+    
+    # Sort events based on similarity scores in descending order
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    
+    # Get the indices of the top 'count' most similar events
+    top_event_indices = [i[0] for i in sim_scores[:count]]
+    
+    # Return the event objects corresponding to those indices
+    recommended_events = [available_events[i] for i in top_event_indices]
+    
+    return recommended_events
+
 def json_to_list(json_str):
     if not json_str or json_str == "null":
         return []
@@ -127,7 +286,6 @@ def json_to_list(json_str):
         # result = json_str[1:-1].split(",")
         # result = [item.strip()[1:-1] for item in result if item.strip()]
         return []
-
 
 def get_all_user_authorizations(email, expected_role_prefix):
     return EventAuthorization.query.filter(
@@ -143,6 +301,7 @@ def get_user_authorization(user_email, expected_role_prefix, organisation):
         EventAuthorization.organization==organisation,
         EventAuthorization.is_active == True
     ).first()
+
 def send_otp_email(receiver_email, otp_code):
     my_email = os.getenv("email")
     app_pass = os.getenv("app_pass")
@@ -223,6 +382,33 @@ def cousre_duration(course):
 
     return duration_by_course.get(course, 0)
 
+def get_organization_stats(org_name, org_event_type, manager_name=None):
+    if manager_name: # Stats for events managed by a specific person in that org
+        base_query = events.query.filter_by(organiser=org_name, event_type=org_event_type, event_manager=manager_name)
+    else: # Stats for all events of that org
+        base_query = events.query.filter_by(organiser=org_name, event_type=org_event_type)
+    
+    all_org_events = base_query.all()
+    
+    current_time = datetime.now()
+    upcoming_count = 0
+    total_regs = 0
+    
+    for event_item in all_org_events:
+        if event_item.date and event_item.starttime:
+            try:
+                event_dt = datetime.strptime(f"{event_item.date} {event_item.starttime}", "%Y-%m-%d %H:%M")
+                if event_dt >= current_time:
+                    upcoming_count += 1
+            except (ValueError, TypeError):
+                pass # Skip if date/time is invalid
+        total_regs += students_events.query.filter_by(event_name=event_item.name).count()
+        
+    return {
+        "managed_events_count": len(all_org_events), # Or specific managed count if manager_name is used
+        "upcoming_events_count": upcoming_count,
+        "total_registrations_count": total_regs,
+    }
 
 # --- Routes ---
 @app.route('/uploads/<path:filename>') # Use path converter for flexibility
@@ -231,126 +417,152 @@ def uploaded_file(filename):
 
 # --- Authentication Routes ---
 @app.route('/', methods=['GET', 'POST'])
-def kars_registration_or_login(): # Combined landing page
-    # if 'user_id' in session: # If already logged in, redirect appropriately
-    #     # This logic could be more sophisticated based on last role or a default dashboard
-    #     return redirect(url_for('kars_student')) # Default to student portal for now
+def kars_registration_or_login():
+    """
+    Handles both user registration and login from the main landing page.
+    - GET: Renders the login/signup page.
+    - POST: Differentiates between a login attempt and a registration attempt
+      based on the submitted form fields.
+    """
     if request.method == 'POST':
-        # This form should distinguish between login and registration actions
-        # For simplicity, assuming it's a registration attempt if certain fields are present
-        print(request.form)
-        if 'name' in request.form and 'confirm_password' in request.form: # Registration
-            name = request.form['name']
-            hostel = request.form['hostel']
+        # --- REGISTRATION LOGIC ---
+        # A registration form is identified by the presence of 'name' and 'confirm_password' fields.
+        if 'name' in request.form and 'confirm_password' in request.form:
+            
+            # Step 1: Collect form data and perform initial validation
             email = request.form['email'].lower()
-            entryno_parts = email.split('@')
-            course=request.form['course']
-            if len(entryno_parts) > 0 and entryno_parts[0]:
-                entryno = to_entryno(entryno_parts[0]) # Using email prefix as entryno
-            else:
-                return "Invalid email format for entry number generation.", 400
             password = request.form['password']
-            confirm_password = request.form['confirm_password']            
-            if password != confirm_password:
-                return "Passwords do not match.", 400
-            if not email.endswith("@iitd.ac.in"): # Example domain
-                return "Only @iitd.ac.in emails are allowed for registration.", 400
-            if Registration.query.filter_by(email=email).first():
-                return "Email already registered.", 400
-            if Registration.query.filter_by(entryno=entryno).first():
-                 return "Entry number already registered (derived from email).", 400
-            hashed_password = hashlib.sha256(password.encode()).hexdigest() # Basic hashing, consider bcrypt
-            role_json = json.dumps(['student'])
 
-            session['registration_data'] = {
-                'entryno': entryno, 'name': name,'hostel':hostel, 'email': email,
-                'password': hashed_password, 'role': role_json,
-                'interest': json.dumps([]), 'photo': None, 'department': find_department(entryno),
-                'entryyear':int(entryno[:4]),'course':course,'exityear':int(entryno[:4])+cousre_duration(course)
-            }
+            if password != request.form['confirm_password']:
+                flash("Passwords do not match. Please try again.", "error")
+                return redirect(url_for('kars_registration_or_login'))
             
-            otp = "".join([str(random.randint(0,9)) for _ in range(6)])
-            session['otp'] = otp
-            session['otp_email'] = email # Store email for OTP verification page
-            
-            if send_otp_email(email, otp):
-                return redirect(url_for('verify_otp'))
+            if not email.endswith("@iitd.ac.in"):
+                flash("Only @iitd.ac.in emails are allowed for registration.", "error")
+                return redirect(url_for('kars_registration_or_login'))
+
+            # Step 2: Check the database for an existing user with this email
+            existing_user = Registration.query.filter_by(email=email).first()
+
+            otp = "".join([str(random.randint(0, 9)) for _ in range(6)])
+            otp_expiry_time = datetime.utcnow() + timedelta(minutes=10)  # OTP is valid for 10 minutes
+
+            if existing_user:
+                if existing_user.is_verified:
+                    # Case A: User is already fully registered.
+                    flash("This email is already registered. Please log in.", "info")
+                    return redirect(url_for('kars_registration_or_login'))
+                else:
+                    # Case B: User started registration but didn't verify. Update their record with a new OTP.
+                    user_to_update = existing_user
+                    user_to_update.password = hashlib.sha256(password.encode()).hexdigest()
+                    user_to_update.otp_token = otp
+                    user_to_update.otp_expiry = otp_expiry_time
             else:
-                # For testing if email fails, allow proceeding or show error
-                # return "OTP email could not be sent. Please try again later or contact support.", 500
-                print(f"DEBUG: OTP for {email} is {otp} (email sending failed or disabled)")
-                return redirect(url_for('verify_otp')) # Proceed for testing without email
-        else: # Login
+                # Case C: This is a brand new registration. Create a new pending user record.
+                entryno = to_entryno(email.split('@')[0])
+                new_user_data = {
+                    'entryno': entryno,
+                    'name': request.form['name'],
+                    'hostel': request.form['hostel'],
+                    'email': email,
+                    'password': hashlib.sha256(password.encode()).hexdigest(),
+                    'role': json.dumps(['student']),
+                    'interest': json.dumps([]),
+                    'photo': None,
+                    'department': find_department(entryno),
+                    'entryyear': int(entryno[:4]),
+                    'course': request.form['course'],
+                    'exityear': int(entryno[:4]) + cousre_duration(request.form['course']),
+                    'is_verified': False,
+                    'otp_token': otp,
+                    'otp_expiry': otp_expiry_time
+                }
+                user_to_update = Registration(**new_user_data)
+                db.session.add(user_to_update)
+
+            # Step 3: Commit changes to the database and send the OTP email
+            try:
+                db.session.commit()
+                if send_otp_email(email, otp):
+                    flash("An OTP has been sent to your email. It is valid for 10 minutes.", "success")
+                else:
+                    print(f"DEBUG: OTP for {email} is {otp} (email sending failed or disabled)")
+                    flash("Could not send OTP email, but registration is pending. Check server logs for OTP.", "warning")
+                
+                # Redirect to the OTP page, passing the email for identification
+                return redirect(url_for('verify_otp', email=email))
+
+            except Exception as e:
+                db.session.rollback()
+                print(f"Database error during registration: {e}")
+                flash("A database error occurred during registration. Please try again.", "error")
+                return redirect(url_for('kars_registration_or_login'))
+        
+        # --- LOGIN LOGIC ---
+        # If the form does not have a 'name' field, it's a login attempt.
+        else:
             email = request.form['email'].lower()
             password = request.form['password']
-            # Role selection at login is important for portal access
-            login_role_selection = request.form.get('role') # e.g. "student", "fest_head", "club_head"
+            login_role_selection = request.form.get('role')
 
             user = Registration.query.filter_by(email=email).first()
             hashed_password_attempt = hashlib.sha256(password.encode()).hexdigest()
 
-            if user and user.password == hashed_password_attempt:
+            # IMPORTANT: Check if user exists, is verified, and password matches
+            if user and user.is_verified and user.password == hashed_password_attempt:
                 session['user_id'] = user.entryno
                 session['user_email'] = user.email
                 session['user_name'] = user.name
                 
                 user_roles = json_to_list(user.role)
 
-                # Redirect logic based on login_role_selection and actual user roles/authorizations
+                # --- Redirection Logic based on selected role ---
                 if login_role_selection == "student" and "student" in user_roles:
                     return redirect(url_for('kars_student'))
                 
-                auth_record = None
-                if login_role_selection and login_role_selection != "student":
-                    # Map form role to auth role prefix
-                    # e.g., if form has "fest_manager", map to "fest_head" for get_user_authorization
-                    role_prefix_map = {
-                        "fest": "fest_head", # Assuming form might use 'fest_manager'
-                        "club": "club_head",
-                        "department": "department_head",
-                        # Direct mapping if form uses the exact EventAuthorization roles
-                        "fest_head": "fest_head",
-                        "club_head": "club_head",
-                        "department_head": "department_head"
-                    }
-                    auth_role_prefix = role_prefix_map.get(login_role_selection)
-
-                    if auth_role_prefix:
-                        auth_records = get_all_user_authorizations(user.email, auth_role_prefix)
-                        if len(auth_records) == 1:
-                            auth_record = auth_records[0]
-                            session['user_organization'] = auth_record.organization
-                            session['auth_role'] = auth_record.role
-                            # redirect based on role
-                        elif len(auth_records) > 1:
-                            session['multi_auth_roles'] = [
-                                {
-                                    'organization': a.organization,
-                                    'role': a.role
-                                } for a in auth_records
-                            ]
-                            return redirect(url_for('choose_organization'))
-
-
-                if auth_record:
-                    session['user_organization'] = auth_record.organization # Store club/fest/dept name
-                    session['auth_role'] = auth_record.role # Store the specific authorized role
-
-                    if auth_record.role.startswith("fest_head"):
-                        return redirect(url_for('fest_dashboard'))
-                    elif auth_record.role.startswith("club_head"):
-                        return redirect(url_for('club_dashboard'))
-                    elif auth_record.role.startswith("department_head"):
-                        return redirect(url_for('department_dashboard'))
+                elif login_role_selection == "course-coordinator":
+                    is_coordinator = CourseCoordinatorAuthorization.query.filter_by(coordinator_email=user.email).first()
+                    if is_coordinator:
+                        return redirect(url_for('course_coordinator_dashboard'))
+                    else:
+                        flash("You are not authorized to access the Course Coordinator portal.", "error")
+                        return redirect(url_for('kars_registration_or_login'))
                 
-                # Fallback if selected role auth fails or no specific portal role chosen
+                elif login_role_selection in ["fest", "club", "department"]:
+                    role_prefix_map = {"fest": "fest_head", "club": "club_head", "department": "department_head"}
+                    auth_role_prefix = role_prefix_map.get(login_role_selection)
+                    auth_records = get_all_user_authorizations(user.email, auth_role_prefix)
+                    
+                    if len(auth_records) == 1:
+                        auth_record = auth_records[0]
+                        session['user_organization'] = auth_record.organization
+                        session['auth_role'] = auth_record.role
+                        if auth_record.role.startswith("fest_head"): return redirect(url_for('fest_dashboard'))
+                        elif auth_record.role.startswith("club_head"): return redirect(url_for('club_dashboard'))
+                        elif auth_record.role.startswith("department_head"): return redirect(url_for('department_dashboard'))
+                            
+                    elif len(auth_records) > 1:
+                        session['multi_auth_roles'] = [{'organization': a.organization, 'role': a.role} for a in auth_records]
+                        return redirect(url_for('choose_organization'))
+
+                # Fallback: If no specific portal login succeeds, or if no authorization was found for the selected role
                 if "student" in user_roles:
+                    flash("Could not log you into the selected portal. Redirecting to student dashboard.", "info")
                     return redirect(url_for('kars_student'))
                 else:
-                    return "No suitable portal found for your roles.", 403
+                    flash("No suitable portal found for your roles, or authorization failed.", "error")
+                    return redirect(url_for('kars_registration_or_login'))
+
+            elif user and not user.is_verified:
+                 flash("Your account is not verified. Please check your email for the OTP or try signing up again.", "warning")
+                 return redirect(url_for('verify_otp', email=user.email))
             else:
-                return "Invalid email or password.", 401
-    return render_template('login.html') # Your main login/registration page
+                flash("Invalid email or password.", "error")
+                return redirect(url_for('kars_registration_or_login'))
+                
+    # For GET requests, just show the main page
+    return render_template('login.html')
 
 @app.route('/choose_organization', methods=['GET', 'POST'])
 def choose_organization():
@@ -372,45 +584,56 @@ def choose_organization():
 
     return render_template("choose_organization.html", roles=session['multi_auth_roles'])
 
-
-
-
 @app.route('/verify-otp', methods=['GET', 'POST'])
 def verify_otp():
-    if 'otp' not in session or 'registration_data' not in session:
+    # The email is passed as a URL parameter to identify the user
+    email = request.args.get('email')
+    if not email:
+        flash("No email specified for verification.", "error")
         return redirect(url_for('kars_registration_or_login'))
-    target_email = session.get('otp_email', 'the provided email')
-    if request.method == 'POST':
-        submitted_otp = "".join([request.form.get(f'digit{i+1}', '') for i in range(6)])
-        if submitted_otp == session['otp']:
-            reg_data = session['registration_data']
-            new_user = Registration(**reg_data)
-            try:
-                db.session.add(new_user)
-                db.session.commit()
-                session.pop('otp', None)
-                session.pop('registration_data', None)
-                session.pop('otp_email', None)
-                # Log in the user directly after successful registration
-                session['user_id'] = new_user.entryno
-                session['user_email'] = new_user.email
-                session['user_name'] = new_user.name
-                return redirect(url_for('kars_student')) # Redirect to student portal or profile setup
-            except Exception as e:
-                db.session.rollback()
-                print(f"Error during registration commit: {e}")
-                return "Registration failed due to a database error. Please try again.", 500
-        else:
-            return render_template('otp.html', error="Incorrect OTP. Please try again.", email=target_email)
-    return render_template('otp.html', email=target_email)
 
+    if request.method == 'POST':
+        # The form should also submit the email back to us
+        submitted_email = request.form.get('email')
+        submitted_otp = "".join([request.form.get(f'digit{i+1}', '') for i in range(6)])
+
+        user = Registration.query.filter_by(email=submitted_email).first()
+
+        # Perform all checks
+        if not user:
+            flash("No pending registration found for this email.", "error")
+        elif user.is_verified:
+            flash("This account has already been verified. Please log in.", "info")
+        elif user.otp_expiry < datetime.utcnow():
+            flash("Your OTP has expired. Please try signing up again to receive a new one.", "error")
+        elif user.otp_token != submitted_otp:
+            flash("The OTP you entered is incorrect. Please try again.", "error")
+        else:
+            # --- Success! Activate the account. ---
+            user.is_verified = True
+            user.otp_token = None  # Clear the token
+            user.otp_expiry = None # Clear the expiry
+            db.session.commit()
+
+            # Log the user in automatically
+            session['user_id'] = user.entryno
+            session['user_email'] = user.email
+            session['user_name'] = user.name
+            
+            flash("Your account has been successfully verified!", "success")
+            return redirect(url_for('kars_student'))
+        
+        # If any check failed, redirect back to the OTP page to try again
+        return redirect(url_for('verify_otp', email=submitted_email))
+
+    # For GET request, just render the page
+    return render_template('otp.html', email=email)
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('kars_registration_or_login'))
 
-# --- Student Portal Routes (largely from your existing code, with minor adjustments) ---
 @app.route('/student')
 def kars_student():
     user_id = session.get('user_id')
@@ -422,82 +645,101 @@ def kars_student():
         session.clear() # Clear invalid session
         return redirect(url_for('kars_registration_or_login'))
     
+    # --- Part 1: Fetch NON-ACADEMIC (fest, club, etc.) events. (No changes here) ---
     registered_event_names = [reg.event_name for reg in students_events.query.filter_by(entryno=user.entryno).all()]
-    current_time = datetime.now()
-    
     all_student_registered_activities = events.query.filter(events.name.in_(registered_event_names)).all()
     
-    upcoming_student_activities = []
-        # app.py - inside the /student route
-
-    # ... existing code ...
-
     calendar_events_data = []
-
-    # Add registered events
     for reg_event in all_student_registered_activities:
-        event_obj = events.query.filter_by(name=reg_event.name).first() # Ensure this lookup is correct
-        if event_obj:
-            # Construct ISO 8601 strings for start and end
-            # Assuming event_obj.date is 'YYYY-MM-DD' and starttime/endtime are 'HH:MM'
-            start_datetime_str = f"{event_obj.date}T{event_obj.starttime}"
-            end_datetime_str = f"{event_obj.date}T{event_obj.endtime}" # Or handle if endtime is optional/different
+        if reg_event.date and reg_event.starttime and reg_event.endtime:
+            start_datetime_str = f"{reg_event.date}T{reg_event.starttime}"
+            end_datetime_str = f"{reg_event.date}T{reg_event.endtime}"
 
             calendar_events_data.append({
-                'title': event_obj.name,
+                'title': reg_event.name,
                 'start': start_datetime_str,
                 'end': end_datetime_str,
-                'description': event_obj.description,
-                'location': event_obj.venue,
-                'extendedProps': { # Use extendedProps for custom data
-                    'organiser': event_obj.organiser
+                'description': reg_event.description,
+                'location': reg_event.venue,
+                'extendedProps': {
+                    'organiser': reg_event.organiser,
+                    'type': 'General Event' # Differentiate event type
                 }
             })
 
-    # # Add academic schedule events
-    # for course_event in course_events_obj:
-    #     # Construct ISO 8601 strings for start and end
-    #     # Assuming course_event.day is 'YYYY-MM-DD' and starttime is 'HH:MM'
-    #     # If course_event doesn't have an endtime, you might use starttime for both or calculate a default duration
-    #     start_datetime_str = f"{course_event.day}T{course_event.starttime}"
-    #     # Example if endtime is missing: assume 1 hour duration
-    #     # You might need to parse start_datetime_str into datetime object to add 1 hour
-    #     # For now, let's assume it's also available or default
-    #     end_datetime_str = f"{course_event.day}T{course_event.starttime}" # Adjust if course_events has an endtime
+    # --- Part 2: ADD LOGIC to fetch ACADEMIC events ---
+    
+    # Get all of the student's course subscriptions
+    subscriptions = StudentCourseSubscription.query.filter_by(student_entryno=user_id).all()
+    print(f"DEBUG: Subscriptions for {user_id}: {[sub.course_code for sub in subscriptions]}") # Debugging line
+    if subscriptions:
+        # Create a list of course codes the student is subscribed to
+        subscribed_course_codes = [sub.course_code for sub in subscriptions]
+        
+        # Fetch all potentially relevant academic events in one query
+        relevant_academic_events = course_events.query.filter(course_events.course.in_(subscribed_course_codes)).all()
+        
+        # Create a mapping of course_code to the student's group for easy lookup
+        student_group_map = {sub.course_code: sub.course_group for sub in subscriptions}
 
-    #     calendar_events_data.append({
-    #         'title': course_event.name,
-    #         'start': start_datetime_str,
-    #         'end': end_datetime_str, # Make sure this is correct for course events
-    #         'description': course_event.description,
-    #         'location': course_event.venue,
-    #         'extendedProps': { # Use extendedProps for custom data
-    #             'course': course_event.course
-    #         }
-    #     })
-    recommend_events = events.query.filter(events.name.notin_(registered_event_names)).order_by(events.date.desc()).limit(5).all()
+        # Filter the events to match the student's group
+        for acad_event in relevant_academic_events:
+            student_group = student_group_map.get(acad_event.course)
+            
+            # The event is relevant if its target group is 'All' OR it matches the student's specific group
+            if acad_event.target_group.lower() == 'all' or acad_event.target_group == student_group:
+                # Assuming acad_event has day and starttime. A default endtime might be needed.
+                if acad_event.day and acad_event.starttime:
+                    start_datetime_str = f"{acad_event.day}T{acad_event.starttime}"
+                    
+                    # You might want to define a default duration for academic events if endtime is not stored
+                    end_datetime_str = start_datetime_str # Or calculate end time
 
+                    calendar_events_data.append({
+                        'title': f"{acad_event.course}: {acad_event.name}",
+                        'start': start_datetime_str,
+                        'end': end_datetime_str,
+                        'description': acad_event.description,
+                        'location': acad_event.venue,
+                        'backgroundColor': '#4CAF50', # Give academic events a different color
+                        'borderColor': '#388E3C',
+                        'extendedProps': {
+                            'organiser': f"Course: {acad_event.course}",
+                            'type': 'Academic Event'
+                        }
+                    })
+
+    # --- Part 3: Recommendation and Feedback Logic (No changes here) ---
+    feedback_needed_activities = []
+    current_time = datetime.now()
     feedback_pending_regs = students_events.query.filter(
         students_events.entryno == user.entryno,
-        (students_events.feedback == None) | (students_events.feedback == 0) # Assuming 0 or None means pending
+        (students_events.feedback == None) | (students_events.feedback == 0)
     ).all()
 
-    feedback_needed_activities = []
     for reg in feedback_pending_regs:
         event_obj = events.query.filter_by(name=reg.event_name).first()
         if event_obj and event_obj.date and event_obj.starttime:
             try:
                 event_datetime = datetime.strptime(f"{event_obj.date} {event_obj.starttime}", "%Y-%m-%d %H:%M")
-                if event_datetime < current_time: # Only ask for feedback for past events
-                    feedback_needed_activities.append(event_obj) # Pass the event object
+                if event_datetime < current_time:
+                    feedback_needed_activities.append(event_obj)
             except (ValueError, TypeError):
                 continue
     
+    all_events_in_db = events.query.order_by(events.date.desc()).all()
+    recommended_events_list = get_recommendations(
+        user=user,
+        all_events=all_events_in_db,
+        registered_events=all_student_registered_activities,
+        count=5
+    )
 
+    # --- Part 4: Render the template with the combined event data ---
     return render_template('student_portal.html',
-                        recommend_events=recommend_events,
-                        feedback_remaining=feedback_needed_activities,
-                        calendar_events=json.dumps(calendar_events_data))
+                           recommend_events=recommended_events_list,
+                           feedback_remaining=feedback_needed_activities,
+                           calendar_events=json.dumps(calendar_events_data))
 
 @app.route('/student/profile', methods=['GET', 'POST'])
 def kars_profile():
@@ -581,6 +823,7 @@ def student_events_to_join():
                 continue  # Skip if date/time is invalid
 
     return render_template('event.html', Events=available_activities)
+
 @app.route('/student/register_event/<string:event_name>')
 def register_student_for_event(event_name):
     user_id = session.get('user_id')
@@ -605,6 +848,64 @@ def register_student_for_event(event_name):
         print(f"Error registering for event: {e}")
         # Add flash message: "Error registering for event."
     return redirect(url_for('student_events_to_join'))
+
+# In app.py, add this new route
+
+@app.route('/student/register/<string:event_name>', methods=['GET', 'POST'])
+def register_for_event_page(event_name):
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('kars_registration_or_login'))
+    
+    user = db.session.get(Registration, user_id)
+    event = events.query.filter_by(name=event_name).first_or_404()
+
+    # Check if the student is already registered
+    existing_registration = students_events.query.filter_by(entryno=user_id, event_name=event.name).first()
+    if existing_registration:
+        flash("You are already registered for this event.", "info")
+        return redirect(url_for('student_events_to_join'))
+        
+    # --- FORM SUBMISSION LOGIC ---
+    if request.method == 'POST':
+        try:
+            # Step 1: Create the main registration record
+            new_registration = students_events(
+                event_name=event.name,
+                entryno=user.entryno,
+                feedback=None 
+            )
+            db.session.add(new_registration)
+            # We must commit here to get the new_registration.srno (the primary key)
+            db.session.commit() 
+
+            # Step 2: Process and save answers to custom questions
+            for field in event.custom_form_fields:
+                response_data = request.form.get(f'custom_field_{field.id}')
+                if response_data: # Only save if an answer was provided
+                    new_response = CustomFormResponse(
+                        registration_id=new_registration.srno, # Link to the main registration
+                        field_id=field.id, # Link to the question
+                        response_text=response_data
+                    )
+                    db.session.add(new_response)
+
+            # Final commit for all custom responses
+            db.session.commit()
+            flash(f"You have successfully registered for '{event.name}'!", "success")
+            return redirect(url_for('kars_student')) # Redirect to the main dashboard after success
+
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error during registration submission: {e}")
+            flash("An error occurred during registration. Please try again.", "error")
+            return redirect(url_for('student_events_to_join'))
+
+    # --- DISPLAY FORM LOGIC (for GET request) ---
+    # Fetch the custom form fields for this event, ordered correctly
+    custom_fields = event.custom_form_fields.order_by(CustomFormField.order).all()
+    
+    return render_template('register_for_event.html', event=event, user=user, custom_fields=custom_fields)
 
 @app.route('/student/submit_feedback/<string:event_name>', methods=['POST'])
 def submit_event_feedback(event_name):
@@ -634,44 +935,302 @@ def submit_event_feedback(event_name):
         pass
     return redirect(url_for('kars_student'))
 
+@app.route('/api/student/calendar-events')
+def calendar_events_api():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    user = db.session.get(Registration, user_id)
+    if not user:
+        session.clear() # Clear invalid session
+        return redirect(url_for('kars_registration_or_login'))
+    
+    registered_event_names = [reg.event_name for reg in students_events.query.filter_by(entryno=user.entryno).all()]
+    current_time = datetime.now()
+    
+    all_student_registered_activities = events.query.filter(events.name.in_(registered_event_names)).all()
+    
+    calendar_events_data = []
+
+    # Add registered events
+    for reg_event in all_student_registered_activities:
+        event_obj = events.query.filter_by(name=reg_event.name).first() # Ensure this lookup is correct
+        if event_obj:
+            # Construct ISO 8601 strings for start and end
+            # Assuming event_obj.date is 'YYYY-MM-DD' and starttime/endtime are 'HH:MM'
+            start_datetime_str = f"{event_obj.date}T{event_obj.starttime}"
+            end_datetime_str = f"{event_obj.date}T{event_obj.endtime}" # Or handle if endtime is optional/different
+
+            calendar_events_data.append({
+                'title': event_obj.name,
+                'start': start_datetime_str,
+                'end': end_datetime_str,
+                'description': event_obj.description,
+                'location': event_obj.venue,
+                'extendedProps': { # Use extendedProps for custom data
+                    'organiser': event_obj.organiser
+                }
+            })
+
+    return jsonify({'events': calendar_events_data})
+
+@app.route('/student/calendar/generate-link', methods=['POST'])
+def generate_calendar_link():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    existing = CalendarShare.query.filter_by(user_id=user_id, is_active=True).first()
+    if existing:
+        share_token = existing.share_token
+    else:
+        share_token = str(uuid.uuid4())
+        new_share = CalendarShare(user_id=user_id, share_token=share_token)
+        db.session.add(new_share)
+        db.session.commit()
+
+    return jsonify({
+        'calendar_url': url_for('shared_calendar', token=share_token, _external=True),
+        'ics_url': url_for('shared_calendar_ics', token=share_token, _external=True)
+    })
+
+@app.route('/student/calendar/revoke-link', methods=['POST'])
+def revoke_calendar_link():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    CalendarShare.query.filter_by(user_id=user_id).update({'is_active': False})
+    db.session.commit()
+    return jsonify({'message': 'Access revoked successfully.'})
+
+@app.route('/calendar/<token>')
+def shared_calendar(token):
+    share = CalendarShare.query.filter_by(share_token=token, is_active=True).first()
+    if not share:
+        return "Invalid or expired calendar link.", 404
+    user = Registration.query.get(share.user_id)
+    if not user:
+        # Invalidate the token to prevent further access to a broken link
+        share.is_active = False
+        db.session.commit()
+        return "Invalid calendar: The user associated with this link could not be found.", 404
+
+    registered_event_names = [reg.event_name for reg in students_events.query.filter_by(entryno=user.entryno).all()]
+    all_student_registered_activities = events.query.filter(events.name.in_(registered_event_names)).all()
+
+    calendar_events_data = []
+
+    # Add registered events
+    for reg_event in all_student_registered_activities:
+        if reg_event.date and reg_event.starttime and reg_event.endtime:
+            start_datetime_str = f"{reg_event.date}T{reg_event.starttime}"
+            end_datetime_str = f"{reg_event.date}T{reg_event.endtime}"
+
+            calendar_events_data.append({
+                'title': reg_event.name,
+                'start': start_datetime_str,
+                'end': end_datetime_str,
+                'description': reg_event.description,
+                'location': reg_event.venue,
+                'extendedProps': {
+                    'organiser': reg_event.organiser
+                }
+            })
+
+    return render_template('shared_calendar.html',
+                           calendar_events=json.dumps(calendar_events_data),
+                           user_name=user.name)
+
+@app.route('/calendar/<token>.ics')
+def shared_calendar_ics(token):
+    share = CalendarShare.query.filter_by(share_token=token, is_active=True).first()
+    if not share:
+        return "Invalid or expired ICS link.", 404
+    user = Registration.query.get(share.user_id)
+    if not user:
+        return "User not found for this calendar.", 404
+
+    # Fetch registered non-academic events
+    registered_event_names = [reg.event_name for reg in students_events.query.filter_by(entryno=user.entryno).all()]
+    all_student_registered_activities = events.query.filter(events.name.in_(registered_event_names)).all()
+
+    # Start ICS generation
+    ics_content = 'BEGIN:VCALENDAR\n'
+    ics_content += 'VERSION:2.0\n'
+    ics_content += 'PRODID:-//KARS//IITD Event Calendar//EN\n'
+    ics_content += 'CALSCALE:GREGORIAN\n'
+
+    # Process non-academic events
+    for event_item in all_student_registered_activities:
+        if not all([event_item.date, event_item.starttime, event_item.endtime]):
+            continue  # Skip events with incomplete time data
+
+        try:
+            # Format for ICS: YYYYMMDDTHHMMSS (floating time)
+            dtstart_str = f"{event_item.date.replace('-', '')}T{event_item.starttime.replace(':', '')}00"
+            dtend_str = f"{event_item.date.replace('-', '')}T{event_item.endtime.replace(':', '')}00"
+        except AttributeError:
+            continue  # Skip if date/time format is unexpectedly wrong
+
+        # Clean strings for ICS format (escape special characters)
+        summary = (event_item.name or '').replace(',', '\\,').replace(';', '\\;')
+        description = (event_item.description or '').replace('\n', '\\n').replace(',', '\\,').replace(';', '\\;')
+        location = (event_item.venue or '').replace(',', '\\,').replace(';', '\\;')
+
+        # Create a stable, unique ID for this specific event on this user's calendar
+        uid = f"KARS-EVENT-{event_item.id}-{user.entryno}@iitd.ac.in"
+
+        ics_content += 'BEGIN:VEVENT\n'
+        ics_content += f'DTSTAMP:{datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")}\n'
+        ics_content += f'UID:{uid}\n'
+        ics_content += f'DTSTART:{dtstart_str}\n'
+        ics_content += f'DTEND:{dtend_str}\n'
+        ics_content += f'SUMMARY:{summary}\n'
+        ics_content += f'DESCRIPTION:{description}\n'
+        ics_content += f'LOCATION:{location}\n'
+        ics_content += 'END:VEVENT\n'
+
+    ics_content += 'END:VCALENDAR\n'
+
+    return Response(
+        ics_content,
+        mimetype='text/calendar',
+        headers={"Content-Disposition": "attachment;filename=kars_calendar.ics"}
+    )
+
+
 # --- Calendar Sharing Routes (from your existing code, ensure they use event_name) ---
 # ... (generate_calendar_link, shared_calendar, shared_calendar_ics, revoke_calendar_link, email_calendar)
 # Make sure these routes fetch event_name from students_events table.
 
 # --- Fest, Club, Department Portal Routes ---
 # Common function to get stats
-def get_organization_stats(org_name, org_event_type, manager_name=None):
-    if manager_name: # Stats for events managed by a specific person in that org
-        base_query = events.query.filter_by(organiser=org_name, event_type=org_event_type, event_manager=manager_name)
-    else: # Stats for all events of that org
-        base_query = events.query.filter_by(organiser=org_name, event_type=org_event_type)
-    
-    all_org_events = base_query.all()
-    
-    current_time = datetime.now()
-    upcoming_count = 0
-    total_regs = 0
-    
-    for event_item in all_org_events:
-        if event_item.date and event_item.starttime:
-            try:
-                event_dt = datetime.strptime(f"{event_item.date} {event_item.starttime}", "%Y-%m-%d %H:%M")
-                if event_dt >= current_time:
-                    upcoming_count += 1
-            except (ValueError, TypeError):
-                pass # Skip if date/time is invalid
-        total_regs += students_events.query.filter_by(event_name=event_item.name).count()
-        
-    return {
-        "managed_events_count": len(all_org_events), # Or specific managed count if manager_name is used
-        "upcoming_events_count": upcoming_count,
-        "total_registrations_count": total_regs,
-    }
-
 
 @app.route('/student/academic_schedule')
 def kars_schedule():
-    return render_template('academic_schedule.html')
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('kars_registration_or_login'))
+    
+    # Fetch the student's current subscriptions (same as before)
+    subscriptions = StudentCourseSubscription.query.filter_by(student_entryno=user_id).order_by(StudentCourseSubscription.course_code).all()
+    
+    # NEW: Fetch all unique, available course codes that a coordinator has set up
+    # This ensures students can only subscribe to courses that actually exist in the system.
+    available_courses_query = db.session.query(CourseCoordinatorAuthorization.course_code).distinct().all()
+    available_courses = [course.course_code for course in available_courses_query]
+    
+    return render_template(
+        'academic_schedule.html', 
+        subscriptions=subscriptions,
+        available_courses=available_courses  # Pass the new list to the template
+    )
+
+
+@app.route('/api/course_groups/<string:course_code>')
+def get_course_groups(course_code):
+    # This is a public-facing API, but security is implicit as it only reveals group structure.
+    # We could add @login_required if we wanted to restrict it further.
+    
+    # Find the authorization for this course to get its defined groups
+    auth_record = CourseCoordinatorAuthorization.query.filter_by(course_code=course_code).first()
+
+    if auth_record and auth_record.groups_json:
+        try:
+            # Parse the JSON string and return the list of groups
+            groups = json.loads(auth_record.groups_json)
+            return jsonify({'groups': groups})
+        except json.JSONDecodeError:
+            return jsonify({'error': 'Invalid group format for this course.'}), 500
+            
+    # If no groups are defined, return an empty list. The frontend should handle this.
+    return jsonify({'groups': []})
+
+# In add_course_subscription() route:
+@app.route('/student/subscribe_course', methods=['POST'])
+def add_course_subscription():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('kars_registration_or_login'))
+    
+    course_code = request.form.get('course_code', '').upper().strip()
+    course_group = request.form.get('course_group', 'All').strip()
+
+    if not course_code:
+        flash("Course code cannot be empty.", "error") # Replaces comment
+        return redirect(url_for('kars_schedule'))
+
+    existing_sub = StudentCourseSubscription.query.filter_by(student_entryno=user_id, course_code=course_code).first()
+
+    if existing_sub:
+        flash(f"You are already subscribed to {course_code}.", "info") # Replaces comment
+        return redirect(url_for('kars_schedule'))
+
+    new_sub = StudentCourseSubscription(student_entryno=user_id, course_code=course_code, course_group=course_group)
+    db.session.add(new_sub)
+    db.session.commit()
+    
+    flash(f"Successfully subscribed to {course_code}.", "success") # Replaces comment
+    return redirect(url_for('kars_schedule'))
+
+# In remove_course_subscription() route:
+@app.route('/student/unsubscribe_course/<int:sub_id>', methods=['POST'])
+def remove_course_subscription(sub_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('kars_registration_or_login'))
+
+    sub_to_delete = StudentCourseSubscription.query.filter_by(id=sub_id, student_entryno=user_id).first()
+
+    if sub_to_delete:
+        db.session.delete(sub_to_delete)
+        db.session.commit()
+        flash("Course subscription removed successfully.", "success") # Replaces comment
+    else:
+        # This is the line you specifically asked about:
+        flash("Subscription not found or you are not authorized to remove it.", "error") # Replaces comment
+    
+    return redirect(url_for('kars_schedule'))
+
+# --- Add this new route to app.py ---
+
+@app.route('/course_coordinator/update_structure', methods=['POST'])
+def update_course_structure():
+    user_email = session.get('user_email')
+    if not user_email:
+        return redirect(url_for('kars_registration_or_login'))
+
+    course_code = request.form.get('course_code')
+    
+    # Security Check: Ensure the logged-in user is an authorized coordinator for this course
+    auth_record = CourseCoordinatorAuthorization.query.filter_by(
+        coordinator_email=user_email,
+        course_code=course_code
+    ).first()
+
+    if not auth_record:
+        flash("You are not authorized to manage this course.", "error")
+        return redirect(url_for('course_coordinator_dashboard'))
+
+    # Process the group names from the textarea
+    groups_str = request.form.get('groups', '')
+    # Create a clean list: split by comma, strip whitespace, remove empty items
+    groups_list = [group.strip() for group in groups_str.split(',') if group.strip()]
+    
+    # Save the cleaned list as a JSON string
+    auth_record.groups_json = json.dumps(groups_list)
+    
+    try:
+        db.session.commit()
+        flash(f"Structure for {course_code} updated successfully.", "success")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error updating course structure: {e}")
+        flash("An error occurred while updating the course structure.", "error")
+        
+    return redirect(url_for('course_coordinator_dashboard'))
 
 # --- FEST PORTAL ---
 @app.route('/fest')
@@ -714,7 +1273,6 @@ def fest_all_events():
                          total_registrations=stats["total_registrations_count"],
                          current_tab='events')
 
-
 @app.route('/fest/settings')
 def fest_settings():
     user_email = session.get('user_email')
@@ -744,9 +1302,9 @@ def create_fest_event():
     link = request.form.get("link")
     tags = request.form.get("tags")
     category_from_form = request.form.get('fest_type') # fest.html form uses name="fest_type" for this
-
     photo_file = request.files.get("photo")
     filename = None
+    print(f"Creating fest event: {name}, Manager: {event_manager_name}, Org: {fest_name_org}, Date: {date}, Venue: {venue}, Category: {category_from_form}, Tags: {tags}, Target Depts: {target_departments}, Target Years: {target_years}, Target Hostels: {target_hostels}")
     if photo_file and photo_file.filename:
         filename = secure_filename(f"fest_{name.replace(' ','_')}_{photo_file.filename}")
         photo_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -811,7 +1369,6 @@ def edit_fest_event(event_name):
     # For GET, pass event_type for conditional rendering in a shared edit template
     return render_template('edit_event.html', event=event_to_edit, event_type='fest')
 
-
 @app.route('/api/event/<string:event_name>/registrations') # Generic API for fest events
 def get_event_registrations(event_name):
     user_email = session.get('user_email')
@@ -845,8 +1402,8 @@ def get_event_registrations(event_name):
         'registrations': registration_data
     })
 
-
 # --- CLUB PORTAL ---
+
 @app.route('/club')
 def club_dashboard():
     user_email = session.get('user_email')
@@ -892,57 +1449,74 @@ def club_settings():
     if not auth: return "Not authorized.", 403
     return render_template('club.html', club_name=auth.organization, club_manager_name=auth.name, stats={}, current_tab='settings')
 
-
 @app.route('/club/create-event', methods=['POST'])
 def create_club_event():
     user_email = session.get('user_email')
     if not user_email: return redirect(url_for('kars_registration_or_login'))
-    auth = get_user_authorization(user_email, "club_head",session['user_organization'])
+    auth = get_user_authorization(user_email, "club_head", session.get('user_organization'))
     if not auth: return "Not authorized to create club events.", 403
 
+    # --- Start of existing logic ---
     club_name_org = auth.organization
     event_manager_name = auth.name
-
     name = request.form['eventName']
-    description = request.form['description']
-    date = request.form['date']
-    starttime = request.form['starttime']
-    endtime = request.form['endtime']
-    venue = request.form['venue']
-    link = request.form.get("link")
-    tags = request.form.get("tags")
-    target_departments = request.form.getlist("target_departments")
-    target_years = request.form.getlist("target_years")
-    target_hostels = request.form.getlist("target_hostels")
-    event_category = request.form.get('event_category') # From club.html modal
 
+    if events.query.filter_by(name=name).first():
+        flash("An event with this name already exists. Please choose a unique name.", "error")
+        return redirect(url_for('club_dashboard'))
+    
     photo_file = request.files.get("photo")
     filename = None
     if photo_file and photo_file.filename:
         filename = secure_filename(f"club_{name.replace(' ','_')}_{photo_file.filename}")
         photo_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    
-    if events.query.filter_by(name=name).first(): # Check for unique event name
-        # Add flash message "Event name already exists"
-        return redirect(url_for('club_dashboard'))
+    # --- End of existing logic ---
 
-    new_event = events(
-        name=name, photo=filename, event_manager=event_manager_name,
-        organiser=club_name_org, description=description, date=date, venue=venue,
-        starttime=starttime, endtime=endtime, link=link, tags=tags,
-        event_type='club', category=event_category,
-        target_departments=json.dumps(target_departments),
-        target_years=json.dumps([int(y) for y in target_years]),
-        target_hostels=json.dumps(target_hostels)
-    )
     try:
+        # Create the main event object
+        new_event = events(
+            name=name, photo=filename, event_manager=event_manager_name,
+            organiser=club_name_org,
+            description=request.form['description'],
+            date=request.form['date'],
+            venue=request.form['venue'],
+            starttime=request.form['starttime'],
+            endtime=request.form['endtime'],
+            link=request.form.get("link"),
+            tags=request.form.get("tags"),
+            event_type='club',
+            category=request.form.get('event_category'),
+            target_departments=json.dumps(request.form.getlist("target_departments")),
+            target_years=json.dumps([int(y) for y in request.form.getlist("target_years")]),
+            target_hostels=json.dumps(request.form.getlist("target_hostels"))
+        )
         db.session.add(new_event)
+        
+        # --- NEW LOGIC: Process Custom Form Fields ---
+        custom_field_count = int(request.form.get('custom_field_count', 0))
+        for i in range(custom_field_count):
+            question_text = request.form.get(f'question_text_{i}')
+            # Only process fields that have question text
+            if question_text:
+                new_field = CustomFormField(
+                    event=new_event, # Link to the event we are creating
+                    question_text=question_text,
+                    question_type=request.form.get(f'question_type_{i}'),
+                    options_json=request.form.get(f'options_{i}'),
+                    is_required='is_required_{i}' in request.form,
+                    order=i
+                )
+                db.session.add(new_field)
+
         db.session.commit()
+        flash(f"Event '{name}' created successfully with custom registration form.", "success")
+
     except Exception as e:
         db.session.rollback()
         print(f"Error creating club event: {e}")
-    return redirect(url_for('club_dashboard'))
+        flash("An error occurred while creating the event.", "error")
 
+    return redirect(url_for('club_dashboard'))
 
 @app.route('/club/edit-event/<string:event_name>', methods=['GET', 'POST'])
 def edit_club_event(event_name):
@@ -979,7 +1553,7 @@ def edit_club_event(event_name):
         return redirect(url_for('club_dashboard'))
     
     return render_template('edit_event.html', event=event_to_edit, event_type='club') # Reusing fest's edit template
-
+# In app.py, REPLACE the existing get_club_event_registrations function
 
 @app.route('/api/club-event/<string:event_name>/registrations')
 def get_club_event_registrations(event_name):
@@ -987,7 +1561,7 @@ def get_club_event_registrations(event_name):
     if not user_email: return jsonify({'error': 'Not authenticated'}), 401
     
     event_obj = events.query.filter_by(name=event_name, event_type='club').first_or_404()
-    auth = get_user_authorization(user_email, "club_head",session['user_organization'])
+    auth = get_user_authorization(user_email, "club_head", session.get('user_organization'))
     
     is_authorized = False
     if auth and auth.organization == event_obj.organiser: is_authorized = True
@@ -996,21 +1570,69 @@ def get_club_event_registrations(event_name):
     if not is_authorized:
         return jsonify({'error': 'Not authorized to view these registrations'}), 403
 
-    registrations_query = db.session.query(students_events, Registration).join(
-        Registration, students_events.entryno == Registration.entryno
-    ).filter(students_events.event_name == event_name).all()
+    # --- NEW: Comprehensive Data Fetching ---
     
-    registration_data = [{
-        'name': student.name, 'email': student.email, 'entryno': student.entryno,
-        'department': student.department, 'feedback': reg.feedback
-    } for reg, student in registrations_query]
+    # 1. Get all registrations for the event, joining with student details
+    registrations = db.session.query(students_events, Registration)\
+        .join(Registration, students_events.entryno == Registration.entryno)\
+        .filter(students_events.event_name == event_name).all()
+
+    # 2. Prepare the list of registrants with their full details
+    registrants_data = []
+    for reg, student in registrations:
+        # Get custom responses for this specific registration
+        custom_responses_query = CustomFormResponse.query.filter_by(registration_id=reg.srno).all()
+        # Create a dictionary of {question_id: answer} for easy lookup
+        custom_answers = {resp.field_id: resp.response_text for resp in custom_responses_query}
+        
+        registrants_data.append({
+            'name': student.name,
+            'email': student.email,
+            'entryno': student.entryno,
+            'department': student.department,
+            'year': student.currentyear,
+            'custom_answers': custom_answers # Add the custom answers
+        })
     
+    # 3. Prepare data for analytics charts
+    analytics = {
+        'year_distribution': {},
+        'department_distribution': {},
+        'custom_question_analytics': {}
+    }
+    
+    # Calculate year and department distribution from registrants_data
+    for registrant in registrants_data:
+        # Year
+        year = registrant.get('year', 'Unknown')
+        analytics['year_distribution'][year] = analytics['year_distribution'].get(year, 0) + 1
+        # Department
+        dept = registrant.get('department', 'Unknown')
+        analytics['department_distribution'][dept] = analytics['department_distribution'].get(dept, 0) + 1
+
+    # Calculate distributions for custom radio/checkbox questions
+    custom_fields = CustomFormField.query.filter_by(event_id=event_obj.id).all()
+    for field in custom_fields:
+        if field.question_type in ['radio', 'checkbox']:
+            analytics['custom_question_analytics'][field.id] = {
+                'question': field.question_text,
+                'type': field.question_type,
+                'responses': {}
+            }
+            # Count responses for each option
+            for registrant in registrants_data:
+                answer = registrant['custom_answers'].get(field.id)
+                if answer:
+                    analytics['custom_question_analytics'][field.id]['responses'][answer] = \
+                        analytics['custom_question_analytics'][field.id]['responses'].get(answer, 0) + 1
+
     return jsonify({
         'event_name': event_name,
-        'total_registrations': len(registration_data),
-        'registrations': registration_data
+        'total_registrations': len(registrants_data),
+        'registrants': registrants_data,
+        'custom_fields': [{'id': f.id, 'text': f.question_text} for f in custom_fields],
+        'analytics': analytics
     })
-
 
 # --- DEPARTMENT PORTAL ---
 @app.route('/department')
@@ -1057,7 +1679,6 @@ def department_settings():
     auth = get_user_authorization(user_email, "department_head",session['user_organization'])
     if not auth: return "Not authorized.", 403
     return render_template('department.html', department_name=auth.organization, department_manager_name=auth.name, stats={}, current_tab='settings')
-
 
 @app.route('/department/create-activity', methods=['POST'])
 def create_department_activity():
@@ -1144,7 +1765,6 @@ def edit_department_activity(activity_name):
     
     return render_template('edit_event.html', event=activity_to_edit, event_type='department_activity')
 
-
 @app.route('/api/department-activity/<string:activity_name>/registrations')
 def get_department_activity_registrations(activity_name):
     user_email = session.get('user_email')
@@ -1175,10 +1795,64 @@ def get_department_activity_registrations(activity_name):
         'registrations': registration_data
     })
 
+# --- Add this new route to app.py ---
+
+@app.route('/course_coordinator')
+def course_coordinator_dashboard():
+    user_email = session.get('user_email')
+    if not user_email:
+        return redirect(url_for('kars_registration_or_login'))
+    
+    # Verify the user has a coordinator role in general.
+    # In a real system, you might also check a 'role' field in the Registration table.
+    
+    # Fetch all courses this user is authorized to coordinate
+    managed_courses = CourseCoordinatorAuthorization.query.filter_by(coordinator_email=user_email).all()
+    
+    return render_template('course.html', 
+                           managed_courses=managed_courses,
+                           coordinator_name=session.get('user_name', 'Coordinator'))
+
+# --- Add this new route to app.py ---
+
+@app.route('/course_coordinator/create_event', methods=['POST'])
+def create_academic_event():
+    user_email = session.get('user_email')
+    if not user_email:
+        return jsonify({'error': 'Unauthorized'}), 401 # Use JSON for form submissions if possible
+
+    # --- Security Check: Verify this coordinator is authorized for this specific course ---
+    course_code = request.form.get('course_code')
+    is_authorized = CourseCoordinatorAuthorization.query.filter_by(
+        coordinator_email=user_email,
+        course_code=course_code
+    ).first()
+
+    if not is_authorized:
+        flash("You are not authorized to add events to this course.", "error")
+        return redirect(url_for('course_coordinator_dashboard'))
+
+    # --- Create the Event ---
+    new_academic_event = course_events(
+        name=request.form.get('name'),
+        course=course_code, # Use the verified course code
+        description=request.form.get('description'),
+        day=request.form.get('day'),
+        venue=request.form.get('venue'),
+        starttime=request.form.get('starttime'),
+        target_group=request.form.get('target_group', 'All')
+    )
+    
+    try:
+        db.session.add(new_academic_event)
+        db.session.commit()
+        flash(f"Academic event '{new_academic_event.name}' created successfully for {course_code}.", "success")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error creating academic event: {e}")
+        flash("An error occurred while creating the event.", "error")
+
+    return redirect(url_for('course_coordinator_dashboard'))
 
 if __name__ == "__main__":
-    # with app.app_context():
-    #     # You can use this to create tables if not using migrations for the first time
-    #     # db.create_all()
-    #     pass
     app.run(debug=True, port=5000)

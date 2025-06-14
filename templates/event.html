@@ -254,19 +254,25 @@
               <h4>Organized by</h4>
               <p>{{ event.organiser }}</p>
             </div>
+
             <div class="action-buttons">
               {% if event.link %}
               <a href="{{ event.link }}" target="_blank"><button type="button"><i class='bx bx-link-external'></i> More
                   Info</button></a>
               {% endif %}
-              <a href="{{ url_for('register_student_for_event', event_name=event.name) }}"><button type="button"><i
+
+              <!-- CHANGE THIS LINE -->
+              <a href="{{ url_for('register_for_event_page', event_name=event.name) }}"><button type="button"><i
                     class='bx bx-plus'></i> Register for Event</button></a>
+
             </div>
+
           </div>
         </div>
       </div>
-      {% endfor %}
     </div>
+    {% endfor %}
+  </div>
   </div>
 </body>
 

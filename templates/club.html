@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Club Management Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -510,6 +511,106 @@
                 /* Single column on smaller screens */
             }
         }
+
+        .form-builder-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .custom-field-group {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 3px solid #7c5ce0;
+        }
+
+        .custom-field-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .custom-field-header span {
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .remove-field-btn {
+            background: rgba(255, 82, 82, 0.2);
+            color: #ff9a9a;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .field-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .field-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .options-input {
+            display: none;
+            /* Hidden by default */
+        }
+
+        .modal-content.registrations-dashboard {
+            max-width: 90%;
+            width: 1200px;
+            /* A large, fixed width for the dashboard */
+        }
+
+        .dashboard-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .dashboard-tab-btn {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+        }
+
+        .dashboard-tab-btn.active {
+            color: #fff;
+            border-bottom-color: #7c5ce0;
+        }
+
+        .dashboard-tab-content {
+            display: none;
+        }
+
+        .dashboard-tab-content.active {
+            display: block;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .chart-container {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+        }
     </style>
 </head>
 
@@ -700,8 +801,6 @@
                     <label>Event Photo</label>
                     <input type="file" name="photo" accept="image/*" required>
                 </div>
-                <input type="hidden" name="organiser" value="{{ club_name }}">
-
                 <div class="form-group">
                     <label>Event Category (Optional)</label>
                     <input type="text" name="event_category" placeholder="e.g., Workshop, Competition, Talk">
@@ -733,11 +832,6 @@
                 <div class="form-group">
                     <label>Registration Link (Optional)</label>
                     <input type="url" name="link" placeholder="https://example.com/register">
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="primary-btn">Add Club Event</button>
-                    <button type="button" class="secondary-btn" onclick="closeAddEventModal()">Cancel</button>
                 </div>
                 <div class="form-group">
                     <label>Select Target Departments</label>
@@ -823,22 +917,71 @@
                     </select>
                     <small style="color: rgba(255,255,255,0.6); font-size: 13px;">Hold Ctrl/Cmd to select
                         multiple.</small>
+                    <div class="form-builder-section">
+                        <h3 style="margin-bottom:15px; font-weight:500;">Custom Registration Questions</h3>
+                        <div id="custom-fields-container">
+                            <!-- JS will add question fields here -->
+                        </div>
+                        <input type="hidden" name="custom_field_count" id="custom_field_count" value="0">
+                        <button type="button" class="secondary-btn" onclick="addQuestionField()"
+                            style="width:100%; margin-top:10px;">
+                            <i class='bx bx-plus'></i> Add Custom Question
+                        </button>
+                    </div>
+                    <div class="form-actions"> <!-- This div should already exist -->
+                        <button type="submit" class="primary-btn">Add Club Event</button>
+                        <button type="button" class="secondary-btn" onclick="closeAddEventModal()">Cancel</button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
+    <!-- In club.html, REPLACE the entire <div id="registrationsModal"> ... </div> with this -->
 
     <div id="registrationsModal" class="modal hidden">
-        <div class="modal-content">
+        <div class="modal-content registrations-dashboard">
             <h2 id="registrationsTitle">Event Registrations</h2>
-            <div id="registrationsContent">
+
+            <!-- Tabs for switching between list and analytics -->
+            <div class="dashboard-tabs">
+                <button class="dashboard-tab-btn active" onclick="showDashboardTab('registrant-list')">Registrant
+                    List</button>
+                <button class="dashboard-tab-btn" onclick="showDashboardTab('analytics')">Analytics</button>
             </div>
-            <div class="form-actions" style="justify-content: flex-end;">
+
+            <!-- Tab 1: Registrant List -->
+            <div id="registrant-list" class="dashboard-tab-content active">
+                <!-- This table will be populated by JS -->
+                <div style="overflow-x: auto;">
+                    <table class="registrations-table" id="registrantListTable">
+                        <!-- JS will generate the header and body -->
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 2: Analytics -->
+            <div id="analytics" class="dashboard-tab-content">
+                <div class="analytics-grid">
+                    <div class="chart-container">
+                        <h3>Year-wise Distribution</h3>
+                        <canvas id="yearChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Department-wise Distribution</h3>
+                        <canvas id="deptChart"></canvas>
+                    </div>
+                    <!-- Custom question charts will be added here by JS -->
+                    <div id="customChartsContainer" class="analytics-grid" style="grid-column: 1 / -1;"></div>
+                </div>
+            </div>
+
+            <div class="form-actions" style="justify-content: flex-end; margin-top: 20px;">
                 <button type="button" class="secondary-btn" onclick="closeRegistrationsModal()"
                     style="flex: 0 0 auto; padding: 10px 20px;">Close</button>
             </div>
         </div>
     </div>
+
     <script>
         // Tab switching functionality
         function showTab(tabName) {
@@ -852,6 +995,17 @@
         }
 
         // Modal functions
+        function showDashboardTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.dashboard-tab-content').forEach(tab => tab.classList.remove('active'));
+            // De-activate all tab buttons
+            document.querySelectorAll('.dashboard-tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            // Show the selected tab and activate its button
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.dashboard-tab-btn[onclick="showDashboardTab('${tabId}')"]`).classList.add('active');
+        }
+
         function showAddEventModal() {
             document.getElementById('addEventModal').classList.remove('hidden');
         }
@@ -864,55 +1018,118 @@
         function editClubEvent(eventName) {
             window.location.href = '/club/edit-event/' + encodeURIComponent(eventName);
         }
+        let activeCharts = []; // To keep track of charts and destroy them before redrawing
 
         function viewClubRegistrations(eventName) {
+            // Destroy old charts to prevent memory leaks and ghosting
+            activeCharts.forEach(chart => chart.destroy());
+            activeCharts = [];
+
             document.getElementById('registrationsModal').classList.remove('hidden');
             document.getElementById('registrationsTitle').textContent = eventName + ' - Registrations';
-            document.getElementById('registrationsContent').innerHTML = '<p>Loading registrations...</p>';
+
+            const table = document.getElementById('registrantListTable');
+            table.innerHTML = '<thead><tr><th>Loading...</th></tr></thead><tbody></tbody>'; // Loading state
+            showDashboardTab('registrant-list'); // Default to the list view
 
             fetch('/api/club-event/' + encodeURIComponent(eventName) + '/registrations')
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
-                        document.getElementById('registrationsContent').innerHTML =
-                            '<p style="color: #ff6b6b;">Error: ' + data.error + '</p>';
+                        table.innerHTML = `<thead><tr><th style="color: #ff6b6b;">Error</th></tr></thead><tbody><tr><td>${data.error}</td></tr></tbody>`;
                         return;
                     }
 
-                    let content = '<div style="margin-bottom: 20px;">';
-                    content += '<h3>Total Registrations: ' + data.total_registrations + '</h3>';
-                    content += '</div>';
+                    // --- 1. BUILD THE REGISTRANT LIST TABLE ---
+                    const tableHeader = document.createElement('thead');
+                    let headerRow = '<tr><th>Name</th><th>Email</th><th>Entry No</th>';
+                    data.custom_fields.forEach(field => {
+                        headerRow += `<th>${field.text}</th>`;
+                    });
+                    headerRow += '</tr>';
+                    tableHeader.innerHTML = headerRow;
 
-                    if (data.registrations && data.registrations.length > 0) {
-                        content += '<table class="registrations-table">';
-                        content += '<thead><tr><th>Name</th><th>Email</th><th>Entry No</th><th>Department</th><th>Feedback</th></tr></thead>';
-                        content += '<tbody>';
-                        data.registrations.forEach(reg => {
-                            content += '<tr>';
-                            content += '<td>' + (reg.name || 'N/A') + '</td>';
-                            content += '<td>' + (reg.email || 'N/A') + '</td>';
-                            content += '<td>' + (reg.entryno || 'N/A') + '</td>';
-                            content += '<td>' + (reg.department || 'N/A') + '</td>';
-                            content += '<td>' + (reg.feedback !== null && reg.feedback !== undefined ? reg.feedback : 'Not provided') + '</td>';
-                            content += '</tr>';
+                    const tableBody = document.createElement('tbody');
+                    if (data.registrants.length > 0) {
+                        data.registrants.forEach(reg => {
+                            let bodyRow = `<tr><td>${reg.name}</td><td>${reg.email}</td><td>${reg.entryno}</td>`;
+                            data.custom_fields.forEach(field => {
+                                bodyRow += `<td>${reg.custom_answers[field.id] || 'N/A'}</td>`;
+                            });
+                            bodyRow += '</tr>';
+                            tableBody.innerHTML += bodyRow;
                         });
-                        content += '</tbody></table>';
                     } else {
-                        content += '<div class="empty-state" style="padding: 20px;">'; // Smaller padding for modal
-                        content += '<i class="bx bx-user-x"></i>';
-                        content += '<h3>No Registrations Yet</h3>';
-                        content += '<p>No one has registered for this club event yet.</p>';
-                        content += '</div>';
+                        tableBody.innerHTML = `<tr><td colspan="${3 + data.custom_fields.length}" style="text-align:center; padding: 20px;">No one has registered yet.</td></tr>`;
                     }
-                    document.getElementById('registrationsContent').innerHTML = content;
+                    table.innerHTML = ''; // Clear loading state
+                    table.appendChild(tableHeader);
+                    table.appendChild(tableBody);
+
+                    // --- 2. RENDER THE ANALYTICS CHARTS ---
+                    // Year Distribution Chart
+                    const yearCtx = document.getElementById('yearChart').getContext('2d');
+                    activeCharts.push(new Chart(yearCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: Object.keys(data.analytics.year_distribution),
+                            datasets: [{
+                                label: 'Year',
+                                data: Object.values(data.analytics.year_distribution),
+                                backgroundColor: ['#5D3FD3', '#7c5ce0', '#9a7ee8', '#b99ff0', '#d7bff8'],
+                                borderColor: 'rgba(255, 255, 255, 0.1)',
+                            }]
+                        },
+                        options: { responsive: true, plugins: { legend: { position: 'top', labels: { color: '#fff' } } } }
+                    }));
+
+                    // Department Distribution Chart
+                    const deptCtx = document.getElementById('deptChart').getContext('2d');
+                    activeCharts.push(new Chart(deptCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: Object.keys(data.analytics.department_distribution),
+                            datasets: [{
+                                label: 'Departments',
+                                data: Object.values(data.analytics.department_distribution),
+                                backgroundColor: '#7c5ce0'
+                            }]
+                        },
+                        options: { indexAxis: 'y', scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } }, plugins: { legend: { display: false } } }
+                    }));
+
+                    // Custom Question Charts
+                    const customChartsContainer = document.getElementById('customChartsContainer');
+                    customChartsContainer.innerHTML = ''; // Clear previous
+                    const customAnalytics = data.analytics.custom_question_analytics;
+                    for (const fieldId in customAnalytics) {
+                        const chartData = customAnalytics[fieldId];
+                        if (Object.keys(chartData.responses).length > 0) {
+                            const chartDiv = document.createElement('div');
+                            chartDiv.className = 'chart-container';
+                            chartDiv.innerHTML = `<h3>${chartData.question}</h3><canvas id="custom-chart-${fieldId}"></canvas>`;
+                            customChartsContainer.appendChild(chartDiv);
+
+                            const customCtx = document.getElementById(`custom-chart-${fieldId}`).getContext('2d');
+                            activeCharts.push(new Chart(customCtx, {
+                                type: 'pie', // Pie chart is good for these
+                                data: {
+                                    labels: Object.keys(chartData.responses),
+                                    datasets: [{
+                                        data: Object.values(chartData.responses),
+                                        backgroundColor: ['#5D3FD3', '#7c5ce0', '#9a7ee8', '#b99ff0', '#d7bff8', '#e5d7fc', '#f2eefd'],
+                                    }]
+                                },
+                                options: { responsive: true, plugins: { legend: { position: 'top', labels: { color: '#fff' } } } }
+                            }));
+                        }
+                    }
                 })
                 .catch(error => {
                     console.error('Error fetching registrations:', error);
-                    document.getElementById('registrationsContent').innerHTML =
-                        '<p style="color: #ff6b6b;">Failed to load registrations. Please try again.</p>';
+                    table.innerHTML = `<thead><tr><th style="color: #ff6b6b;">Error</th></tr></thead><tbody><tr><td>Failed to load registrations. Please try again.</td></tr></tbody>`;
                 });
         }
-
         function closeRegistrationsModal() {
             document.getElementById('registrationsModal').classList.add('hidden');
         }
@@ -946,7 +1163,80 @@
             }
         }
 
+        // In club.html, inside the <script> tag
 
+        let questionCounter = 0;
+
+        function addQuestionField() {
+            const container = document.getElementById('custom-fields-container');
+            const fieldIndex = questionCounter;
+
+            const newField = document.createElement('div');
+            newField.className = 'custom-field-group';
+            newField.id = 'field-group-' + fieldIndex;
+            newField.innerHTML = `
+        <div class="custom-field-header">
+            <span>Question ${fieldIndex + 1}</span>
+            <button type="button" class="remove-field-btn" onclick="removeQuestionField(${fieldIndex})">Remove</button>
+        </div>
+        <div class="form-group">
+            <label>Question Text</label>
+            <input type="text" name="question_text_${fieldIndex}" placeholder="e.g., Why do you want to join?" required>
+        </div>
+        <div class="field-row">
+            <div class="form-group">
+                <label>Question Type</label>
+                <select name="question_type_${fieldIndex}" onchange="toggleOptionsInput(this, ${fieldIndex})">
+                    <option value="text">Text (Short Answer)</option>
+                    <option value="textarea">Text Area (Paragraph)</option>
+                    <option value="radio">Multiple Choice (Single Select)</option>
+                    <option value="checkbox">Checkboxes (Multiple Select)</option>
+                </select>
+            </div>
+            <div class="form-group" style="flex:0; padding-top:30px;">
+                <label style="display:flex; align-items:center; gap:5px;">
+                    <input type="checkbox" name="is_required_${fieldIndex}"> Required
+                </label>
+            </div>
+        </div>
+        <div class="form-group options-input" id="options-input-${fieldIndex}">
+            <label>Choices (comma-separated)</label>
+            <input type="text" name="options_${fieldIndex}" placeholder="e.g., Option 1, Option 2, Option 3">
+        </div>
+    `;
+
+            container.appendChild(newField);
+            questionCounter++;
+            document.getElementById('custom_field_count').value = questionCounter;
+        }
+
+        function removeQuestionField(index) {
+            const fieldGroup = document.getElementById('field-group-' + index);
+            if (fieldGroup) {
+                // Instead of removing, we just clear its content so the indices don't get messed up on the backend
+                fieldGroup.innerHTML = '<p style="text-align:center; color: #ff9a9a;">This question has been removed.</p>';
+            }
+        }
+
+        function toggleOptionsInput(selectElement, index) {
+            const optionsInput = document.getElementById('options-input-' + index);
+            const selectedType = selectElement.value;
+            if (selectedType === 'radio' || selectedType === 'checkbox') {
+                optionsInput.style.display = 'block';
+            } else {
+                optionsInput.style.display = 'none';
+            }
+        }
+
+        // Override the modal close function to reset the counter
+        function closeAddEventModal() {
+            document.getElementById('addEventModal').classList.add('hidden');
+            document.getElementById('addEventForm').reset();
+            // Clear the custom fields and reset the counter
+            document.getElementById('custom-fields-container').innerHTML = '';
+            questionCounter = 0;
+            document.getElementById('custom_field_count').value = 0;
+        }
     </script>
 </body>
 

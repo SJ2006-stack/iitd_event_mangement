@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,7 +22,6 @@
             color: #fff;
         }
 
-        /* Sidebar styles */
         .sidebar {
             width: 250px;
             background: rgba(0, 0, 0, 0.4);
@@ -51,7 +51,6 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        /* Content container */
         .content {
             flex: 1;
             padding: 30px;
@@ -66,7 +65,6 @@
             color: #fff;
         }
 
-        /* Schedule container */
         .schedule-container {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(6px);
@@ -76,27 +74,12 @@
             flex: 1;
         }
 
-        /* Course list styles */
         .course-list {
             list-style: none;
             padding: 0;
             margin: 0 0 25px 0;
             max-height: 400px;
             overflow-y: auto;
-        }
-
-        .course-list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .course-list::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-
-        .course-list::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
         }
 
         .course-list li {
@@ -108,41 +91,39 @@
             background: rgba(255, 255, 255, 0.08);
             border-left: 4px solid #5D3FD3;
             border-radius: 8px;
-            transition: all 0.3s ease;
         }
 
-        .course-list li:hover {
-            transform: translateX(5px);
-            background: rgba(255, 255, 255, 0.12);
+        .course-info span {
+            font-weight: 500;
+        }
+
+        .course-info .group-info {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-left: 10px;
         }
 
         .course-list li button {
-            background-color: rgba(255, 255, 255, 0.15);
-            color: white;
-            border: none;
+            background-color: rgba(255, 82, 82, 0.2);
+            color: #ff9a9a;
+            border: 1px solid rgba(255, 82, 82, 0.4);
             border-radius: 6px;
             padding: 8px 15px;
             cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
 
-        .course-list li button:hover {
-            background-color: rgba(255, 0, 0, 0.6);
-        }
-
-        /* Add course form */
-        .add-course {
-            display: flex;
+        .add-course-form {
             margin-top: 15px;
-            gap: 10px;
         }
 
-        .add-course input {
-            flex: 1;
+        .form-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .add-course-form select,
+        .add-course-form button {
             padding: 12px 15px;
             border: none;
             background: rgba(255, 255, 255, 0.12);
@@ -151,182 +132,139 @@
             font-size: 16px;
         }
 
-        .add-course input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
+        .add-course-form select {
+            flex: 1;
+            min-width: 200px;
         }
 
-        .add-course input:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(93, 63, 211, 0.5);
+        select option {
+            background-color: #333;
         }
 
-        .add-course button {
+        .add-course-form button {
             background-color: #5D3FD3;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 20px;
             cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
 
-        .add-course button:hover {
-            background-color: #4a32a8;
-            transform: translateY(-2px);
+        .add-course-form button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
         }
 
-        .no-courses {
+        .no-courses,
+        .loader {
             text-align: center;
             padding: 30px;
             color: rgba(255, 255, 255, 0.6);
-            font-style: italic;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                height: auto;
-                padding: 15px;
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-                overflow-x: auto;
-            }
-
-            .sidebar img {
-                width: 40px;
-                margin: 0;
-            }
-
-            .sidebar a {
-                margin: 0 5px;
-                padding: 10px;
-                width: auto;
-                white-space: nowrap;
-            }
-
-            .content {
-                padding: 20px;
-            }
-        }
-
-        /* Animation for adding new courses */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.3s ease-in-out;
+        .hidden {
+            display: none;
         }
     </style>
 </head>
+
 <body>
-    <!-- Sidebar -->
     <div class="sidebar">
         <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" />
-        <a href="/student"><i class='bx bxs-dashboard'></i> Dashboard</a>
-        <a href="/student/profile"><i class='bx bxs-user'></i> Profile</a>
-        <a href="/student/event"><i class='bx bxs-calendar-event'></i> Events</a>
-        <a href="/student/academic_schedule"><i class='bx bxs-book'></i> Academic Schedule</a>
-        <a href="/logout"><i class='bx bx-log-out'></i> Logout</a>
+        <a href="{{ url_for('kars_student') }}">Dashboard</a>
+        <a href="{{ url_for('kars_profile') }}">Profile</a>
+        <a href="{{ url_for('student_events_to_join') }}">Events</a>
+        <a href="{{ url_for('kars_schedule') }}">Academic Schedule</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
     </div>
 
-    <!-- Main Content -->
     <div class="content">
-        <h1><i class='bx bxs-book-alt'></i> Academic Schedule</h1>
-        
+        <h1>My Academic Courses</h1>
+
         <div class="schedule-container">
-            <ul class="course-list" id="courseList">
-                <!-- Courses will appear here -->
-                <div id="emptyMessage" class="no-courses">
-                    No courses added yet. Add your courses below.
-                </div>
+            <h2>Your Subscribed Courses</h2>
+            <ul class="course-list">
+                {% for sub in subscriptions %}
+                <li>
+                    <div class="course-info">
+                        <span>{{ sub.course_code }}</span>
+                        <span class="group-info">(Group: {{ sub.course_group }})</span>
+                    </div>
+                    <form action="{{ url_for('remove_course_subscription', sub_id=sub.id) }}" method="POST">
+                        <button type="submit">Remove</button>
+                    </form>
+                </li>
+                {% else %}
+                <p class="no-courses">You have not subscribed to any courses yet.</p>
+                {% endfor %}
             </ul>
-            
-            <div class="add-course">
-                <input type="text" id="courseInput" placeholder="Enter course name (e.g. CS101: Introduction to Programming)">
-                <button onclick="addCourse()"><i class='bx bx-plus'></i> Add Course</button>
-            </div>
+
+            <hr style="border-color: rgba(255,255,255,0.2); margin: 30px 0;">
+            <h2>Add New Course Subscription</h2>
+            <form id="addCourseForm" action="{{ url_for('add_course_subscription') }}" method="POST"
+                class="add-course-form">
+                <div class="form-row">
+                    <select id="courseCodeSelect" name="course_code" required>
+                        <option value="" disabled selected>-- Select a Course --</option>
+                        {% for course in available_courses %}
+                        <option value="{{ course }}">{{ course }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="loader" class="loader hidden">Loading groups...</div>
+
+                <div id="groupSelectionContainer" class="form-row hidden" style="margin-top: 10px;">
+                    <select id="groupSelect" name="course_group" required></select>
+                    <button id="addCourseBtn" type="submit">Add Course</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            updateEmptyState();
-        });
+        const courseCodeSelect = document.getElementById('courseCodeSelect');
+        const groupSelectionContainer = document.getElementById('groupSelectionContainer');
+        const groupSelect = document.getElementById('groupSelect');
+        const loader = document.getElementById('loader');
+        const addCourseBtn = document.getElementById('addCourseBtn');
 
-        const courseList = document.getElementById('courseList');
-        const emptyMessage = document.getElementById('emptyMessage');
-
-        function addCourse() {
-            const courseInput = document.getElementById('courseInput');
-            const courseName = courseInput.value.trim();
-
-            if (courseName) {
-                // Hide empty message if it's the first course
-                updateEmptyState(true);
-                
-                // Create new list item
-                const listItem = document.createElement('li');
-                listItem.className = 'fade-in';
-                listItem.innerHTML = `
-                    <span>${courseName}</span>
-                    <button onclick="removeCourse(this)">
-                        <i class='bx bx-trash'></i> Remove
-                    </button>
-                `;
-                
-                courseList.appendChild(listItem);
-                courseInput.value = '';
-                courseInput.focus();
+        courseCodeSelect.addEventListener('change', async function () {
+            const courseCode = this.value;
+            if (!courseCode) {
+                groupSelectionContainer.classList.add('hidden');
+                return;
             }
-        }
 
-        function removeCourse(button) {
-            const listItem = button.parentElement;
-            
-            // Add fade-out animation
-            listItem.style.opacity = '0';
-            listItem.style.transform = 'translateX(10px)';
-            listItem.style.transition = 'all 0.3s ease';
-            
-            // Remove after animation completes
-            setTimeout(() => {
-                courseList.removeChild(listItem);
-                updateEmptyState();
-            }, 300);
-        }
-        
-        function updateEmptyState(hasItems) {
-            // Check if there are any courses if not explicitly specified
-            if (hasItems === undefined) {
-                hasItems = courseList.querySelectorAll('li').length > 0;
-            }
-            
-            // Show or hide the empty message
-            if (hasItems) {
-                emptyMessage.style.display = 'none';
-            } else {
-                emptyMessage.style.display = 'block';
-            }
-        }
-        
-        // Allow Enter key to submit
-        document.getElementById('courseInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                addCourse();
+            // Show loader and hide previous results
+            loader.classList.remove('hidden');
+            groupSelectionContainer.classList.add('hidden');
+            groupSelect.innerHTML = '';
+
+            try {
+                const response = await fetch(`/api/course_groups/${courseCode}`);
+                if (!response.ok) throw new Error('Network response was not ok.');
+
+                const data = await response.json();
+
+                // Add an "All" option for events that target everyone
+                const allOption = new Option('All Groups', 'All');
+                groupSelect.add(allOption);
+
+                if (data.groups && data.groups.length > 0) {
+                    data.groups.forEach(group => {
+                        const option = new Option(`Group ${group}`, group);
+                        groupSelect.add(option);
+                    });
+                } else {
+                    // If no specific groups are defined, "All" is the only valid option
+                }
+
+                // Show the group selection
+                groupSelectionContainer.classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Error fetching course groups:', error);
+                alert('Could not fetch groups for the selected course.');
+            } finally {
+                // Hide loader
+                loader.classList.add('hidden');
             }
         });
     </script>

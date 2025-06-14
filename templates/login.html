@@ -752,6 +752,20 @@
 
 <body>
     <div class="background"></div>
+    <div class="toast-container" id="toast-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="toast toast-{{ category }}">
+                        {% if category == 'success' %}<i class='bx bx-check-circle'></i>
+                        {% elif category == 'error' %}<i class='bx bx-error-circle'></i>
+                        {% else %}<i class='bx bx-info-circle'></i>{% endif %}
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
     <div class="container">
         <!-- Left Section -->
         <div class="item">
