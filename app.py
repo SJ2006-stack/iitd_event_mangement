@@ -428,7 +428,6 @@ def kars_registration_or_login():
         # --- REGISTRATION LOGIC ---
         # A registration form is identified by the presence of 'name' and 'confirm_password' fields.
         if 'name' in request.form and 'confirm_password' in request.form:
-            
             # Step 1: Collect form data and perform initial validation
             email = request.form['email'].lower()
             password = request.form['password']
@@ -455,7 +454,7 @@ def kars_registration_or_login():
                 else:
                     # Case B: User started registration but didn't verify. Update their record with a new OTP.
                     user_to_update = existing_user
-                    user_to_update.password = hashlib.sha256(password.encode()).hexdigest()
+                    user_to_update.password = generate_password_hash(password)
                     user_to_update.otp_token = otp
                     user_to_update.otp_expiry = otp_expiry_time
             else:
@@ -466,7 +465,7 @@ def kars_registration_or_login():
                     'name': request.form['name'],
                     'hostel': request.form['hostel'],
                     'email': email,
-                    'password': hashlib.sha256(password.encode()).hexdigest(),
+                    'password': generate_password_hash(password),
                     'role': json.dumps(['student']),
                     'interest': json.dumps([]),
                     'photo': None,
@@ -487,7 +486,6 @@ def kars_registration_or_login():
                 if send_otp_email(email, otp):
                     flash("An OTP has been sent to your email. It is valid for 10 minutes.", "success")
                 else:
-                    print(f"DEBUG: OTP for {email} is {otp} (email sending failed or disabled)")
                     flash("Could not send OTP email, but registration is pending. Check server logs for OTP.", "warning")
                 
                 # Redirect to the OTP page, passing the email for identification
@@ -506,11 +504,9 @@ def kars_registration_or_login():
             password = request.form['password']
             login_role_selection = request.form.get('role')
 
-            user = Registration.query.filter_by(email=email).first()
-            hashed_password_attempt = hashlib.sha256(password.encode()).hexdigest()
-
+            user = Registration.query.filter_by(email=email).first() 
             # IMPORTANT: Check if user exists, is verified, and password matches
-            if user and user.is_verified and user.password == hashed_password_attempt:
+            if user and user.is_verified and check_password_hash(user.password, password):
                 session['user_id'] = user.entryno
                 session['user_email'] = user.email
                 session['user_name'] = user.name
@@ -671,7 +667,6 @@ def kars_student():
     
     # Get all of the student's course subscriptions
     subscriptions = StudentCourseSubscription.query.filter_by(student_entryno=user_id).all()
-    print(f"DEBUG: Subscriptions for {user_id}: {[sub.course_code for sub in subscriptions]}") # Debugging line
     if subscriptions:
         # Create a list of course codes the student is subscribed to
         subscribed_course_codes = [sub.course_code for sub in subscriptions]
