@@ -1,68 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OTP Verification</title>
+  <title>OTP Verification - KARS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* General Styles */
+    :root {
+      --primary-bg: #1a1a2e;
+      --secondary-bg: #16213e;
+      --highlight-color: #e94560;
+      --text-color: #ffffff;
+      --muted-text: #a9a9a9;
+      --container-bg: rgba(0, 0, 0, 0.4);
+      --input-bg: rgba(255, 255, 255, 0.1);
+      --input-border: rgba(255, 255, 255, 0.3);
+      --input-focus-border: var(--highlight-color);
+    }
+
     body {
       margin: 0;
-      font-family: 'Arial', sans-serif;
+      font-family: 'Poppins', sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: linear-gradient(to bottom right, #3f82d3, #c300fe);
+      background-color: var(--secondary-bg);
+      padding: 20px;
+    }
+
+    .background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 100%;
+      background: url("{{ url_for('static', filename='main_bg.png') }}") no-repeat center center;
+      background-size: cover;
+      filter: blur(5px) brightness(0.6);
+      z-index: -1;
     }
 
     .otp-container {
-      background: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      width: 350px;
-      max-width: 90%;
-      padding: 30px;
+      background: var(--container-bg);
+      backdrop-filter: blur(15px);
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      width: 100%;
+      max-width: 420px;
+      padding: 40px;
       text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .icon-wrapper {
+      width: 70px;
+      height: 70px;
+      margin: 0 auto 25px;
+      border-radius: 50%;
+      background: rgba(233, 69, 96, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: var(--highlight-color);
     }
 
     .otp-container h2 {
-      margin: 0 0 20px;
-      color: #333333;
+      margin: 0 0 15px;
+      color: var(--text-color);
+      font-weight: 600;
+    }
+
+    .otp-container p {
+      color: var(--muted-text);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .otp-container p strong {
+      color: var(--text-color);
+      font-weight: 500;
     }
 
     .otp-input-group {
       display: flex;
       justify-content: center;
       gap: 10px;
-      margin: 20px 0;
+      margin: 30px 0;
     }
 
     .otp-input {
-      width: 50px;
-      height: 50px;
-      font-size: 18px;
+      width: 48px;
+      height: 58px;
+      font-size: 24px;
       text-align: center;
-      border: 2px solid #cccccc;
+      border: 2px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text-color);
       border-radius: 8px;
       transition: border-color 0.3s, box-shadow 0.3s;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 500;
     }
 
     .otp-input:focus {
-      border-color: #4facfe;
-      box-shadow: 0 0 5px rgba(79, 172, 254, 0.5);
+      border-color: var(--input-focus-border);
+      box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.3);
       outline: none;
     }
 
     .btn {
       display: block;
-      background: #4facfe;
-      color: #ffffff;
+      background: var(--highlight-color);
+      color: var(--text-color);
       font-size: 16px;
-      font-weight: bold;
-      text-transform: uppercase;
-      text-align: center;
-      padding: 10px 20px;
+      font-weight: 500;
+      padding: 14px 20px;
       border-radius: 8px;
       border: none;
       cursor: pointer;
@@ -72,85 +127,76 @@
     }
 
     .btn:hover {
-      background: #5D3FD3;
+      background: #ff7991;
     }
 
     .note {
       font-size: 14px;
-      color: #666666;
-      margin-top: 15px;
+      color: var(--muted-text);
+      margin-top: 25px;
+    }
+
+    .note a {
+      color: var(--highlight-color);
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .note a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
+
 <body>
+  <div class="background"></div>
   <div class="otp-container">
-    <h2>Verify Your OTP</h2>
-    <p>Please enter the 6-digit code sent to <strong>{{ email }}</strong>.</p>
+    <div class="icon-wrapper"><i class='bx bxs-key'></i></div>
+    <h2>Verify Your Account</h2>
+    <p>Please enter the 6-digit code sent to your email address:<br><strong>{{ email }}</strong></p>
     <form action="{{ url_for('verify_otp') }}" method="POST">
       <input type="hidden" name="email" value="{{ email }}">
       <div class="otp-input-group">
-        <input type="text" maxlength="1" class="otp-input" name="digit1" required>
-        <input type="text" maxlength="1" class="otp-input" name="digit2" required>
-        <input type="text" maxlength="1" class="otp-input" name="digit3" required>
-        <input type="text" maxlength="1" class="otp-input" name="digit4" required>
-        <input type="text" maxlength="1" class="otp-input" name="digit5" required>
-        <input type="text" maxlength="1" class="otp-input" name="digit6" required>
+        <input type="tel" maxlength="1" class="otp-input" name="digit1" required pattern="[0-9]">
+        <input type="tel" maxlength="1" class="otp-input" name="digit2" required pattern="[0-9]">
+        <input type="tel" maxlength="1" class="otp-input" name="digit3" required pattern="[0-9]">
+        <input type="tel" maxlength="1" class="otp-input" name="digit4" required pattern="[0-9]">
+        <input type="tel" maxlength="1" class="otp-input" name="digit5" required pattern="[0-9]">
+        <input type="tel" maxlength="1" class="otp-input" name="digit6" required pattern="[0-9]">
       </div>
-      <button type="submit" class="btn">Submit</button>
+      <button type="submit" class="btn">Verify Account</button>
     </form>
-    <p class="note">Didn't receive the code? <a href="{{ url_for('kars_registration_or_login') }}">Try signing up again</a></p>
+    <p class="note">Didn't receive the code? <a href="{{ url_for('kars_registration_or_login') }}">Try signing up
+        again.</a></p>
   </div>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', () => {
       const inputs = document.querySelectorAll('.otp-input');
-      
-      // Add event listeners to each input
+      if (inputs.length > 0) inputs[0].focus();
+
       inputs.forEach((input, index) => {
-        // Focus on the first input when page loads
-        if (index === 0) {
-          input.focus();
-        }
-        
-        // Handle input events
-        input.addEventListener('input', function(e) {
-          // Move to the next input after entering a digit
-          if (this.value.length === 1 && index < inputs.length - 1) {
+        input.addEventListener('input', () => {
+          if (input.value.length === 1 && index < inputs.length - 1) {
             inputs[index + 1].focus();
           }
         });
-        
-        // Handle keydown events
-        input.addEventListener('keydown', function(e) {
-          // Handle backspace
-          if (e.key === 'Backspace' && index > 0 && this.value === '') {
+
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && index > 0 && !input.value) {
             inputs[index - 1].focus();
           }
-          
-          // Only allow digits
-          if (!/^\d$/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
-            e.preventDefault();
-          }
         });
-        
-        // Handle paste events for better user experience
-        input.addEventListener('paste', function(e) {
+
+        input.addEventListener('paste', (e) => {
           e.preventDefault();
-          const pasteData = (e.clipboardData || window.clipboardData).getData('text');
-          const digits = pasteData.match(/\d/g);
-          
-          if (digits) {
-            // Fill inputs with pasted digits
-            for (let i = 0; i < Math.min(digits.length, inputs.length - index); i++) {
-              inputs[index + i].value = digits[i];
-              
-              // Focus on the next unfilled input or the last one
-              if (index + i < inputs.length - 1 && i === digits.length - 1) {
-                inputs[index + i + 1].focus();
-              } else if (i === digits.length - 1) {
-                inputs[index + i].focus();
-              }
+          const pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+          for (let i = 0; i < pasteData.length; i++) {
+            if (index + i < inputs.length) {
+              inputs[index + i].value = pasteData[i];
             }
           }
+          const nextFocusIndex = Math.min(inputs.length - 1, index + pasteData.length);
+          inputs[nextFocusIndex].focus();
         });
       });
     });

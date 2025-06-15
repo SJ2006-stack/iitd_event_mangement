@@ -5,350 +5,303 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Course Coordinator Portal</title>
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            font-family: 'Poppins', sans-serif;
-            box-sizing: border-box;
+        :root {
+            --primary-color: #0d9488;
+            /* teal-600 */
+            --secondary-color: #0f766e;
+            /* teal-700 */
+            --sidebar-bg: rgba(13, 148, 136, 0.2);
+            --card-bg: rgba(13, 148, 136, 0.1);
+            --text-color: #f0f0f0;
+            --border-color: rgba(13, 148, 136, 0.4);
+            --input-bg: rgba(255, 255, 255, 0.1);
         }
 
         body {
-            background: linear-gradient(to bottom right, #2c483e, #3F5D53);
+            font-family: 'Poppins', sans-serif;
+            background: #0f766e;
+            color: var(--text-color);
             display: flex;
             min-height: 100vh;
-            color: #fff;
         }
 
         .sidebar {
-            width: 250px;
-            background: rgba(0, 0, 0, 0.4);
-            padding-top: 30px;
+            width: 260px;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            transition: margin-left 0.3s ease-in-out;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            backdrop-filter: blur(10px);
-        }
-
-        .sidebar img {
-            width: 80px;
-            margin-bottom: 30px;
-        }
-
-        .sidebar a {
-            text-decoration: none;
-            color: #fff;
-            padding: 12px 20px;
-            margin: 5px 0;
-            width: 90%;
-            text-align: left;
-            transition: 0.3s;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .sidebar a:hover,
-        .sidebar a.active {
-            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem 0;
+            flex-shrink: 0;
         }
 
         .main-content {
-            flex: 1;
-            padding: 30px;
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
         }
 
-        .main-content h1 {
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-
-        .courses-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(6px);
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(8px);
             border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            padding: 2rem;
+            border: 1px solid var(--border-color);
         }
 
-        .course-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            margin-bottom: 12px;
-            background: rgba(255, 255, 255, 0.08);
-            border-left: 4px solid #4CAF50;
-            border-radius: 8px;
+        .form-control,
+        .form-select {
+            background-color: var(--input-bg);
+            border-color: var(--border-color);
+            color: var(--text-color);
         }
 
-        .course-item h3 {
-            font-size: 1.2em;
-            font-weight: 500;
+        .form-control:focus,
+        .form-select:focus {
+            background-color: var(--input-bg);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.25);
+            color: var(--text-color);
         }
 
-        .course-actions button {
-            border: none;
-            border-radius: 6px;
-            padding: 8px 15px;
-            cursor: pointer;
-            font-weight: 500;
-            margin-left: 10px;
+        select option {
+            background-color: #0f766e;
         }
 
-        .add-event-btn {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .manage-btn {
-            background-color: #f0ad4e;
-            color: white;
-        }
-
-        .no-courses {
-            text-align: center;
-            padding: 30px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.6);
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
         }
 
         .modal-content {
-            background: #2c483e;
-            margin: 10% auto;
-            padding: 30px;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            width: 90%;
-            max-width: 600px;
+            background: #0f766e;
+            border: 1px solid var(--border-color);
         }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                position: fixed;
+                margin-left: -260px;
+                z-index: 1030;
+                height: 100%;
+            }
 
-        .modal-header h2 {
-            margin: 0;
-        }
+            .sidebar.active {
+                margin-left: 0;
+            }
 
-        .close-btn {
-            color: #aaa;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+            .mobile-menu-toggle {
+                display: block !important;
+            }
 
-        .form-group {
-            margin-bottom: 15px;
-        }
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1029;
+            }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-        }
-
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .form-actions button {
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .btn-submit {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .btn-cancel {
-            background: #777;
-            color: white;
+            .sidebar.active~.overlay {
+                display: block;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="sidebar">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" />
-        <a href="{{ url_for('course_coordinator_dashboard') }}" class="active"><i class='bx bxs-dashboard'></i>
-            Dashboard</a>
-        <a href="{{ url_for('logout') }}"><i class='bx bx-log-out'></i> Logout</a>
-    </div>
 
-    <div class="main-content">
-        <h1>Course Coordinator Portal</h1>
-        <p style="margin-bottom: 20px;">Welcome, {{ coordinator_name }}. Manage your assigned courses below.</p>
-
-        <div class="courses-container">
-            <h2>Your Managed Courses</h2>
-            {% if managed_courses %}
-            {% for auth in managed_courses %}
-            <div class="course-item">
-                <h3>{{ auth.course_code }}</h3>
-                <div class="course-actions">
-                    <button class="manage-btn" data-course-code="{{ auth.course_code }}"
-                        data-groups-json="{{ auth.groups_json|tojson|safe }}" onclick="openManageModal(this)">
-                        <i class='bx bxs-cog'></i> Manage Structure
-                    </button>
-                    <button class="add-event-btn" data-course-code="{{ auth.course_code }}"
-                        data-groups-json="{{ auth.groups_json|tojson|safe }}" onclick="openAddEventModal(this)">
-                        <i class='bx bx-plus'></i> Add Event
-                    </button>
-                </div>
-            </div>
-            {% endfor %}
-            {% else %}
-            <p class="no-courses">You have not been assigned to manage any courses.</p>
-            {% endif %}
+    <div class="sidebar" id="sidebar">
+        <div class="text-center p-3 mb-3">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="KARS Logo" style="width: 60px;">
+            <h5 class="mt-2 text-white">Course Coordinator</h5>
+        </div>
+        <ul class="nav flex-column w-100">
+            <li class="nav-item">
+                <a class="nav-link text-white active" href="#"><i class="bi bi-grid-fill"></i><span>Dashboard</span></a>
+            </li>
+        </ul>
+        <div class="mt-auto p-3 w-100">
+            <a class="nav-link text-white" href="{{ url_for('logout') }}"><i
+                    class="bi bi-box-arrow-left"></i><span>Logout</span></a>
         </div>
     </div>
 
-    <!-- Modals -->
-    <div id="addEventModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="addEventModalTitle">Add Event</h2>
-                <span class="close-btn" onclick="closeModal('addEventModal')">×</span>
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <main class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="text-white mb-0">Coordinator Dashboard</h1>
+                <p class="lead text-white-50">Welcome, {{ coordinator_name }}. Manage your assigned courses below.</p>
             </div>
-            <form action="{{ url_for('create_academic_event') }}" method="POST">
-                <input type="hidden" name="course_code" id="addEventModalCourseCode">
-                <div class="form-group"><label for="eventName">Event Name</label><input type="text" id="eventName"
-                        name="name" required></div>
-                <div class="form-group"><label for="description">Description</label><textarea id="description"
-                        name="description" rows="3" required></textarea></div>
-                <div class="form-group"><label for="date">Date</label><input type="date" id="date" name="day" required>
+            <button class="btn btn-dark d-lg-none mobile-menu-toggle" type="button" onclick="toggleSidebar()"><i
+                    class="bi bi-list fs-4"></i></button>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, message in messages %}
+        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
+            role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}{% endif %}
+        {% endwith %}
+
+        <div class="glass-card">
+            <h4 class="text-white mb-3">Your Managed Courses</h4>
+            <div class="list-group">
+                {% if managed_courses %}
+                {% for auth in managed_courses %}
+                <div
+                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center bg-transparent border-light border-opacity-25 text-white mb-2">
+                    <h5 class="mb-0 fw-bold">{{ auth.course_code }}</h5>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-warning btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#manageStructureModal" data-course-code="{{ auth.course_code }}"
+                            data-groups-json="{{ auth.groups_json|tojson|safe }}">
+                            <i class="bi bi-diagram-3-fill me-1"></i> Manage Structure
+                        </button>
+                        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addEventModal"
+                            data-course-code="{{ auth.course_code }}"
+                            data-groups-json="{{ auth.groups_json|tojson|safe }}">
+                            <i class="bi bi-plus-circle-fill me-1"></i> Add Academic Event
+                        </button>
+                    </div>
                 </div>
-                <div class="form-group"><label for="starttime">Start Time</label><input type="time" id="starttime"
-                        name="starttime" required></div>
-                <div class="form-group"><label for="venue">Venue</label><input type="text" id="venue" name="venue"
-                        required></div>
-                <div class="form-group">
-                    <label for="targetGroupSelect">Target Group/Section</label>
-                    <select id="targetGroupSelect" name="target_group" required></select>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="closeModal('addEventModal')">Cancel</button>
-                    <button type="submit" class="btn-submit">Create Event</button>
-                </div>
-            </form>
+                {% endfor %}
+                {% else %}
+                <p class="text-center text-white-50 p-4">You have not been assigned to manage any courses.</p>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Event Modal -->
+    <div class="modal fade" id="addEventModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="{{ url_for('create_academic_event') }}" method="POST">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addEventModalTitle">Add Academic Event</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="course_code" id="addEventModalCourseCode">
+                        <div class="mb-3"><label for="eventName" class="form-label">Event Name</label><input type="text"
+                                id="eventName" name="name" class="form-control" placeholder="e.g., Midsem Exam, Quiz 1"
+                                required></div>
+                        <div class="mb-3"><label for="description" class="form-label">Description</label><textarea
+                                id="description" name="description" rows="3" class="form-control" required></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label for="date" class="form-label">Date</label><input
+                                    type="date" id="date" name="day" class="form-control" required></div>
+                            <div class="col-md-6 mb-3"><label for="starttime" class="form-label">Start
+                                    Time</label><input type="time" id="starttime" name="starttime" class="form-control"
+                                    required></div>
+                        </div>
+                        <div class="mb-3"><label for="venue" class="form-label">Venue</label><input type="text"
+                                id="venue" name="venue" class="form-control" required></div>
+                        <div class="mb-3"><label for="targetGroupSelect" class="form-label">Target
+                                Group/Section</label><select id="targetGroupSelect" name="target_group"
+                                class="form-select" required></select></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Event</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-    <div id="manageStructureModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="manageModalTitle">Manage Structure</h2>
-                <span class="close-btn" onclick="closeModal('manageStructureModal')">×</span>
+    <!-- Manage Structure Modal -->
+    <div class="modal fade" id="manageStructureModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="{{ url_for('update_course_structure') }}" method="POST">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="manageModalTitle">Manage Course Structure</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="course_code" id="manageModalCourseCode">
+                        <div class="mb-3">
+                            <label for="groupsInput" class="form-label">Group/Section Names</label>
+                            <textarea id="groupsInput" name="groups" rows="4" class="form-control"
+                                placeholder="e.g. 1, 2, 3, 4, 5a, 5b"></textarea>
+                            <div class="form-text text-white-50">Enter all possible tutorial/lab group names for this
+                                course, separated by commas.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Structure</button>
+                    </div>
+                </form>
             </div>
-            <form action="{{ url_for('update_course_structure') }}" method="POST">
-                <input type="hidden" name="course_code" id="manageModalCourseCode">
-                <div class="form-group">
-                    <label for="groupsInput">Group Names (comma-separated)</label>
-                    <textarea id="groupsInput" name="groups" rows="4" placeholder="e.g. 1, 2, 3, 4, 5a, 5b"></textarea>
-                    <small style="opacity: 0.7; margin-top: 5px; display: block;">Enter all possible group/section names
-                        for this course.</small>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel"
-                        onclick="closeModal('manageStructureModal')">Cancel</button>
-                    <button type="submit" class="btn-submit">Save Structure</button>
-                </div>
-            </form>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function openModal(modalId) { document.getElementById(modalId).style.display = "block"; }
-        function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
-        window.onclick = function (event) {
-            if (event.target.classList.contains('modal')) {
-                closeModal(event.target.id);
-            }
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
         }
 
-        function openAddEventModal(button) {
-            const courseCode = button.dataset.courseCode;
-            const groupsJson = button.dataset.groupsJson;
+        const addEventModal = document.getElementById('addEventModal');
+        addEventModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            const courseCode = button.getAttribute('data-course-code');
+            const groupsJson = button.getAttribute('data-groups-json');
 
-            document.getElementById('addEventModalTitle').innerText = `Add Event for ${courseCode}`;
-            document.getElementById('addEventModalCourseCode').value = courseCode;
+            const modalTitle = addEventModal.querySelector('.modal-title');
+            const modalCourseCodeInput = addEventModal.querySelector('#addEventModalCourseCode');
+            modalTitle.textContent = `Add Event for ${courseCode}`;
+            modalCourseCodeInput.value = courseCode;
 
-            const select = document.getElementById('targetGroupSelect');
-            select.innerHTML = ''; // Clear existing options
-
-            const allOption = new Option('All Groups', 'All');
-            select.add(allOption);
-
+            const select = addEventModal.querySelector('#targetGroupSelect');
+            select.innerHTML = '<option value="All">All Groups</option>'; // Default
             if (groupsJson) {
                 try {
-                    // The JSON from the data attribute is already a valid JSON string
                     const groups = JSON.parse(groupsJson);
                     if (Array.isArray(groups)) {
-                        groups.forEach(group => {
-                            const option = new Option(`Group ${group}`, group);
-                            select.add(option);
-                        });
+                        groups.forEach(group => select.add(new Option(`Group ${group}`, group)));
                     }
                 } catch (e) { console.error("Could not parse groups JSON:", e); }
             }
-            openModal('addEventModal');
-        }
+        });
 
-        function openManageModal(button) {
-            const courseCode = button.dataset.courseCode;
-            const groupsJson = button.dataset.groupsJson;
+        const manageStructureModal = document.getElementById('manageStructureModal');
+        manageStructureModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            const courseCode = button.getAttribute('data-course-code');
+            const groupsJson = button.getAttribute('data-groups-json');
 
-            document.getElementById('manageModalTitle').innerText = `Manage Structure for ${courseCode}`;
-            document.getElementById('manageModalCourseCode').value = courseCode;
+            manageStructureModal.querySelector('.modal-title').textContent = `Manage Structure for ${courseCode}`;
+            manageStructureModal.querySelector('#manageModalCourseCode').value = courseCode;
 
-            const textarea = document.getElementById('groupsInput');
-            if (groupsJson) {
-                try {
-                    const groups = JSON.parse(groupsJson);
-                    textarea.value = Array.isArray(groups) ? groups.join(', ') : '';
-                } catch (e) { textarea.value = ''; }
-            } else {
-                textarea.value = '';
-            }
-            openModal('manageStructureModal');
-        }
+            const textarea = manageStructureModal.querySelector('#groupsInput');
+            try {
+                const groups = JSON.parse(groupsJson);
+                textarea.value = Array.isArray(groups) ? groups.join(', ') : '';
+            } catch (e) { textarea.value = ''; }
+        });
     </script>
 </body>
 

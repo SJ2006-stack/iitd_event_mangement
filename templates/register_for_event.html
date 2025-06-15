@@ -1,143 +1,243 @@
-<!-- START OF FILE templates/register_for_event.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register for {{ event.name }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-bg: #2c2f48;
+            --secondary-bg: #483D8B;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --text-color: #ffffff;
+            --text-muted: #b0c4de;
+            --accent-color: #7b68ee;
+            --highlight-color: #e94560;
+            --border-color: rgba(255, 255, 255, 0.15);
+        }
+
         * {
             margin: 0;
             padding: 0;
             font-family: 'Poppins', sans-serif;
             box-sizing: border-box;
         }
+
         body {
-            background: linear-gradient(to bottom right, #2c2f48, #5D3FD3);
+            background: linear-gradient(to bottom right, var(--primary-bg), var(--secondary-bg));
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            color: #333;
+            color: var(--text-color);
             padding: 20px;
         }
+
         .container {
-            background: #fff;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             width: 100%;
             max-width: 700px;
             overflow: hidden;
         }
+
         .event-header {
             padding: 30px;
-            background: #f7f7f7;
-            border-bottom: 1px solid #eee;
+            background: url("{{ url_for('static', filename='uploads/' + event.photo if event.photo else 'default_event.jpg') }}") no-repeat center center;
+            background-size: cover;
+            position: relative;
             text-align: center;
         }
+
+        .event-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4));
+        }
+
+        .event-header-content {
+            position: relative;
+            z-index: 1;
+        }
+
         .event-header h1 {
-            color: #5D3FD3;
+            color: var(--text-color);
             margin-bottom: 10px;
+            font-size: 2rem;
         }
+
         .event-header p {
-            color: #666;
+            color: var(--text-muted);
+            font-size: 1.1rem;
         }
+
         .form-content {
             padding: 30px;
         }
+
         .form-section {
-            margin-bottom: 25px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
         }
+
         .form-section:last-child {
             border-bottom: none;
             margin-bottom: 0;
         }
+
         .form-section h2 {
-            font-size: 18px;
+            font-size: 1.3rem;
             font-weight: 600;
-            margin-bottom: 15px;
-            color: #444;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
+
         .form-group {
             margin-bottom: 20px;
         }
+
         .form-group label {
             display: block;
             font-weight: 500;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
+
         .form-group input[type="text"],
         .form-group textarea {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ccc;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 1rem;
+            color: var(--text-color);
         }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(123, 104, 238, 0.3);
+        }
+
         .form-group input[readonly] {
-            background: #f0f0f0;
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text-muted);
             cursor: not-allowed;
         }
-        .form-group .radio-group label,
-        .form-group .checkbox-group label {
-            display: block;
+
+        .radio-group label,
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: var(--card-bg);
+            border-radius: 8px;
             margin-bottom: 8px;
-            font-weight: 400;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
         }
+
+        .radio-group label:hover,
+        .checkbox-group label:hover {
+            border-color: var(--accent-color);
+        }
+
+        .radio-group input,
+        .checkbox-group input {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--highlight-color);
+        }
+
         .required-star {
-            color: #e74c3c;
+            color: var(--highlight-color);
             margin-left: 4px;
         }
+
         .submit-btn {
-            background: #5D3FD3;
+            background: var(--highlight-color);
             color: #fff;
-            padding: 12px 25px;
+            padding: 14px 25px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
+            font-size: 1rem;
+            font-weight: 600;
             width: 100%;
             transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
+
         .submit-btn:hover {
-            background: #4a32a8;
+            background: #ff7991;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 0;
+                align-items: flex-start;
+            }
+
+            .container {
+                border-radius: 0;
+            }
+
+            .event-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .form-content,
+            .event-header {
+                padding: 20px;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="event-header">
-            <h1>{{ event.name }}</h1>
-            <p>Organized by {{ event.organiser }}</p>
+            <div class="event-header-content">
+                <h1>{{ event.name }}</h1>
+                <p>Organized by {{ event.organiser }}</p>
+            </div>
         </div>
         <div class="form-content">
             <form action="{{ url_for('register_for_event_page', event_name=event.name) }}" method="POST">
 
-                <!-- Section 1: Pre-filled User Details -->
                 <div class="form-section">
-                    <h2>Your Details</h2>
-                    <div class="form-group">
-                        <label>Name</label>
-                        <input type="text" value="{{ user.name }}" readonly>
+                    <h2><i class='bx bxs-user-detail'></i>Your Details</h2>
+                    <div class="form-group"><label>Name</label><input type="text" value="{{ user.name }}" readonly>
                     </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="text" value="{{ user.email }}" readonly>
+                    <div class="form-group"><label>Email</label><input type="text" value="{{ user.email }}" readonly>
                     </div>
-                    <div class="form-group">
-                        <label>Entry Number</label>
-                        <input type="text" value="{{ user.entryno }}" readonly>
-                    </div>
+                    <div class="form-group"><label>Entry Number</label><input type="text" value="{{ user.entryno }}"
+                            readonly></div>
                 </div>
 
-                <!-- Section 2: Custom Questions -->
                 <div class="form-section">
-                    <h2>Event Questions</h2>
+                    <h2><i class='bx bxs-help-circle'></i>Event Questions</h2>
                     {% for field in custom_fields %}
                     <div class="form-group">
                         <label>
@@ -146,34 +246,39 @@
                         </label>
 
                         {% if field.question_type == 'text' %}
-                            <input type="text" name="custom_field_{{ field.id }}" {% if field.is_required %}required{% endif %}>
-                        
+                        <input type="text" name="custom_field_{{ field.id }}" {% if field.is_required %}required{% endif
+                            %}>
+
                         {% elif field.question_type == 'textarea' %}
-                            <textarea name="custom_field_{{ field.id }}" rows="4" {% if field.is_required %}required{% endif %}></textarea>
-                        
+                        <textarea name="custom_field_{{ field.id }}" rows="4" {% if field.is_required %}required{% endif
+                            %}></textarea>
+
                         {% elif field.question_type == 'radio' %}
-                            <div class="radio-group">
+                        <div class="radio-group">
                             {% for option in from_json(field.options_json) %}
-                                <label><input type="radio" name="custom_field_{{ field.id }}" value="{{ option }}" {% if field.is_required %}required{% endif %}> {{ option }}</label>
+                            <label><input type="radio" name="custom_field_{{ field.id }}" value="{{ option }}" {% if
+                                    field.is_required %}required{% endif %}> <span>{{ option }}</span></label>
                             {% endfor %}
-                            </div>
+                        </div>
 
                         {% elif field.question_type == 'checkbox' %}
-                            <div class="checkbox-group">
+                        <div class="checkbox-group">
                             {% for option in from_json(field.options_json) %}
-                                <label><input type="checkbox" name="custom_field_{{ field.id }}" value="{{ option }}"> {{ option }}</label>
+                            <label><input type="checkbox" name="custom_field_{{ field.id }}" value="{{ option }}">
+                                <span>{{ option }}</span></label>
                             {% endfor %}
-                            </div>
+                        </div>
                         {% endif %}
                     </div>
                     {% else %}
-                        <p>There are no additional questions for this event.</p>
+                    <p style="color: var(--text-muted);">There are no additional questions for this event.</p>
                     {% endfor %}
                 </div>
 
-                <button type="submit" class="submit-btn">Confirm Registration</button>
+                <button type="submit" class="submit-btn"><i class='bx bx-check-circle'></i>Confirm Registration</button>
             </form>
         </div>
     </div>
 </body>
+
 </html>

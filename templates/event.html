@@ -6,8 +6,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Events</title>
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary-bg: #2c2f48;
+      --secondary-bg: #5D3FD3;
+      --sidebar-bg: rgba(0, 0, 0, 0.4);
+      --card-bg: rgba(255, 255, 255, 0.08);
+      --card-hover-bg: rgba(255, 255, 255, 0.12);
+      --text-color: #ffffff;
+      --text-muted: #b0c4de;
+      --accent-color: #7b68ee;
+      /* A lighter purple for accents */
+      --accent-hover: #9370db;
+      --border-color: rgba(255, 255, 255, 0.15);
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -16,21 +30,23 @@
     }
 
     body {
-      background: linear-gradient(to bottom right, #2c2f48, #5D3FD3);
+      background: linear-gradient(to bottom right, var(--primary-bg), var(--secondary-bg));
       display: flex;
       min-height: 100vh;
-      color: #fff;
+      color: var(--text-color);
     }
 
-    /* Sidebar */
+    /* --- Sidebar --- */
     .sidebar {
       width: 250px;
-      background: rgba(0, 0, 0, 0.4);
+      background: var(--sidebar-bg);
       padding-top: 30px;
       display: flex;
       flex-direction: column;
       align-items: center;
       backdrop-filter: blur(10px);
+      border-right: 1px solid var(--border-color);
+      transition: width 0.3s ease;
     }
 
     .sidebar img {
@@ -40,46 +56,93 @@
 
     .sidebar a {
       text-decoration: none;
-      color: #fff;
+      color: var(--text-muted);
       padding: 12px 20px;
-      margin: 5px 0;
-      width: 100%;
-      text-align: center;
-      transition: 0.3s;
+      margin: 5px 15px;
+      width: calc(100% - 30px);
+      text-align: left;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
 
-    .sidebar a:hover {
-      background: rgba(255, 255, 255, 0.1);
+    .sidebar a i {
+      font-size: 1.2rem;
     }
 
-    /* Main Content */
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: var(--accent-color);
+      color: var(--text-color);
+      transform: translateX(5px);
+    }
+
+    /* --- Main Content --- */
     .main-content {
       flex: 1;
       padding: 30px;
       overflow-y: auto;
+      max-height: 100vh;
     }
 
-    .main-content h1 {
-      font-size: 28px;
-      font-weight: 600;
+    .page-header {
       margin-bottom: 30px;
-      color: #fff;
+    }
+
+    .page-header h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 10px;
       text-align: center;
     }
 
-    /* Event Cards */
+    .search-container {
+      max-width: 600px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .search-container input {
+      width: 100%;
+      padding: 15px 20px 15px 50px;
+      border-radius: 50px;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      color: var(--text-color);
+      font-size: 1rem;
+    }
+
+    .search-container input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .search-container input:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(123, 104, 238, 0.3);
+    }
+
+    .search-container .search-icon {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1.2rem;
+    }
+
+    /* --- Event Cards --- */
     .event-cards {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 25px;
-      justify-content: center;
-      padding: 10px;
     }
 
     .event-card {
-      height: 380px;
+      height: 400px;
       perspective: 1000px;
-      margin-bottom: 15px;
     }
 
     .card-inner {
@@ -88,7 +151,7 @@
       transform-style: preserve-3d;
       transition: transform 0.6s;
       border-radius: 16px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
     }
 
     .event-card:hover .card-inner {
@@ -100,23 +163,50 @@
       position: absolute;
       width: 100%;
       height: 100%;
+      -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
       border-radius: 16px;
       overflow: hidden;
-    }
-
-    .card-front {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
       display: flex;
       flex-direction: column;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(6px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card-front-img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .card-info {
+      padding: 20px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-info h3 {
+      font-size: 1.3rem;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .card-info p {
+      font-size: 0.9rem;
+      margin: 5px 0;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-info p i {
+      font-size: 1.1rem;
     }
 
     .card-back {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(6px);
-      color: #fff;
+      background: var(--card-hover-bg);
       padding: 25px;
       transform: rotateY(180deg);
       display: flex;
@@ -124,74 +214,92 @@
       justify-content: space-between;
     }
 
-    .card-front img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-top-left-radius: 16px;
-      border-top-right-radius: 16px;
-    }
-
-    .card-info {
-      text-align: center;
-      padding: 15px;
+    .card-back .description-content {
       flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .card-info h3 {
-      font-size: 20px;
-      margin-bottom: 12px;
-      color: #fff;
-    }
-
-    .card-info p {
-      font-size: 14px;
-      margin: 5px 0;
-      color: rgba(255, 255, 255, 0.8);
-    }
-
-    .card-back .description {
-      font-size: 14px;
-      line-height: 1.6;
+      overflow-y: auto;
     }
 
     .card-back h4 {
-      font-size: 16px;
+      font-size: 1rem;
       margin: 15px 0 8px;
-      color: rgba(255, 255, 255, 0.9);
+      font-weight: 600;
+      color: var(--accent-color);
     }
 
-    .card-back p {
-      margin-bottom: 12px;
-      color: rgba(255, 255, 255, 0.8);
+    .card-back h4:first-child {
+      margin-top: 0;
     }
 
-    .card-back button {
-      background: #5D3FD3;
-      color: #fff;
+    .card-back .description {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    .action-buttons {
+      margin-top: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .action-buttons a {
+      text-decoration: none;
+    }
+
+    .action-buttons button {
+      background: var(--secondary-bg);
+      color: var(--text-color);
       border: none;
-      padding: 10px 15px;
+      padding: 12px 15px;
       border-radius: 8px;
       cursor: pointer;
-      margin-top: 5px;
-      transition: all 0.3s ease;
       width: 100%;
       font-weight: 500;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
-    .card-back button:hover {
+    .action-buttons button:hover {
       background: #4a32a8;
       transform: translateY(-2px);
     }
 
-    .card-back a {
-      text-decoration: none;
-      color: #fff;
-      display: block;
-      margin-top: 8px;
+    .action-buttons .info-btn {
+      background-color: transparent;
+      border: 1px solid var(--accent-color);
+    }
+
+    .action-buttons .info-btn:hover {
+      background-color: var(--accent-color);
+    }
+
+    .empty-state {
+      background: var(--card-bg);
+      border: 2px dashed var(--border-color);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      grid-column: 1 / -1;
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      color: var(--accent-color);
+      margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    .empty-state p {
+      color: var(--text-muted);
     }
 
     @media (max-width: 900px) {
@@ -202,78 +310,122 @@
       .sidebar {
         width: 100%;
         height: auto;
-        padding-bottom: 20px;
+        flex-direction: row;
+        padding: 10px;
+        justify-content: space-around;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .sidebar img {
+        display: none;
+      }
+
+      .sidebar a {
+        flex-direction: column;
+        padding: 8px 5px;
+        gap: 4px;
+        flex-grow: 1;
+        width: auto;
+        text-align: center;
+      }
+
+      .sidebar a span {
+        font-size: 0.7rem;
       }
 
       .main-content {
         padding: 20px;
-      }
-
-      .event-cards {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        max-height: none;
       }
     }
   </style>
 </head>
 
 <body>
-  <!-- Sidebar -->
   <div class="sidebar">
     <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" />
-    <a href="/student"><i class='bx bxs-dashboard'></i> Dashboard</a>
-    <a href="/student/profile"><i class='bx bxs-user'></i> Profile</a>
-    <a href="{{ url_for('student_events_to_join') }}"><i class='bx bxs-calendar-event'></i> Events</a> <a
-      href="/student/academic_schedule"><i class='bx bxs-book'></i> Academic Schedule</a>
-    <a href="/logout"><i class='bx bx-log-out'></i> Logout</a>
+    <a href="/student"><i class='bx bxs-dashboard'></i> <span>Dashboard</span></a>
+    <a href="/student/profile"><i class='bx bxs-user'></i> <span>Profile</span></a>
+    <a href="{{ url_for('student_events_to_join') }}" class="active"><i class='bx bxs-calendar-event'></i>
+      <span>Events</span></a>
+    <a href="/student/academic_schedule"><i class='bx bxs-book'></i> <span>Academics</span></a>
+    <a href="/logout"><i class='bx bx-log-out'></i> <span>Logout</span></a>
   </div>
 
-  <!-- Main Content (Event Cards) -->
   <div class="main-content">
-    <h1>Upcoming Events</h1>
+    <div class="page-header">
+      <h1>Find Your Next Event</h1>
+      <div class="search-container">
+        <i class='bx bx-search search-icon'></i>
+        <input type="text" id="eventSearch" placeholder="Search for events by name, organizer, or tag...">
+      </div>
+    </div>
 
     <div class="event-cards">
-      <!-- Event Cards will be dynamically generated here using Jinja2 templating -->
       {% for event in Events %}
-      <div class="event-card">
+      <div class="event-card" data-name="{{ event.name | lower }}" data-organiser="{{ event.organiser | lower }}"
+        data-tags="{{ event.tags | lower if event.tags else '' }}">
         <div class="card-inner">
           <div class="card-front">
-            <img src="{{ url_for('static', filename='uploads/' + event.photo) }}" alt="{{ event.name }}">
+            <img class="card-front-img"
+              src="{{ url_for('static', filename='uploads/' + event.photo if event.photo else 'default_event.jpg') }}"
+              alt="{{ event.name }}">
             <div class="card-info">
               <h3>{{ event.name }}</h3>
+              <p><i class='bx bxs-calendar'></i> {{ event.date }}</p>
               {% if event.starttime %}
-              <p><i class='bx bx-time'></i> {{ event.starttime }} to {{ event.endtime }}</p>
+              <p><i class='bx bxs-time-five'></i> {{ event.starttime }} to {{ event.endtime }}</p>
               {% endif %}
-              <p><i class='bx bx-calendar'></i> {{ event.date }}</p>
-              <p><i class='bx bx-map'></i> {{ event.venue }}</p>
+              <p><i class='bx bxs-map'></i> {{ event.venue }}</p>
             </div>
           </div>
           <div class="card-back">
-            <div class="description">
+            <div class="description-content">
               <h4>Event Description</h4>
-              <p>{{ event.description }}</p>
+              <p class="description">{{ event.description }}</p>
               <h4>Organized by</h4>
-              <p>{{ event.organiser }}</p>
+              <p class="description">{{ event.organiser }}</p>
             </div>
-
             <div class="action-buttons">
               {% if event.link %}
-              <a href="{{ event.link }}" target="_blank"><button type="button"><i class='bx bx-link-external'></i> More
-                  Info</button></a>
+              <a href="{{ event.link }}" target="_blank">
+                <button type="button" class="info-btn"><i class='bx bx-link-external'></i> More Info</button>
+              </a>
               {% endif %}
-
-              <!-- CHANGE THIS LINE -->
-              <a href="{{ url_for('register_for_event_page', event_name=event.name) }}"><button type="button"><i
-                    class='bx bx-plus'></i> Register for Event</button></a>
-
+              <a href="{{ url_for('register_for_event_page', event_name=event.name) }}">
+                <button type="button"><i class='bx bx-edit-alt'></i> Register for Event</button>
+              </a>
             </div>
-
           </div>
         </div>
       </div>
+      {% else %}
+      <div class="empty-state">
+        <i class='bx bx-calendar-x'></i>
+        <h3>No Upcoming Events</h3>
+        <p>There are no new events to join at the moment. Please check back later!</p>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
   </div>
-  </div>
+
+  <script>
+    document.getElementById('eventSearch').addEventListener('keyup', function () {
+      let filter = this.value.toLowerCase();
+      let cards = document.querySelectorAll('.event-card');
+      cards.forEach(card => {
+        let name = card.dataset.name || '';
+        let organiser = card.dataset.organiser || '';
+        let tags = card.dataset.tags || '';
+        if (name.includes(filter) || organiser.includes(filter) || tags.includes(filter)) {
+          card.style.display = "";
+        } else {
+          card.style.display = "none";
+        }
+      });
+    });
+  </script>
 </body>
 
 </html>

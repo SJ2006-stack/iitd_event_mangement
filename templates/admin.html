@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - KARS</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #7c3aed;
+            --sidebar-bg: rgba(17, 24, 39, 0.8);
+            /* bg-gray-900 with opacity */
+            --card-bg: rgba(31, 41, 55, 0.7);
+            /* bg-gray-800 with opacity */
+            --text-color: #d1d5db;
+            /* gray-300 */
+            --border-color: rgba(75, 85, 99, 0.8);
+            /* gray-600 with opacity */
+            --input-bg: rgba(55, 65, 81, 0.9);
+            /* gray-700 with opacity */
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #111827;
+            /* bg-gray-900 */
+            color: var(--text-color);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            transition: margin-left 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem 0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .sidebar-header img {
+            max-width: 60px;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-color);
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 500;
+        }
+
+        .sidebar .nav-link.active,
+        .sidebar .nav-link:hover {
+            background: rgba(79, 70, 229, 0.2);
+            color: #fff;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-control,
+        .form-select {
+            background-color: var(--input-bg);
+            border-color: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background-color: var(--input-bg);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.25);
+            color: var(--text-color);
+        }
+
+        select option {
+            background-color: #1f2937;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #4338ca;
+            border-color: #4338ca;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                position: fixed;
+                margin-left: -260px;
+                z-index: 1030;
+                height: 100%;
+            }
+
+            .sidebar.active {
+                margin-left: 0;
+            }
+
+            .mobile-menu-toggle {
+                display: block !important;
+            }
+
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1029;
+            }
+
+            .sidebar.active~.overlay {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="KARS Logo">
+            <h5 class="mt-2 text-white">KARS Admin</h5>
+        </div>
+        <ul class="nav flex-column w-100">
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('admin_dashboard') }}"><i
+                        class="bi bi-shield-lock-fill"></i><span>Authorization</span></a>
+            </li>
+        </ul>
+        <div class="mt-auto p-3 w-100">
+            <a class="nav-link" href="{{ url_for('logout') }}"><i
+                    class="bi bi-box-arrow-left"></i><span>Logout</span></a>
+        </div>
+    </div>
+
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <main class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="text-white mb-0">Admin Authorization Panel</h1>
+            <button class="btn btn-dark d-lg-none mobile-menu-toggle" type="button" onclick="toggleSidebar()"><i
+                    class="bi bi-list fs-4"></i></button>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
+            role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="row g-4">
+            <!-- Event Organizer Authorization -->
+            <div class="col-lg-6">
+                <div class="glass-card h-100">
+                    <h4 class="text-white"><i class="bi bi-people-fill me-2"></i>Authorize Event Organizer</h4>
+                    <hr class="border-secondary my-3">
+                    <form action="{{ url_for('admin_authorize') }}" method="POST">
+                        <input type="hidden" name="auth_type" value="event_org">
+                        <div class="mb-3">
+                            <label for="event-user-select" class="form-label">Select User</label>
+                            <select name="email" id="event-user-select" class="form-select" required>
+                                <option value="" disabled selected>-- Choose a user --</option>
+                                {% for user in all_users %}<option value="{{ user.email }}">{{ user.name }} ({{
+                                    user.email }})</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="role-prefix-select" class="form-label">Assign Role</label>
+                            <select name="role_prefix" id="role-prefix-select" class="form-select" required>
+                                <option value="club_head">Club Head</option>
+                                <option value="fest_head">Fest Head</option>
+                                <option value="department_head">Department Head</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="org-name-input" class="form-label">Organization Name</label>
+                            <input type="text" name="organization_name" id="org-name-input" class="form-control"
+                                placeholder="e.g., Debating Club, Tryst" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Grant Event Permission</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Course Coordinator Authorization -->
+            <div class="col-lg-6">
+                <div class="glass-card h-100">
+                    <h4 class="text-white"><i class="bi bi-book-half me-2"></i>Authorize Course Coordinator</h4>
+                    <hr class="border-secondary my-3">
+                    <form action="{{ url_for('admin_authorize') }}" method="POST">
+                        <input type="hidden" name="auth_type" value="course_coord">
+                        <div class="mb-3">
+                            <label for="course-user-select" class="form-label">Select User</label>
+                            <select name="email" id="course-user-select" class="form-select" required>
+                                <option value="" disabled selected>-- Choose a user --</option>
+                                {% for user in all_users %}<option value="{{ user.email }}">{{ user.name }} ({{
+                                    user.email }})</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="course-code-input" class="form-label">Course Code</label>
+                            <input type="text" name="course_code" id="course-code-input" class="form-control"
+                                placeholder="e.g., CSL303" required>
+                        </div>
+                        <div class="d-grid mt-5">
+                            <button type="submit" class="btn btn-primary">Grant Course Permission</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Existing Authorizations Tables -->
+        <div class="glass-card mt-4">
+            <h3 class="text-white">Existing Authorizations</h3>
+            <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active text-white" id="pills-event-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-event" type="button" role="tab">Event Orgs</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link text-white" id="pills-course-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-course" type="button" role="tab">Course Coords</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="pills-tabContent">
+                <div class="tab-pane fade show active" id="pills-event" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Organization</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for auth in event_authorizations %}
+                                <tr>
+                                    <td>{{ auth.name }}</td>
+                                    <td>{{ auth.email }}</td>
+                                    <td><span class="badge bg-primary">{{ auth.role.replace('_', ' ').title() }}</span>
+                                    </td>
+                                    <td>{{ auth.organization }}</td>
+                                    <td>
+                                        <form action="{{ url_for('admin_revoke', auth_type='event', auth_id=auth.id) }}"
+                                            method="POST"
+                                            onsubmit="return confirm('Are you sure you want to revoke this permission?');">
+                                            <button type="submit" class="btn btn-sm btn-danger"><i
+                                                    class="bi bi-trash-fill"></i> Revoke</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% else %}<tr>
+                                    <td colspan="5" class="text-center">No event authorizations found.</td>
+                                </tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="pills-course" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Course Code</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for auth in course_authorizations %}
+                                <tr>
+                                    <td>{{ auth.coordinator.name }}</td>
+                                    <td>{{ auth.coordinator_email }}</td>
+                                    <td><span class="badge bg-success">{{ auth.course_code }}</span></td>
+                                    <td>
+                                        <form
+                                            action="{{ url_for('admin_revoke', auth_type='course', auth_id=auth.id) }}"
+                                            method="POST" onsubmit="return confirm('Are you sure?');">
+                                            <button type="submit" class="btn btn-sm btn-danger"><i
+                                                    class="bi bi-trash-fill"></i> Revoke</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% else %}<tr>
+                                    <td colspan="4" class="text-center">No course authorizations found.</td>
+                                </tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+    </script>
+</body>
+
+</html>

@@ -1,143 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Choose Organization - KARS</title>
-  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Choose Portal - KARS</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
-      margin: 0;
-      padding: 0;
-    }
     body {
-      background: #121212;
-      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      color: #f0f0f0;
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 20px;
     }
-    .container {
-      background: rgba(0, 0, 0, 0.5);
-      padding: 40px 30px;
-      border-radius: 12px;
-      max-width: 500px;
+
+    .choice-container {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 1rem;
+      padding: 2.5rem;
+      max-width: 600px;
       width: 100%;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 25px;
-      font-weight: 500;
-      color: #fff;
-    }
+
     .org-option {
-      display: flex;
-      align-items: center;
       background: rgba(255, 255, 255, 0.05);
-      margin: 10px 0;
-      padding: 12px 15px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
       border: 2px solid transparent;
+      transition: all 0.3s ease;
     }
+
     .org-option:hover {
-      background: rgba(93, 63, 211, 0.1);
-      border-color: #5d3fd3;
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #a78bfa;
     }
-    /* Added styles for selected state */
-    .org-option.selected {
-      background: rgba(93, 63, 211, 0.2);
-      border-color: #5d3fd3;
-      box-shadow: 0 0 0 1px rgba(93, 63, 211, 0.3);
-    }
-    .org-option.selected i {
-      color: #7c5ce0;
-    }
-    .org-option input[type="radio"] {
-      display: none;
-    }
-    .org-option i {
-      font-size: 22px;
-      margin-right: 12px;
-      color: #5d3fd3;
-      transition: color 0.3s ease;
-    }
-    .org-option label {
-      flex: 1;
-      cursor: pointer;
-    }
-    .btn {
-      margin-top: 25px;
-      width: 100%;
-      padding: 12px;
-      border: none;
-      background: #5d3fd3;
+
+    .org-option input[type="radio"]:checked+label {
+      background: rgba(167, 139, 250, 0.2);
+      border-color: #a78bfa;
       color: #fff;
-      font-size: 16px;
-      font-weight: 500;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.3s ease;
     }
-    .btn:hover {
-      background: #4a32a8;
-    }
-    .logo {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .logo img {
-      width: 60px;
-      margin-bottom: 10px;
-    }
-    .logo span {
-      font-size: 22px;
-      font-weight: 600;
-      color: #fff;
+
+    .category-title {
+      color: #a78bfa;
     }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <div class="logo">
-      <img src="{{ url_for('static', filename='logo.png') }}" alt="KARS Logo" />
-      <span>KARS</span>
+  <div class="choice-container m-3">
+    <div class="text-center mb-4">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="KARS Logo" style="width: 70px;" />
+      <h2 class="mt-2 text-white">Select a Portal to Manage</h2>
+      <p class="text-white-50">You have multiple high-level roles. Please choose one to proceed.</p>
     </div>
-    <h2>Select an Organization to Manage</h2>
-    <form method="POST">
-      {% for item in roles %}
-        <div class="org-option" onclick="selectOption(this)">
-          <input type="radio" name="organization" id="{{ item.organization }}-{{ loop.index }}" value="{{ item.organization }}" required>
-          <label for="{{ item.organization }}-{{ loop.index }}">
-            <i class='bx bxs-briefcase'></i>
-            {{ item.organization }} ({{ item.role.replace('_', ' ').title() }})
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category if category != 'error' else 'danger' }} small" role="alert">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <form method="POST" id="portalForm">
+      {% for category, roles in roles_by_type.items() %}
+      {% if roles %}
+      <div class="mb-4">
+        <h5 class="category-title border-bottom border-secondary pb-2 mb-3"><i class="bi bi-folder-fill me-2"></i>{{
+          category }}</h5>
+        {% for item in roles %}
+        <div class="org-option rounded-3 mb-2">
+          <input type="radio" class="btn-check" name="organization_role" id="opt-{{ loop.index0 }}"
+            value="{{ item.organization }}|{{ item.role }}" required onchange="enableButton()">
+          <label class="btn btn-outline-light text-start p-3 w-100" for="opt-{{ loop.index0 }}">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-0 fw-bold">{{ item.organization }}</h6>
+              <span class="badge bg-light text-dark">{{ item.role.replace('_', ' ').title() }}</span>
+            </div>
           </label>
-          <input type="hidden" name="role" value="{{ item.role }}" />
         </div>
+        {% endfor %}
+      </div>
+      {% endif %}
       {% endfor %}
-      
-      <button type="submit" class="btn">Continue</button>
+
+      <input type="hidden" name="organization" id="hidden_org">
+      <input type="hidden" name="role" id="hidden_role">
+
+      <div class="d-grid mt-4">
+        <button type="submit" class="btn btn-primary btn-lg" id="continueBtn" disabled>Continue to Portal</button>
+      </div>
     </form>
   </div>
 
   <script>
-    function selectOption(optionDiv) {
-      const all = document.querySelectorAll('.org-option');
-      all.forEach(opt => opt.classList.remove('selected'));
-
-      const radio = optionDiv.querySelector('input[type="radio"]');
+    function enableButton() {
+      const radio = document.querySelector('input[name="organization_role"]:checked');
       if (radio) {
-        radio.checked = true;
-        optionDiv.classList.add('selected');
+        const [org, role] = radio.value.split('|');
+        document.getElementById('hidden_org').value = org;
+        document.getElementById('hidden_role').value = role;
+        document.getElementById('continueBtn').disabled = false;
       }
     }
   </script>
 </body>
+
 </html>

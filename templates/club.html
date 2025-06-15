@@ -4,1239 +4,815 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Club Management Portal</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>{{ club_name }} Portal - KARS</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            font-family: 'Poppins', sans-serif;
-            box-sizing: border-box;
+        :root {
+            --primary-color: #6a11cb;
+            --secondary-color: #2575fc;
+            --sidebar-bg: rgba(20, 20, 40, 0.7);
+            --card-bg: rgba(35, 35, 65, 0.6);
+            --text-color: #f0f0f0;
+            --border-color: rgba(255, 255, 255, 0.2);
+            --input-bg: rgba(255, 255, 255, 0.1);
         }
 
         body {
-            background: linear-gradient(to bottom right, #2c2f48, #5D3FD3);
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
             display: flex;
             min-height: 100vh;
-            color: #fff;
+            overflow-x: hidden;
         }
 
-        /* Sidebar */
+        /* --- Sidebar --- */
         .sidebar {
-            width: 250px;
-            background: rgba(0, 0, 0, 0.4);
-            padding-top: 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            width: 260px;
+            background: var(--sidebar-bg);
             backdrop-filter: blur(10px);
-        }
-
-        .sidebar img {
-            /* Assuming you have a logo.png in static */
-            width: 80px;
-            margin-bottom: 30px;
-        }
-
-        .sidebar a {
-            text-decoration: none;
-            color: #fff;
-            padding: 12px 20px;
-            margin: 5px 0;
-            width: 90%;
-            text-align: left;
-            transition: 0.3s;
-            border-radius: 8px;
+            border-right: 1px solid var(--border-color);
+            transition: margin-left 0.3s ease-in-out;
             display: flex;
-            align-items: center;
-            gap: 10px;
+            flex-direction: column;
+            padding: 1rem 0;
+            flex-shrink: 0;
         }
 
-        .sidebar a:hover,
-        .sidebar a.active {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar a i {
-            font-size: 18px;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 30px;
-        }
-
-        .main-content h1 {
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-
-        /* Tab Content Areas */
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Dashboard Stats */
-        .dashboard-overview {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(6px);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
-        }
-
-        .dashboard-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .stat-card {
-            background: rgba(93, 63, 211, 0.2);
-            padding: 20px;
-            border-radius: 12px;
+        .sidebar-header {
+            padding: 1rem;
+            margin-bottom: 1rem;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
+        .sidebar-header img {
+            max-width: 60px;
+            margin-bottom: 0.5rem;
         }
 
-        .stat-card h3 {
-            font-size: 28px;
+        .sidebar-header h5 {
             font-weight: 600;
-            margin-bottom: 8px;
             color: #fff;
         }
 
-        .stat-card p {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        /* My Events Section */
-        .my-events-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(6px);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .section-header {
+        .sidebar .nav-pills .nav-link {
+            color: var(--text-color);
+            padding: 0.8rem 1.5rem;
+            margin: 0.2rem 0;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .section-header h2 {
-            font-size: 24px;
-            color: #fff;
-        }
-
-        .primary-btn-action {
-            /* Differentiated from form primary-btn */
-            background: #5D3FD3;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            gap: 1rem;
             font-weight: 500;
-            font-size: 16px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
+            border-radius: 0;
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
         }
 
-        .primary-btn-action:hover {
-            background: #4a32a8;
+        .sidebar .nav-pills .nav-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: var(--secondary-color);
         }
 
-
-        /* Event Cards */
-        .events-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-        }
-
-        .event-card {
-            height: 380px;
-            perspective: 1000px;
-        }
-
-        .card-inner {
-            width: 100%;
-            height: 100%;
-            transform-style: preserve-3d;
-            transition: transform 0.6s;
-            border-radius: 16px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .event-card:hover .card-inner {
-            transform: rotateY(180deg);
-        }
-
-        .card-front,
-        .card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            border-radius: 16px;
-            overflow: hidden;
-        }
-
-        .card-front {
-            display: flex;
-            flex-direction: column;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(6px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .card-back {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(6px);
+        .sidebar .nav-pills .nav-link.active {
+            background: rgba(37, 117, 252, 0.2);
+            border-left-color: var(--secondary-color);
             color: #fff;
-            padding: 25px;
-            transform: rotateY(180deg);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            font-weight: 600;
         }
 
-        .card-front img {
+        .sidebar .nav-link i {
+            font-size: 1.2rem;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* --- Event Card --- */
+        .event-card {
+            background: var(--input-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .event-card-img {
             width: 100%;
             height: 180px;
             object-fit: cover;
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
         }
 
-        .card-info {
-            text-align: center;
-            padding: 15px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+        /* --- Forms --- */
+        .form-control,
+        .form-select {
+            background-color: var(--input-bg);
+            border-color: var(--border-color);
+            color: var(--text-color);
         }
 
-        .card-info h3 {
-            font-size: 20px;
-            margin-bottom: 12px;
-            color: #fff;
+        .form-control:focus,
+        .form-select:focus {
+            background-color: var(--input-bg);
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.25rem rgba(37, 117, 252, 0.25);
+            color: var(--text-color);
         }
 
-        .card-info p {
-            font-size: 14px;
-            margin: 5px 0;
-            color: rgba(255, 255, 255, 0.8);
+        select option {
+            background-color: #2c2f48;
         }
 
-        .card-back .description {
-            font-size: 14px;
-            line-height: 1.6;
-            overflow-y: auto;
-            max-height: 180px;
-            /* Adjusted height */
-        }
-
-        .card-back h4 {
-            font-size: 16px;
-            margin: 15px 0 8px;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .card-back p {
-            margin-bottom: 12px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .card-back .action-buttons {
-            margin-top: auto;
-            /* Pushes buttons to the bottom */
-            padding-top: 10px;
-            /* Add some space above buttons */
-        }
-
-
-        .card-back button {
-            background: #5D3FD3;
-            color: #fff;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin: 3px 0;
-            transition: all 0.3s ease;
-            width: 100%;
-            font-weight: 500;
-        }
-
-        .card-back button:hover {
-            background: #4a32a8;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary-card {
-            /* Differentiated for card buttons */
-            background: rgba(255, 255, 255, 0.2) !important;
-        }
-
-        .btn-secondary-card:hover {
-            background: rgba(255, 255, 255, 0.3) !important;
-        }
-
-
-        /* Modal Styling */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
+        /* --- Modals --- */
         .modal-content {
-            background: rgba(44, 47, 72, 0.95);
-            border-radius: 16px;
-            padding: 30px;
-            width: 90%;
-            max-width: 700px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: #2c2f48;
+            border: 1px solid var(--border-color);
         }
 
-        .modal h2 {
-            color: #fff;
-            margin-bottom: 20px;
-            font-size: 24px;
-            text-align: center;
+        .modal-header,
+        .modal-footer {
+            border-bottom-color: var(--border-color);
+            border-top-color: var(--border-color);
         }
 
-        .form-group {
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            font-size: 16px;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .form-group input::placeholder,
-        .form-group textarea::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .form-actions {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 30px;
-        }
-
-        .form-actions button {
-            flex: 0 0 48%;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .primary-btn {
-            /* For form buttons */
-            background: #5D3FD3;
-            color: white;
-            border: none;
-        }
-
-        .primary-btn:hover {
-            background: #4a32a8;
-        }
-
-        .secondary-btn {
-            /* For form buttons */
-            background: transparent;
-            color: #fff;
-            border: 1px solid #fff;
-        }
-
-        .secondary-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        /* Settings Tab */
-        .settings-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(6px);
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
-
-        .settings-section h2 {
-            margin-bottom: 20px;
-            color: #fff;
-        }
-
-        .settings-section p {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 16px;
-        }
-
-        /* Registrations Table */
-        .registrations-table {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            overflow: hidden;
-            margin-top: 20px;
-        }
-
-        .registrations-table th,
-        .registrations-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .registrations-table th {
-            background: rgba(0, 0, 0, 0.2);
-            font-weight: 600;
-            color: #fff;
-        }
-
-        .registrations-table td {
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .empty-state h3 {
-            margin-bottom: 10px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        @media (max-width: 900px) {
-            body {
-                flex-direction: column;
-            }
-
+        /* --- Mobile Responsiveness --- */
+        @media (max-width: 992px) {
             .sidebar {
+                position: fixed;
+                margin-left: -260px;
+                z-index: 1030;
+                height: 100%;
+            }
+
+            .sidebar.active {
+                margin-left: 0;
+            }
+
+            .mobile-menu-toggle {
+                display: block !important;
+            }
+
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
                 width: 100%;
-                height: auto;
-                padding-bottom: 20px;
-                flex-direction: row;
-                justify-content: space-around;
-                overflow-x: auto;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1029;
             }
 
-            .sidebar a {
-                min-width: 120px;
-                margin: 0 5px;
-                text-align: center;
+            .sidebar.active~.overlay {
+                display: block;
             }
-
-            .main-content {
-                padding: 20px;
-            }
-
-            .events-grid {
-                grid-template-columns: 1fr;
-                /* Single column on smaller screens */
-            }
-        }
-
-        .form-builder-section {
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .custom-field-group {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 3px solid #7c5ce0;
-        }
-
-        .custom-field-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .custom-field-header span {
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .remove-field-btn {
-            background: rgba(255, 82, 82, 0.2);
-            color: #ff9a9a;
-            border: none;
-            border-radius: 5px;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .field-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .field-row .form-group {
-            flex: 1;
-            margin-bottom: 0;
-        }
-
-        .options-input {
-            display: none;
-            /* Hidden by default */
-        }
-
-        .modal-content.registrations-dashboard {
-            max-width: 90%;
-            width: 1200px;
-            /* A large, fixed width for the dashboard */
-        }
-
-        .dashboard-tabs {
-            display: flex;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 20px;
-        }
-
-        .dashboard-tab-btn {
-            padding: 10px 20px;
-            cursor: pointer;
-            border: none;
-            background: none;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 16px;
-            font-weight: 500;
-            border-bottom: 3px solid transparent;
-        }
-
-        .dashboard-tab-btn.active {
-            color: #fff;
-            border-bottom-color: #7c5ce0;
-        }
-
-        .dashboard-tab-content {
-            display: none;
-        }
-
-        .dashboard-tab-content.active {
-            display: block;
-        }
-
-        .analytics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 20px;
-        }
-
-        .chart-container {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            border-radius: 12px;
         }
     </style>
 </head>
 
 <body>
-    <div class="sidebar">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" /> <a href="#" onclick="showTab('dashboard')"
-            id="dashboard-tab" class="active">
-            <i class='bx bxs-dashboard'></i> Dashboard
-        </a>
-        <a href="#" onclick="showTab('events')" id="events-tab">
-            <i class='bx bxs-calendar-event'></i> Events
-        </a>
-        <a href="#" onclick="showTab('settings')" id="settings-tab">
-            <i class='bx bxs-cog'></i> Settings
-        </a>
-        <a href="{{ url_for('logout') }}"> <i class='bx bx-log-out'></i> Logout
-        </a>
-    </div>
 
-    <div class="main-content">
-        <div id="dashboard" class="tab-content active">
-            <div class="dashboard-overview">
-                <h1>{{ club_name }} Club Dashboard</h1>
-                <p>Welcome back, {{ club_manager_name }}</p>
-
-                <div class="dashboard-stats">
-                    <div class="stat-card">
-                        <h3 id="totalManagedEvents">{{ stats.managed_events_count if stats else 0 }}</h3>
-                        <p>My Club Events</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="upcomingEvents">{{ stats.upcoming_events_count if stats else 0 }}</h3>
-                        <p>Upcoming Club Events</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="totalRegistrations">{{ stats.total_registrations_count if stats else 0 }}</h3>
-                        <p>Total Registrations</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="my-events-section">
-                <div class="section-header">
-                    <h2>My Managed Club Events</h2>
-                    <button class="primary-btn-action" onclick="showAddEventModal()">
-                        <i class='bx bx-plus'></i> Add Club Event
-                    </button>
-                </div>
-
-                {% if managed_events %}
-                <div class="events-grid">
-                    {% for event in managed_events %}
-                    <div class="event-card">
-                        <div class="card-inner">
-                            <div class="card-front">
-                                <img src="{{ url_for('uploaded_file', filename=event.photo) if event.photo else url_for('static', filename='default_event.jpg') }}"
-                                    alt="{{ event.name }}">
-                                <div class="card-info">
-                                    <h3>{{ event.name }}</h3>
-                                    {% if event.starttime and event.endtime %}
-                                    <p><i class='bx bx-time'></i> {{ event.starttime }} - {{ event.endtime }}</p>
-                                    {% endif %}
-                                    <p><i class='bx bx-calendar'></i> {{ event.date }}</p>
-                                    <p><i class='bx bx-map'></i> {{ event.venue }}</p>
-                                </div>
-                            </div>
-                            <div class="card-back">
-                                <div class="description">
-                                    <h4>Event Description</h4>
-                                    <p>{{ event.description }}</p>
-                                    <h4>Organized by</h4>
-                                    <p>{{ event.organiser }}</p>
-                                    <h4>Tags</h4>
-                                    <p>{{ event.tags }}</p>
-                                </div>
-                                <div class="action-buttons">
-                                    <button type="button" onclick="editClubEvent('{{ event.name }}')">
-                                        <i class='bx bx-edit'></i> Edit Event
-                                    </button>
-                                    <button type="button" class="btn-secondary-card"
-                                        onclick="viewClubRegistrations('{{ event.name }}')">
-                                        <i class='bx bx-group'></i> View Registrations
-                                    </button>
-                                    {% if event.link %}
-                                    <a href="{{ event.link }}" target="_blank" style="text-decoration: none;">
-                                        <button type="button"><i class='bx bx-link-external'></i> Reg. Link</button>
-                                    </a>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="empty-state">
-                    <i class='bx bx-calendar-x'></i>
-                    <h3>No Club Events Created Yet</h3>
-                    <p>Create your first club event to get started.</p>
-                </div>
-                {% endif %}
-            </div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ url_for('uploaded_file', filename=club_profile.logo_path) if club_profile and club_profile.logo_path else url_for('static', filename='logo.png') }}"
+                alt="Club Logo" class="rounded-circle">
+            <h5 class="mt-2 text-white">{{ club_name }}</h5>
         </div>
 
-        <div id="events" class="tab-content">
-            <div class="my-events-section">
-                <div class="section-header">
-                    <h2>All {{ club_name }} Club Events</h2>
-                    <button class="primary-btn-action" onclick="showAddEventModal()">
-                        <i class='bx bx-plus'></i> Add Club Event
-                    </button>
-                </div>
-                {% if all_club_events %}
-                <div class="events-grid">
-                    {% for event in all_club_events %}
-                    <div class="event-card">
-                        <div class="card-inner">
-                            <div class="card-front">
-                                <img src="{{ url_for('uploaded_file', filename=event.photo) if event.photo else url_for('static', filename='default_event.jpg') }}"
-                                    alt="{{ event.name }}">
-                                <div class="card-info">
-                                    <h3>{{ event.name }}</h3>
-                                    {% if event.starttime and event.endtime %}
-                                    <p><i class='bx bx-time'></i> {{ event.starttime }} - {{ event.endtime }}</p>
-                                    {% endif %}
-                                    <p><i class='bx bx-calendar'></i> {{ event.date }}</p>
-                                    <p><i class='bx bx-map'></i> {{ event.venue }}</p>
-                                </div>
-                            </div>
-                            <div class="card-back">
-                                <div class="description">
-                                    <h4>Event Description</h4>
-                                    <p>{{ event.description }}</p>
-                                    <h4>Organized by</h4>
-                                    <p>{{ event.organiser }}</p>
-                                    <h4>Tags</h4>
-                                    <p>{{ event.tags }}</p>
-                                </div>
-                                <div class="action-buttons">
-                                    {% if event.event_manager == club_manager_name %} <button type="button"
-                                        onclick="editClubEvent('{{ event.name }}')">
-                                        <i class='bx bx-edit'></i> Edit
-                                    </button>
-                                    <button type="button" class="btn-secondary-card"
-                                        onclick="viewClubRegistrations('{{ event.name }}')">
-                                        <i class='bx bx-group'></i> Registrations
-                                    </button>
-                                    {% endif %}
-                                    {% if event.link %}
-                                    <a href="{{ event.link }}" target="_blank" style="text-decoration: none;">
-                                        <button type="button"><i class='bx bx-link-external'></i> Reg. Link</button>
-                                    </a>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="empty-state">
-                    <i class='bx bx-calendar-x'></i>
-                    <h3>No Events Available for {{ club_name }}</h3>
-                    <p>No club events have been created yet for this club.</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
+        <!-- Nav tabs -->
+        <ul class="nav nav-pills flex-column w-100" id="main-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" href="#dashboard" role="tab"
+                    aria-controls="dashboard" aria-selected="true">
+                    <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="events-tab" data-bs-toggle="tab" href="#events" role="tab"
+                    aria-controls="events" aria-selected="false">
+                    <i class="bi bi-calendar-event-fill"></i><span>All Events</span>
+                </a>
+            </li>
+            <!-- PERMISSION CHECK: Only show Settings tab to Club Head -->
+            {% if session.get('auth_role') == 'club_head' %}
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="settings-tab" data-bs-toggle="tab" href="#settings" role="tab"
+                    aria-controls="settings" aria-selected="false">
+                    <i class="bi bi-gear-fill"></i><span>Settings & Team</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
 
-        <div id="settings" class="tab-content">
-            <div class="settings-section">
-                <h2>Club Settings</h2>
-                <p>Club-specific settings and configuration options will be available here in future updates.</p>
-            </div>
+        <div class="mt-auto p-3 w-100">
+            <a class="nav-link" href="{{ url_for('logout') }}"><i
+                    class="bi bi-box-arrow-left"></i><span>Logout</span></a>
         </div>
     </div>
 
-    <div id="addEventModal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Add New Club Event</h2>
-            <form id="addEventForm" action="{{ url_for('create_club_event') }}" method="POST"
-                enctype="multipart/form-data">
-                <div class="form-group">
-                    <label>Event Name</label>
-                    <input type="text" name="eventName" required>
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <main class="main-content">
+        <!-- Flash Messages & Mobile Toggle -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <button class="btn btn-light d-lg-none mobile-menu-toggle" type="button" onclick="toggleSidebar()">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            <div class="position-absolute top-0 end-0 p-3" style="z-index: 1100">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
+                    role="alert" style="background-color: rgba(0,0,0,0.4); border-color: var(--border-color);">
+                    <strong>{{ category|title }}:</strong> {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                        aria-label="Close"></button>
                 </div>
-                <div class="form-group">
-                    <label>Event Photo</label>
-                    <input type="file" name="photo" accept="image/*" required>
-                </div>
-                <div class="form-group">
-                    <label>Event Category (Optional)</label>
-                    <input type="text" name="event_category" placeholder="e.g., Workshop, Competition, Talk">
-                </div>
-                <div class="form-group">
-                    <label>Tags (comma-separated)</label>
-                    <input type="text" name="tags" required>
-                </div>
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea name="description" rows="4" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Date</label>
-                    <input type="date" name="date" required>
-                </div>
-                <div class="form-group">
-                    <label>Start Time</label>
-                    <input type="time" name="starttime" required>
-                </div>
-                <div class="form-group">
-                    <label>End Time</label>
-                    <input type="time" name="endtime" required>
-                </div>
-                <div class="form-group">
-                    <label>Venue</label>
-                    <input type="text" name="venue" required>
-                </div>
-                <div class="form-group">
-                    <label>Registration Link (Optional)</label>
-                    <input type="url" name="link" placeholder="https://example.com/register">
-                </div>
-                <div class="form-group">
-                    <label>Select Target Departments</label>
-                    <select name="target_departments" multiple id="department-select" onchange="handleSelectAll(this)">
-                        <option value="__all__">-- Select All Departments --</option>
-                        <option value="Applied Mechanics">Applied Mechanics</option>
-                        <option value="Biochemical Engineering and Biotechnology">Biochemical Engineering and
-                            Biotechnology</option>
-                        <option value="Biochemical Engineering and Biotechnology (Dual/M.Tech)">Biochemical Engineering
-                            and
-                            Biotechnology (Dual/M.Tech)</option>
-                        <option value="Chemical Engineering">Chemical Engineering</option>
-                        <option value="Chemical Engineering (Dual/M.Tech)">Chemical Engineering (Dual/M.Tech)</option>
-                        <option value="Chemistry">Chemistry</option>
-                        <option value="Civil Engineering">Civil Engineering</option>
-                        <option value="Civil Engineering (Dual/M.Tech)">Civil Engineering (Dual/M.Tech)</option>
-                        <option value="Computer Science and Engineering">Computer Science and Engineering</option>
-                        <option value="Computer Science and Engineering (Dual/M.Tech)">Computer Science and Engineering
-                            (Dual/M.Tech)</option>
-                        <option value="Design">Design</option>
-                        <option value="Electrical Engineering">Electrical Engineering</option>
-                        <option value="Electrical Engineering (M.Tech)">Electrical Engineering (M.Tech)</option>
-                        <option value="Electrical Engineering (Dual Degree)">Electrical Engineering (Dual Degree)
-                        </option>
-                        <option value="Energy Science and Engineering">Energy Science and Engineering</option>
-                        <option value="Energy Science and Engineering (Dual/M.Tech)">Energy Science and Engineering
-                            (Dual/M.Tech)
-                        </option>
-                        <option value="Humanities and Social Sciences">Humanities and Social Sciences</option>
-                        <option value="Management Studies">Management Studies</option>
-                        <option value="Materials Science and Engineering">Materials Science and Engineering</option>
-                        <option value="Materials Science and Engineering (Dual/M.Tech)">Materials Science and
-                            Engineering
-                            (Dual/M.Tech)</option>
-                        <option value="Mathematics">Mathematics</option>
-                        <option value="Mechanical Engineering">Mechanical Engineering</option>
-                        <option value="Mechanical Engineering (Dual/M.Tech)">Mechanical Engineering (Dual/M.Tech)
-                        </option>
-                        <option value="Physics">Physics</option>
-                        <option value="Textile and Fibre Engineering">Textile and Fibre Engineering</option>
-                        <option value="Textile and Fibre Engineering (Dual/M.Tech)">Textile and Fibre Engineering
-                            (Dual/M.Tech)
-                        </option>
-                    </select>
-                    <small style="color: rgba(255,255,255,0.6); font-size: 13px;">Hold Ctrl/Cmd to select
-                        multiple.</small>
-                </div>
-                <div class="form-group">
-                    <label>Select Target Years</label>
-                    <div id="year-checkboxes">
-                        <label><input type="checkbox" onclick="toggleAll(this, 'target_years')" value="__all__"> Select
-                            All</label><br>
-                        <label><input type="checkbox" name="target_years" value="1"> 1st Year</label><br>
-                        <label><input type="checkbox" name="target_years" value="2"> 2nd Year</label><br>
-                        <label><input type="checkbox" name="target_years" value="3"> 3rd Year</label><br>
-                        <label><input type="checkbox" name="target_years" value="4"> 4th Year</label><br>
-                        <label><input type="checkbox" name="target_years" value="5"> 5th Year</label>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+
+        <!-- Tab content -->
+        <div class="tab-content" id="myTabContent">
+            <!-- DASHBOARD TAB -->
+            <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
+                <div class="glass-card mb-4">
+                    <h1 class="text-white">{{ club_name }} Club Dashboard</h1>
+                    <p class="lead text-white-50">Welcome back, {{ club_manager_name }}!</p>
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-4">
+                            <div class="p-3 rounded text-center" style="background: rgba(37, 117, 252, 0.3);">
+                                <h3 class="display-6 fw-bold">{{ stats.managed_events_count }}</h3>
+                                <p class="mb-0">Managed Events</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 rounded text-center" style="background: rgba(106, 17, 203, 0.3);">
+                                <h3 class="display-6 fw-bold">{{ stats.upcoming_events_count }}</h3>
+                                <p class="mb-0">Upcoming Events</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 rounded text-center" style="background: rgba(37, 117, 252, 0.3);">
+                                <h3 class="display-6 fw-bold">{{ stats.total_registrations_count }}</h3>
+                                <p class="mb-0">Total Registrations</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Select Target Hostels</label>
-                    <select name="target_hostels" multiple id="hostel-select" onchange="handleSelectAll(this)">
-                        <option value="__all__">-- Select All Hostels --</option>
-                        <option value="day-scholar">Day Scholar</option>
-                        <option value="aravali">Aravali</option>
-                        <option value="girnar">Girnar</option>
-                        <option value="jwalamukhi">Jwalamukhi</option>
-                        <option value="karakoram">Karakoram</option>
-                        <option value="kumaon">Kumaon</option>
-                        <option value="nilgiri">Nilgiri</option>
-                        <option value="shivalik">Shivalik</option>
-                        <option value="satpura">Satpura</option>
-                        <option value="udaigiri">Udaigiri</option>
-                        <option value="vindhyachal">Vindhyachal</option>
-                        <option value="zanskar">Zanskar</option>
-                        <option value="dronagiri">Dronagiri (PG only)</option>
-                        <option value="saptagiri-boys">Saptagiri Boys (PG only)</option>
-                        <option value="kailash">Kailash</option>
-                        <option value="himadri">Himadri</option>
-                        <option value="sahyadri">Sahyadri (PG only)</option>
-                        <option value="saptagiri-girls">Saptagiri Girls (PG only)</option>
-                        <option value="nalanda">Nalanda (Transit)</option>
-                    </select>
-                    <small style="color: rgba(255,255,255,0.6); font-size: 13px;">Hold Ctrl/Cmd to select
-                        multiple.</small>
-                    <div class="form-builder-section">
-                        <h3 style="margin-bottom:15px; font-weight:500;">Custom Registration Questions</h3>
-                        <div id="custom-fields-container">
-                            <!-- JS will add question fields here -->
-                        </div>
-                        <input type="hidden" name="custom_field_count" id="custom_field_count" value="0">
-                        <button type="button" class="secondary-btn" onclick="addQuestionField()"
-                            style="width:100%; margin-top:10px;">
-                            <i class='bx bx-plus'></i> Add Custom Question
+
+                <div class="glass-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="text-white">My Managed Events</h2>
+                        <!-- PERMISSION CHECK: Show "Add Event" to any team member -->
+                        {% if session.get('auth_role') in ['club_head', 'club_coordinator', 'club_executive'] %}
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal">
+                            <i class="bi bi-plus-circle-fill me-2"></i>Add New Event
                         </button>
+                        {% endif %}
                     </div>
-                    <div class="form-actions"> <!-- This div should already exist -->
-                        <button type="submit" class="primary-btn">Add Club Event</button>
-                        <button type="button" class="secondary-btn" onclick="closeAddEventModal()">Cancel</button>
+                    <div class="row g-4">
+                        {% if managed_events %}
+                        {% for event in managed_events %}
+                        <div class="col-xl-4 col-md-6">
+                            <div class="event-card">
+                                <img src="{{ url_for('uploaded_file', filename=event.photo) if event.photo else url_for('static', filename='default_event.jpg') }}"
+                                    class="event-card-img" alt="{{ event.name }}">
+                                <div class="p-3">
+                                    <h5 class="card-title text-white">{{ event.name }}</h5>
+                                    <p class="card-text text-white-50 small">
+                                        <i class="bi bi-calendar-fill"></i> {{ event.date }}  
+                                        <i class="bi bi-clock-fill"></i> {{ event.starttime }}  
+                                        <i class="bi bi-geo-alt-fill"></i> {{ event.venue }}
+                                    </p>
+                                    <p class="card-text small">{{ event.description|truncate(100) }}</p>
+                                    <div class="d-grid gap-2 d-md-flex justify-content-end">
+                                        <a href="{{ url_for('edit_club_event', event_name=event.name) }}"
+                                            class="btn btn-outline-info btn-sm"><i class="bi bi-pencil-fill"></i>
+                                            Edit</a>
+                                        <button class="btn btn-info btn-sm"
+                                            onclick="viewClubRegistrations('{{ event.name }}')"><i
+                                                class="bi bi-people-fill"></i> View Registrations</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="text-center py-5 text-white-50">
+                            <i class="bi bi-calendar-x-fill display-4"></i>
+                            <h4 class="mt-3">No Events Managed By You</h4>
+                            <p>Click "Add New Event" to create one.</p>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
-            </form>
+            </div>
+
+            <!-- ALL EVENTS TAB -->
+            <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">
+                <div class="glass-card">
+                    <h2 class="text-white mb-3">All {{ club_name }} Club Events</h2>
+                    <div class="row g-4">
+                        {% if all_club_events %}
+                        {% for event in all_club_events %}
+                        <div class="col-xl-4 col-md-6">
+                            <div class="event-card">
+                                <img src="{{ url_for('uploaded_file', filename=event.photo) if event.photo else url_for('static', filename='default_event.jpg') }}"
+                                    class="event-card-img" alt="{{ event.name }}">
+                                <div class="p-3">
+                                    <h5 class="card-title text-white">{{ event.name }}</h5>
+                                    <p class="card-text text-white-50 small">
+                                        <i class="bi bi-calendar-fill"></i> {{ event.date }}  
+                                        <i class="bi bi-person-check-fill"></i> Managed by: {{ event.event_manager }}
+                                    </p>
+                                    <p class="card-text small">{{ event.description|truncate(100) }}</p>
+                                    <!-- PERMISSION CHECK: Show buttons if user is Head/Coordinator OR the event manager -->
+                                    {% if session.get('auth_role') in ['club_head', 'club_coordinator'] or
+                                    event.event_manager == club_manager_name %}
+                                    <div class="d-grid gap-2 d-md-flex justify-content-end">
+                                        <a href="{{ url_for('edit_club_event', event_name=event.name) }}"
+                                            class="btn btn-outline-info btn-sm"><i class="bi bi-pencil-fill"></i>
+                                            Edit</a>
+                                        <button class="btn btn-info btn-sm"
+                                            onclick="viewClubRegistrations('{{ event.name }}')"><i
+                                                class="bi bi-people-fill"></i> View Registrations</button>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="text-center py-5 text-white-50">
+                            <i class="bi bi-calendar-x-fill display-4"></i>
+                            <h4 class="mt-3">No events found for this club.</h4>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS TAB (CLUB HEAD ONLY) -->
+            <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+                {% if session.get('auth_role') == 'club_head' %}
+                <!-- Section 1: Club Profile & Data Management -->
+                <div class="glass-card mb-4">
+                    <h2 class="text-white">Club Profile & Data</h2>
+                    <div class="row g-4 mt-2">
+                        <div class="col-lg-8">
+                            <form action="{{ url_for('update_club_profile') }}" method="POST"
+                                enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Club Description / Charter</label>
+                                    <textarea name="description" id="description" rows="6"
+                                        class="form-control">{{ club_profile.description if club_profile else '' }}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="logo" class="form-label">Upload New Logo (replaces current)</label>
+                                    <input type="file" name="logo" id="logo" class="form-control" accept="image/*">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+                            </form>
+                        </div>
+                        <div class="col-lg-4">
+                            <h5 class="text-white">Data Exports</h5>
+                            <p class="text-white-50 small">Download CSV files of your club's data.</p>
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('export_club_data', export_type='members') }}"
+                                    class="btn btn-outline-light"><i class="bi bi-people-fill me-2"></i>Export Member
+                                    List</a>
+                                <a href="{{ url_for('export_club_data', export_type='registrations') }}"
+                                    class="btn btn-outline-light"><i class="bi bi-clipboard-data-fill me-2"></i>Export
+                                    All Registrations</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Team Management -->
+                <div class="glass-card">
+                    <h2 class="text-white">Team Management</h2>
+                    <p class="text-white-50">Appoint, manage, and remove roles for your club's core team.</p>
+                    <div class="glass-card p-3 my-3">
+                        <form action="{{ url_for('manage_team_action') }}" method="POST"
+                            class="row g-2 align-items-end">
+                            <input type="hidden" name="action" value="add">
+                            <div class="col-md-6">
+                                <label for="user_email_select" class="form-label">Select User to Appoint</label>
+                                <select name="email" id="user_email_select" class="form-select" required>
+                                    <option value="" disabled selected>-- Choose a verified user --</option>
+                                    {% for user in all_users %}
+                                    <option value="{{ user.email }}">{{ user.name }} ({{ user.email }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="role_select" class="form-label">Assign Role</label>
+                                <select name="role" id="role_select" class="form-select" required>
+                                    <option value="club_coordinator">Coordinator</option>
+                                    <option value="club_executive">Executive</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-grid">
+                                <button type="submit" class="btn btn-success"><i class="bi bi-person-plus-fill"></i>
+                                    Appoint</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in team_members %}
+                                <tr>
+                                    <td>{{ member.name }}</td>
+                                    <td>{{ member.email }}</td>
+                                    <td><span class="badge bg-info text-dark">{{ member.role.replace('_', ' ').title()
+                                            }}</span></td>
+                                    <td class="text-center">
+                                        {% if member.role != 'club_head' %}
+                                        <div class="btn-group btn-group-sm">
+                                            <form action="{{ url_for('manage_team_action') }}" method="POST"
+                                                class="d-inline">
+                                                <input type="hidden" name="action" value="update_role">
+                                                <input type="hidden" name="auth_id" value="{{ member.id }}">
+                                                {% if member.role == 'club_executive' %}
+                                                <input type="hidden" name="role" value="club_coordinator">
+                                                <button type="submit" class="btn btn-outline-success"
+                                                    title="Promote to Coordinator"><i
+                                                        class="bi bi-arrow-up-circle"></i></button>
+                                                {% elif member.role == 'club_coordinator' %}
+                                                <input type="hidden" name="role" value="club_executive">
+                                                <button type="submit" class="btn btn-outline-warning"
+                                                    title="Demote to Executive"><i
+                                                        class="bi bi-arrow-down-circle"></i></button>
+                                                {% endif %}
+                                            </form>
+                                            <form action="{{ url_for('manage_team_action') }}" method="POST"
+                                                onsubmit="return confirm('Are you sure? This will remove their role from the team.');"
+                                                class="d-inline">
+                                                <input type="hidden" name="action" value="remove">
+                                                <input type="hidden" name="auth_id" value="{{ member.id }}">
+                                                <button type="submit" class="btn btn-outline-danger"
+                                                    title="Remove from Team"><i class="bi bi-trash"></i></button>
+                                            </form>
+                                        </div>
+                                        {% else %}
+                                        <span class="text-white-50 small">Admin Role</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-white-50">No team members found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% else %}
+                <div class="glass-card text-center text-white-50 py-5">
+                    <i class="bi bi-lock-fill display-4"></i>
+                    <h4 class="mt-3">Access Denied</h4>
+                    <p>Only Club Heads can access these settings.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Event Modal -->
+    <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEventModalLabel">Add New Club Event</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addEventForm" action="{{ url_for('create_club_event') }}" method="POST"
+                        enctype="multipart/form-data">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label for="eventName" class="form-label">Event Name</label>
+                                <input type="text" class="form-control" id="eventName" name="eventName" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="eventCategory" class="form-label">Category (Optional)</label>
+                                <input type="text" class="form-control" id="eventCategory" name="event_category"
+                                    placeholder="e.g., Workshop">
+                            </div>
+                            <div class="col-12">
+                                <label for="eventPhoto" class="form-label">Event Photo/Banner</label>
+                                <input class="form-control" type="file" id="eventPhoto" name="photo" accept="image/*"
+                                    required>
+                            </div>
+                            <div class="col-12">
+                                <label for="eventDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="eventDescription" name="description" rows="3"
+                                    required></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="eventDate" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="eventDate" name="date" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="eventStartTime" class="form-label">Start Time</label>
+                                <input type="time" class="form-control" id="eventStartTime" name="starttime" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="eventEndTime" class="form-label">End Time</label>
+                                <input type="time" class="form-control" id="eventEndTime" name="endtime" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="eventVenue" class="form-label">Venue</label>
+                                <input type="text" class="form-control" id="eventVenue" name="venue" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="eventTags" class="form-label">Tags (comma-separated)</label>
+                                <input type="text" class="form-control" id="eventTags" name="tags"
+                                    placeholder="Coding, Music, Fun" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="eventLink" class="form-label">Registration Link (Optional)</label>
+                                <input type="url" class="form-control" id="eventLink" name="link">
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" role="switch"
+                                        id="is_private_checkbox" name="is_private" value="true">
+                                    <label class="form-check-label" for="is_private_checkbox">Member-Only Event (Visible
+                                        only to past attendees)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" style="border-color: var(--border-color)">
+                        <h5 class="mb-3">Custom Registration Questions</h5>
+                        <div id="custom-fields-container"></div>
+                        <input type="hidden" name="custom_field_count" id="custom_field_count" value="0">
+                        <button type="button" class="btn btn-outline-info w-100" onclick="addQuestionField()">
+                            <i class="bi bi-plus-lg"></i> Add Question
+                        </button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="addEventForm" class="btn btn-primary">Create Event</button>
+                </div>
+            </div>
         </div>
     </div>
-    <!-- In club.html, REPLACE the entire <div id="registrationsModal"> ... </div> with this -->
 
-    <div id="registrationsModal" class="modal hidden">
-        <div class="modal-content registrations-dashboard">
-            <h2 id="registrationsTitle">Event Registrations</h2>
-
-            <!-- Tabs for switching between list and analytics -->
-            <div class="dashboard-tabs">
-                <button class="dashboard-tab-btn active" onclick="showDashboardTab('registrant-list')">Registrant
-                    List</button>
-                <button class="dashboard-tab-btn" onclick="showDashboardTab('analytics')">Analytics</button>
-            </div>
-
-            <!-- Tab 1: Registrant List -->
-            <div id="registrant-list" class="dashboard-tab-content active">
-                <!-- This table will be populated by JS -->
-                <div style="overflow-x: auto;">
-                    <table class="registrations-table" id="registrantListTable">
-                        <!-- JS will generate the header and body -->
-                    </table>
+    <!-- Registrations Modal -->
+    <div class="modal fade" id="registrationsModal" tabindex="-1" aria-labelledby="registrationsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registrationsTitle">Event Registrations</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
-            </div>
-
-            <!-- Tab 2: Analytics -->
-            <div id="analytics" class="dashboard-tab-content">
-                <div class="analytics-grid">
-                    <div class="chart-container">
-                        <h3>Year-wise Distribution</h3>
-                        <canvas id="yearChart"></canvas>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" id="regDashboardTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="list-tab" data-bs-toggle="tab"
+                                data-bs-target="#registrant-list" type="button" role="tab">Registrant List</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics"
+                                type="button" role="tab">Analytics</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content pt-3">
+                        <div class="tab-pane fade show active" id="registrant-list" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-dark table-striped table-hover" id="registrantListTable">
+                                    <!-- JS will populate this -->
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="analytics" role="tabpanel">
+                            <div class="row g-4">
+                                <div class="col-lg-6">
+                                    <div class="glass-card h-100"><canvas id="yearChart"></canvas></div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="glass-card h-100"><canvas id="deptChart"></canvas></div>
+                                </div>
+                            </div>
+                            <div id="customChartsContainer" class="row g-4 mt-1"></div>
+                        </div>
                     </div>
-                    <div class="chart-container">
-                        <h3>Department-wise Distribution</h3>
-                        <canvas id="deptChart"></canvas>
-                    </div>
-                    <!-- Custom question charts will be added here by JS -->
-                    <div id="customChartsContainer" class="analytics-grid" style="grid-column: 1 / -1;"></div>
                 </div>
-            </div>
-
-            <div class="form-actions" style="justify-content: flex-end; margin-top: 20px;">
-                <button type="button" class="secondary-btn" onclick="closeRegistrationsModal()"
-                    style="flex: 0 0 auto; padding: 10px 20px;">Close</button>
             </div>
         </div>
     </div>
+
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Tab switching functionality
-        function showTab(tabName) {
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabContents.forEach(content => content.classList.remove('active'));
-            const sidebarLinks = document.querySelectorAll('.sidebar a');
-            sidebarLinks.forEach(link => link.classList.remove('active'));
-
-            document.getElementById(tabName).classList.add('active');
-            document.getElementById(tabName + '-tab').classList.add('active');
-        }
-
-        // Modal functions
-        function showDashboardTab(tabId) {
-            // Hide all tab contents
-            document.querySelectorAll('.dashboard-tab-content').forEach(tab => tab.classList.remove('active'));
-            // De-activate all tab buttons
-            document.querySelectorAll('.dashboard-tab-btn').forEach(btn => btn.classList.remove('active'));
-
-            // Show the selected tab and activate its button
-            document.getElementById(tabId).classList.add('active');
-            document.querySelector(`.dashboard-tab-btn[onclick="showDashboardTab('${tabId}')"]`).classList.add('active');
-        }
-
-        function showAddEventModal() {
-            document.getElementById('addEventModal').classList.remove('hidden');
-        }
-
-        function closeAddEventModal() {
-            document.getElementById('addEventModal').classList.add('hidden');
-            document.getElementById('addEventForm').reset(); // Reset form on close
-        }
-
-        function editClubEvent(eventName) {
-            window.location.href = '/club/edit-event/' + encodeURIComponent(eventName);
-        }
-        let activeCharts = []; // To keep track of charts and destroy them before redrawing
-
-        function viewClubRegistrations(eventName) {
-            // Destroy old charts to prevent memory leaks and ghosting
-            activeCharts.forEach(chart => chart.destroy());
-            activeCharts = [];
-
-            document.getElementById('registrationsModal').classList.remove('hidden');
-            document.getElementById('registrationsTitle').textContent = eventName + ' - Registrations';
-
-            const table = document.getElementById('registrantListTable');
-            table.innerHTML = '<thead><tr><th>Loading...</th></tr></thead><tbody></tbody>'; // Loading state
-            showDashboardTab('registrant-list'); // Default to the list view
-
-            fetch('/api/club-event/' + encodeURIComponent(eventName) + '/registrations')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        table.innerHTML = `<thead><tr><th style="color: #ff6b6b;">Error</th></tr></thead><tbody><tr><td>${data.error}</td></tr></tbody>`;
-                        return;
-                    }
-
-                    // --- 1. BUILD THE REGISTRANT LIST TABLE ---
-                    const tableHeader = document.createElement('thead');
-                    let headerRow = '<tr><th>Name</th><th>Email</th><th>Entry No</th>';
-                    data.custom_fields.forEach(field => {
-                        headerRow += `<th>${field.text}</th>`;
-                    });
-                    headerRow += '</tr>';
-                    tableHeader.innerHTML = headerRow;
-
-                    const tableBody = document.createElement('tbody');
-                    if (data.registrants.length > 0) {
-                        data.registrants.forEach(reg => {
-                            let bodyRow = `<tr><td>${reg.name}</td><td>${reg.email}</td><td>${reg.entryno}</td>`;
-                            data.custom_fields.forEach(field => {
-                                bodyRow += `<td>${reg.custom_answers[field.id] || 'N/A'}</td>`;
-                            });
-                            bodyRow += '</tr>';
-                            tableBody.innerHTML += bodyRow;
-                        });
-                    } else {
-                        tableBody.innerHTML = `<tr><td colspan="${3 + data.custom_fields.length}" style="text-align:center; padding: 20px;">No one has registered yet.</td></tr>`;
-                    }
-                    table.innerHTML = ''; // Clear loading state
-                    table.appendChild(tableHeader);
-                    table.appendChild(tableBody);
-
-                    // --- 2. RENDER THE ANALYTICS CHARTS ---
-                    // Year Distribution Chart
-                    const yearCtx = document.getElementById('yearChart').getContext('2d');
-                    activeCharts.push(new Chart(yearCtx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: Object.keys(data.analytics.year_distribution),
-                            datasets: [{
-                                label: 'Year',
-                                data: Object.values(data.analytics.year_distribution),
-                                backgroundColor: ['#5D3FD3', '#7c5ce0', '#9a7ee8', '#b99ff0', '#d7bff8'],
-                                borderColor: 'rgba(255, 255, 255, 0.1)',
-                            }]
-                        },
-                        options: { responsive: true, plugins: { legend: { position: 'top', labels: { color: '#fff' } } } }
-                    }));
-
-                    // Department Distribution Chart
-                    const deptCtx = document.getElementById('deptChart').getContext('2d');
-                    activeCharts.push(new Chart(deptCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: Object.keys(data.analytics.department_distribution),
-                            datasets: [{
-                                label: 'Departments',
-                                data: Object.values(data.analytics.department_distribution),
-                                backgroundColor: '#7c5ce0'
-                            }]
-                        },
-                        options: { indexAxis: 'y', scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } }, plugins: { legend: { display: false } } }
-                    }));
-
-                    // Custom Question Charts
-                    const customChartsContainer = document.getElementById('customChartsContainer');
-                    customChartsContainer.innerHTML = ''; // Clear previous
-                    const customAnalytics = data.analytics.custom_question_analytics;
-                    for (const fieldId in customAnalytics) {
-                        const chartData = customAnalytics[fieldId];
-                        if (Object.keys(chartData.responses).length > 0) {
-                            const chartDiv = document.createElement('div');
-                            chartDiv.className = 'chart-container';
-                            chartDiv.innerHTML = `<h3>${chartData.question}</h3><canvas id="custom-chart-${fieldId}"></canvas>`;
-                            customChartsContainer.appendChild(chartDiv);
-
-                            const customCtx = document.getElementById(`custom-chart-${fieldId}`).getContext('2d');
-                            activeCharts.push(new Chart(customCtx, {
-                                type: 'pie', // Pie chart is good for these
-                                data: {
-                                    labels: Object.keys(chartData.responses),
-                                    datasets: [{
-                                        data: Object.values(chartData.responses),
-                                        backgroundColor: ['#5D3FD3', '#7c5ce0', '#9a7ee8', '#b99ff0', '#d7bff8', '#e5d7fc', '#f2eefd'],
-                                    }]
-                                },
-                                options: { responsive: true, plugins: { legend: { position: 'top', labels: { color: '#fff' } } } }
-                            }));
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching registrations:', error);
-                    table.innerHTML = `<thead><tr><th style="color: #ff6b6b;">Error</th></tr></thead><tbody><tr><td>Failed to load registrations. Please try again.</td></tr></tbody>`;
-                });
-        }
-        function closeRegistrationsModal() {
-            document.getElementById('registrationsModal').classList.add('hidden');
+        // --- Sidebar & Tab Management ---
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            const currentTab = '{{ current_tab | default("dashboard") }}';
-            showTab(currentTab);
-
-            // Optional: Add a default image for event cards if event.photo is missing
-            const eventImages = document.querySelectorAll('.card-front img');
-            eventImages.forEach(img => {
-                img.onerror = function () {
-                    this.src = "{{ url_for('static', filename='default_event.jpg') }}"; // Path to your default image
-                };
+            const hash = window.location.hash;
+            if (hash) {
+                const tab = document.querySelector(`.nav-link[href="${hash}"]`);
+                if (tab) {
+                    new bootstrap.Tab(tab).show();
+                }
+            }
+            // Handle image load errors
+            document.querySelectorAll('.event-card-img').forEach(img => {
+                img.onerror = () => { img.src = "{{ url_for('static', filename='default_event.jpg') }}"; };
             });
         });
 
-        function handleSelectAll(selectElement) {
-            const isAll = Array.from(selectElement.selectedOptions).some(opt => opt.value === "__all__");
-            if (isAll) {
-                for (let option of selectElement.options) {
-                    option.selected = true;
+        // --- Registrations Modal & Analytics ---
+        const registrationsModal = new bootstrap.Modal(document.getElementById('registrationsModal'));
+        let activeCharts = [];
+
+        function viewClubRegistrations(eventName) {
+            activeCharts.forEach(chart => chart.destroy());
+            activeCharts = [];
+
+            registrationsModal.show();
+            document.getElementById('registrationsTitle').textContent = `${eventName} - Registrations`;
+            const table = document.getElementById('registrantListTable');
+            table.innerHTML = '<thead><tr><th><div class="spinner-border spinner-border-sm" role="status"></div> Loading...</th></tr></thead>';
+
+            // Reset to first tab
+            new bootstrap.Tab(document.getElementById('list-tab')).show();
+
+            fetch(`/api/club-event/${encodeURIComponent(eventName)}/registrations`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) throw new Error(data.error);
+                    renderRegistrations(data);
+                    renderAnalytics(data.analytics);
+                })
+                .catch(err => {
+                    console.error('Error fetching registrations:', err);
+                    table.innerHTML = `<thead><tr><th class="text-danger">Error</th></tr></thead><tbody><tr><td>${err.message}</td></tr></tbody>`;
+                });
+        }
+
+        function renderRegistrations(data) {
+            const table = document.getElementById('registrantListTable');
+            let headerHTML = '<tr><th>Name</th><th>Email</th><th>Entry No</th><th>Year</th>';
+            data.custom_fields.forEach(f => { headerHTML += `<th>${f.text}</th>`; });
+            headerHTML += '</tr>';
+
+            let bodyHTML = '';
+            if (data.registrants.length > 0) {
+                data.registrants.forEach(r => {
+                    let row = `<tr><td>${r.name}</td><td>${r.email}</td><td>${r.entryno}</td><td>${r.year || 'N/A'}</td>`;
+                    data.custom_fields.forEach(f => { row += `<td>${r.custom_answers[f.id] || 'N/A'}</td>`; });
+                    row += '</tr>';
+                    bodyHTML += row;
+                });
+            } else {
+                bodyHTML = `<tr><td colspan="${4 + data.custom_fields.length}" class="text-center py-4">No one has registered yet.</td></tr>`;
+            }
+            table.innerHTML = `<thead>${headerHTML}</thead><tbody>${bodyHTML}</tbody>`;
+        }
+
+        function renderAnalytics(analytics) {
+            const chartOptions = { plugins: { legend: { labels: { color: '#fff' } } } };
+            const barChartOptions = { ...chartOptions, indexAxis: 'y', scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } };
+            const colors = ['#5D3FD3', '#7c5ce0', '#9a7ee8', '#b99ff0', '#d7bff8', '#4cc9f0', '#4895ef'];
+
+            if (Object.keys(analytics.year_distribution).length > 0) {
+                activeCharts.push(new Chart('yearChart', { type: 'doughnut', data: { labels: Object.keys(analytics.year_distribution), datasets: [{ data: Object.values(analytics.year_distribution), backgroundColor: colors }] }, options: chartOptions }));
+            }
+            if (Object.keys(analytics.department_distribution).length > 0) {
+                activeCharts.push(new Chart('deptChart', { type: 'bar', data: { labels: Object.keys(analytics.department_distribution), datasets: [{ label: 'Departments', data: Object.values(analytics.department_distribution), backgroundColor: '#7c5ce0' }] }, options: barChartOptions }));
+            }
+
+            const customChartsContainer = document.getElementById('customChartsContainer');
+            customChartsContainer.innerHTML = '';
+            for (const fieldId in analytics.custom_question_analytics) {
+                const d = analytics.custom_question_analytics[fieldId];
+                if (Object.keys(d.responses).length > 0) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-6';
+                    col.innerHTML = `<div class="glass-card h-100"><h5>${d.question}</h5><canvas id="custom-chart-${fieldId}"></canvas></div>`;
+                    customChartsContainer.appendChild(col);
+                    activeCharts.push(new Chart(`custom-chart-${fieldId}`, { type: 'pie', data: { labels: Object.keys(d.responses), datasets: [{ data: Object.values(d.responses), backgroundColor: colors }] }, options: chartOptions }));
                 }
             }
         }
 
-        function toggleAll(sourceCheckbox, name) {
-            const checkboxes = document.querySelectorAll(`input[name="${name}"]`);
-            for (let box of checkboxes) {
-                box.checked = sourceCheckbox.checked;
-            }
-        }
 
-        // In club.html, inside the <script> tag
-
+        // --- Custom Form Builder for Add Event Modal ---
         let questionCounter = 0;
-
         function addQuestionField() {
             const container = document.getElementById('custom-fields-container');
-            const fieldIndex = questionCounter;
-
-            const newField = document.createElement('div');
-            newField.className = 'custom-field-group';
-            newField.id = 'field-group-' + fieldIndex;
-            newField.innerHTML = `
-        <div class="custom-field-header">
-            <span>Question ${fieldIndex + 1}</span>
-            <button type="button" class="remove-field-btn" onclick="removeQuestionField(${fieldIndex})">Remove</button>
-        </div>
-        <div class="form-group">
-            <label>Question Text</label>
-            <input type="text" name="question_text_${fieldIndex}" placeholder="e.g., Why do you want to join?" required>
-        </div>
-        <div class="field-row">
-            <div class="form-group">
-                <label>Question Type</label>
-                <select name="question_type_${fieldIndex}" onchange="toggleOptionsInput(this, ${fieldIndex})">
-                    <option value="text">Text (Short Answer)</option>
-                    <option value="textarea">Text Area (Paragraph)</option>
-                    <option value="radio">Multiple Choice (Single Select)</option>
-                    <option value="checkbox">Checkboxes (Multiple Select)</option>
-                </select>
-            </div>
-            <div class="form-group" style="flex:0; padding-top:30px;">
-                <label style="display:flex; align-items:center; gap:5px;">
-                    <input type="checkbox" name="is_required_${fieldIndex}"> Required
-                </label>
-            </div>
-        </div>
-        <div class="form-group options-input" id="options-input-${fieldIndex}">
-            <label>Choices (comma-separated)</label>
-            <input type="text" name="options_${fieldIndex}" placeholder="e.g., Option 1, Option 2, Option 3">
-        </div>
-    `;
-
-            container.appendChild(newField);
+            const i = questionCounter;
+            const newFieldHTML = `
+                <div class="glass-card p-3 mb-3" id="field-group-${i}">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold">Question ${i + 1}</span>
+                        <button type="button" class="btn-close btn-close-white" onclick="removeQuestionField(${i})"></button>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Question Text</label>
+                        <input type="text" class="form-control" name="question_text_${i}" required>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col">
+                            <label class="form-label small">Question Type</label>
+                            <select class="form-select" name="question_type_${i}" onchange="toggleOptionsInput(this,${i})">
+                                <option value="text">Short Answer</option>
+                                <option value="textarea">Paragraph</option>
+                                <option value="radio">Multiple Choice</option>
+                                <option value="checkbox">Checkboxes</option>
+                            </select>
+                        </div>
+                        <div class="col-auto d-flex align-items-end">
+                             <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_required_${i}" id="is_required_${i}">
+                                <label class="form-check-label small" for="is_required_${i}">Required</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2 d-none" id="options-input-${i}">
+                        <label class="form-label small">Choices (comma-separated)</label>
+                        <input type="text" class="form-control" name="options_${i}" placeholder="Option A, Option B, Option C">
+                    </div>
+                </div>`;
+            container.insertAdjacentHTML('beforeend', newFieldHTML);
             questionCounter++;
             document.getElementById('custom_field_count').value = questionCounter;
         }
 
         function removeQuestionField(index) {
-            const fieldGroup = document.getElementById('field-group-' + index);
+            const fieldGroup = document.getElementById(`field-group-${index}`);
             if (fieldGroup) {
-                // Instead of removing, we just clear its content so the indices don't get messed up on the backend
-                fieldGroup.innerHTML = '<p style="text-align:center; color: #ff9a9a;">This question has been removed.</p>';
+                // We don't remove, just hide and clear inputs to avoid re-indexing issues on form submission
+                fieldGroup.innerHTML = `<p class="text-center text-danger small p-2">Question removed.</p>`;
+                fieldGroup.querySelectorAll('input, select').forEach(el => el.removeAttribute('name'));
             }
         }
 
-        function toggleOptionsInput(selectElement, index) {
-            const optionsInput = document.getElementById('options-input-' + index);
-            const selectedType = selectElement.value;
-            if (selectedType === 'radio' || selectedType === 'checkbox') {
-                optionsInput.style.display = 'block';
-            } else {
-                optionsInput.style.display = 'none';
-            }
+        function toggleOptionsInput(select, index) {
+            const optionsInput = document.getElementById(`options-input-${index}`);
+            optionsInput.classList.toggle('d-none', !(select.value === 'radio' || select.value === 'checkbox'));
         }
 
-        // Override the modal close function to reset the counter
-        function closeAddEventModal() {
-            document.getElementById('addEventModal').classList.add('hidden');
+        // Reset form on modal close
+        document.getElementById('addEventModal').addEventListener('hidden.bs.modal', function () {
             document.getElementById('addEventForm').reset();
-            // Clear the custom fields and reset the counter
             document.getElementById('custom-fields-container').innerHTML = '';
             questionCounter = 0;
             document.getElementById('custom_field_count').value = 0;
-        }
+        });
+
     </script>
 </body>
 

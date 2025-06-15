@@ -4,10 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile</title>
+    <title>My Profile</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
+        :root {
+            --primary-bg: #2c2f48;
+            --secondary-bg: #483D8B;
+            --sidebar-bg: rgba(0, 0, 0, 0.4);
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --text-color: #ffffff;
+            --text-muted: #b0c4de;
+            --accent-color: #7b68ee;
+            --highlight-color: #e94560;
+            --border-color: rgba(255, 255, 255, 0.15);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -18,20 +31,22 @@
         body {
             min-height: 100vh;
             width: 100%;
-            background: linear-gradient(to bottom right, #2c2f48, #5D3FD3);
+            background: linear-gradient(to bottom right, var(--primary-bg), var(--secondary-bg));
             display: flex;
-            color: #fff;
+            color: var(--text-color);
         }
 
         /* Sidebar Styles */
         .sidebar {
             width: 250px;
-            background: rgba(0, 0, 0, 0.4);
-            padding-top: 30px;
+            background: var(--sidebar-bg);
+            padding: 30px 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            transition: width 0.3s ease;
         }
 
         .sidebar img {
@@ -41,257 +56,256 @@
 
         .sidebar a {
             text-decoration: none;
-            color: #fff;
+            color: var(--text-muted);
             padding: 12px 20px;
-            margin: 5px 0;
-            width: 100%;
-            text-align: center;
-            transition: 0.3s;
+            margin: 5px 15px;
+            width: calc(100% - 30px);
+            text-align: left;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
-        .sidebar a:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .sidebar a i {
+            font-size: 1.2rem;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: var(--accent-color);
+            color: var(--text-color);
+            transform: translateX(5px);
         }
 
         /* Main Content */
         .main-content {
             flex: 1;
             padding: 30px;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+
+        .main-header {
+            margin-bottom: 30px;
+        }
+
+        .main-header h1 {
+            font-size: 2rem;
+            font-weight: 600;
         }
 
         .profile-container {
-            position: relative;
-            background: rgba(255, 255, 255, 0.95);
-            width: 90%;
-            max-width: 800px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
             overflow: hidden;
-            padding: 0;
+            max-width: 900px;
             margin: 0 auto;
+            border: 1px solid var(--border-color);
         }
 
         .profile-header {
-            background: linear-gradient(135deg, #4facfe, #5D3FD3);
-            padding: 30px;
+            padding: 40px 30px;
             text-align: center;
-            color: #fff;
             position: relative;
+            background: linear-gradient(135deg, rgba(123, 104, 238, 0.2), rgba(72, 61, 139, 0.3));
         }
 
-        .profile-photo {
+        .profile-photo-wrapper {
             position: relative;
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            margin: 0 auto;
-            border: 4px solid #fff;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            background-color: #f0f0f0;
+            margin: 0 auto 20px;
+            border: 4px solid var(--accent-color);
         }
 
-        .profile-photo img {
+        .profile-photo {
             width: 100%;
             height: 100%;
+            border-radius: 50%;
             object-fit: cover;
         }
 
-        .profile-photo .edit-photo {
+        .edit-photo-btn {
             position: absolute;
             bottom: 0;
             right: 0;
-            width: 30px;
-            height: 30px;
-            background: #5D3FD3;
+            width: 35px;
+            height: 35px;
+            background: var(--accent-color);
+            border: 2px solid var(--primary-bg);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
-        .profile-photo .edit-photo:hover {
-            background: #4a32a8;
+        .edit-photo-btn:hover {
             transform: scale(1.1);
+            background: var(--highlight-color);
         }
 
-        .profile-photo .edit-photo i {
-            color: #fff;
-            font-size: 16px;
-        }
-
-        .profile-info {
-            margin-top: 15px;
+        .edit-photo-btn i {
+            font-size: 18px;
         }
 
         .profile-name {
-            font-size: 24px;
+            font-size: 1.8rem;
             font-weight: 600;
-            margin-bottom: 5px;
         }
 
         .profile-department {
-            font-size: 16px;
-            opacity: 0.9;
+            font-size: 1.1rem;
+            color: var(--text-muted);
         }
 
         .profile-content {
             padding: 30px;
-            color: #333;
         }
 
         .section-title {
-            font-size: 18px;
-            font-weight: 500;
-            margin-bottom: 15px;
-            color: #5D3FD3;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--accent-color);
             display: flex;
             align-items: center;
-        }
-
-        .section-title i {
-            margin-right: 10px;
+            gap: 10px;
         }
 
         .interests-container {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
 
         .interest-tag {
-            background: rgba(93, 63, 211, 0.1);
-            border: 1px solid rgba(93, 63, 211, 0.5);
-            padding: 6px 12px;
-            border-radius: 50px;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            transition: 0.3s;
-            color: #5D3FD3;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
         }
 
-        .interest-tag:hover {
-            background: rgba(93, 63, 211, 0.2);
-        }
-
-        .edit-section {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
         }
 
         .form-group {
             margin-bottom: 20px;
         }
 
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #5D3FD3;
             font-weight: 500;
-            font-size: 14px;
         }
 
         .form-control {
             width: 100%;
-            background: #fff;
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 12px 15px;
-            color: #333;
-            font-size: 15px;
-            transition: 0.3s;
+            color: var(--text-color);
+            font-size: 1rem;
         }
 
         .form-control:focus {
-            border-color: #5D3FD3;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(93, 63, 211, 0.2);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(123, 104, 238, 0.3);
         }
 
         .interests-input-group {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-bottom: 15px;
+        }
+
+        .interest-checkbox-label {
+            display: block;
+            position: relative;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .interest-checkbox-label:hover {
+            border-color: var(--accent-color);
         }
 
         .interest-checkbox {
             display: none;
         }
 
-        .interest-label {
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            padding: 8px 15px;
-            border-radius: 50px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: 0.3s;
-            color: #333;
+        .interest-checkbox:checked+.interest-checkbox-label {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: var(--text-color);
         }
 
-        .interest-checkbox:checked+.interest-label {
-            background: rgba(93, 63, 211, 0.6);
-            border-color: rgba(93, 63, 211, 0.8);
-            color: #fff;
-        }
-
-        .interest-label:hover {
-            background: rgba(93, 63, 211, 0.1);
-        }
-
+        /* --- Custom Interests --- */
         .custom-interests-container {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 15px;
         }
 
         .custom-interest-tag {
-            background: rgba(93, 63, 211, 0.15);
-            border-radius: 50px;
-            padding: 5px 12px;
-            font-size: 14px;
+            background: var(--highlight-color);
+            color: var(--text-color);
+            padding: 8px 10px 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
-            color: #4a32a8;
         }
 
         .custom-interest-tag .remove-interest {
             margin-left: 8px;
             cursor: pointer;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 16px;
-            height: 16px;
-            font-size: 14px;
-            color: #4a32a8;
-            transition: color 0.2s;
+            transition: background 0.2s;
         }
 
         .custom-interest-tag .remove-interest:hover {
-            color: #e74c3c;
+            background: rgba(0, 0, 0, 0.3);
         }
 
         .add-interest-btn {
-            background: rgba(93, 63, 211, 0.1);
-            border: 1px dashed rgba(93, 63, 211, 0.5);
-            color: #5D3FD3;
-            padding: 6px 12px;
-            border-radius: 50px;
-            display: flex;
+            background: transparent;
+            border: 1px dashed var(--border-color);
+            color: var(--text-muted);
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-flex;
             align-items: center;
             cursor: pointer;
-            font-size: 14px;
-            transition: 0.3s;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
         }
 
         .add-interest-btn i {
@@ -299,230 +313,201 @@
         }
 
         .add-interest-btn:hover {
-            background: rgba(93, 63, 211, 0.2);
+            color: var(--text-color);
+            border-color: var(--accent-color);
         }
 
-        .custom-interest-input {
+        .custom-interest-input-wrapper {
             display: none;
-            margin-top: 10px;
-            width: 100%;
+            margin-top: 15px;
         }
 
-        .custom-interest-input.active {
+        .custom-interest-input-wrapper.active {
             display: flex;
         }
 
-        .custom-interest-input input {
-            flex: 1;
-            background: #fff;
-            border: 1px solid rgba(0, 0, 0, 0.1);
+        .custom-interest-input-wrapper input {
+            flex-grow: 1;
             border-radius: 8px 0 0 8px;
-            padding: 10px 15px;
-            color: #333;
-            font-size: 14px;
+            border-right: none;
         }
 
-        .custom-interest-input input:focus {
-            outline: none;
-            border-color: #5D3FD3;
-        }
-
-        .custom-interest-input button {
-            background: #5D3FD3;
+        .custom-interest-input-wrapper button {
+            background: var(--accent-color);
+            color: var(--text-color);
             border: none;
-            color: #fff;
-            padding: 10px 15px;
+            padding: 0 15px;
             border-radius: 0 8px 8px 0;
             cursor: pointer;
-            transition: 0.3s;
+            transition: background 0.2s;
         }
 
-        .custom-interest-input button:hover {
-            background: #4a32a8;
+        .custom-interest-input-wrapper button:hover {
+            background: var(--highlight-color);
         }
+
 
         .photo-input {
             display: none;
         }
 
-        .btn {
-            background: #4facfe;
+        .btn-save {
+            background: var(--highlight-color);
             color: #fff;
             border: none;
             border-radius: 8px;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: 500;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
             width: 100%;
             transition: 0.3s;
+            grid-column: 1 / -1;
         }
 
-        .btn:hover {
-            background: #5D3FD3;
+        .btn-save:hover {
+            background: #ff7991;
         }
 
-        .photo-preview {
-            position: relative;
-            width: 100%;
-            height: 0;
-            padding-bottom: 100%;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            overflow: hidden;
-            display: none;
-        }
-
-        .photo-preview img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        @media (max-width: 768px) {
+        @media (max-width: 992px) {
             .sidebar {
                 width: 70px;
             }
 
-            .sidebar a {
-                padding: 12px 5px;
-                text-align: center;
-            }
-
-            .sidebar i {
-                font-size: 20px;
-            }
-
-            .sidebar span {
+            .sidebar a span {
                 display: none;
             }
 
-            .profile-container {
-                width: 95%;
+            .sidebar a {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
             }
 
-            .profile-header {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                justify-content: space-around;
+                padding: 10px;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .sidebar img {
+                display: none;
+            }
+
+            .sidebar a {
+                flex-direction: column;
+                padding: 8px 5px;
+                gap: 4px;
+                flex-grow: 1;
+                width: auto;
+            }
+
+            .sidebar a span {
+                display: block;
+                font-size: 0.7rem;
+            }
+
+            .main-content {
                 padding: 20px;
+                max-height: none;
             }
 
-            .profile-photo {
-                width: 100px;
-                height: 100px;
-            }
-
-            .profile-name {
-                font-size: 20px;
-            }
-
-            .profile-content {
-                padding: 20px;
-            }
-
-            .edit-section {
-                padding: 20px 15px;
+            .form-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 
 <body>
-    <!-- Sidebar -->
     <div class="sidebar">
         <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" />
         <a href="/student"><i class='bx bxs-dashboard'></i> <span>Dashboard</span></a>
-        <a href="/student/profile"><i class='bx bxs-user'></i> <span>Profile</span></a>
+        <a href="/student/profile" class="active"><i class='bx bxs-user'></i> <span>Profile</span></a>
         <a href="/student/events_to_join"><i class='bx bxs-calendar-event'></i> <span>Events</span></a>
-        <a href="/student/academic_schedule"><i class='bx bxs-book'></i> <span>Academic Schedule</span></a>
+        <a href="/student/academic_schedule"><i class='bx bxs-book'></i> <span>Academics</span></a>
         <a href="/logout"><i class='bx bx-log-out'></i> <span>Logout</span></a>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
+        <div class="main-header">
+            <h1>My Profile</h1>
+        </div>
+
         <div class="profile-container">
-            <!-- Profile Header -->
             <div class="profile-header">
-                <div class="profile-photo">
-                    <img
-                        src="{{ url_for('static', filename='uploads/' + User.photo) if User.photo not in [None, 'null', ''] else url_for('static', filename='default_avatar.png') }}">
-                    alt="Profile Photo" id="profilePhoto">
-                    <div class="edit-photo" onclick="document.getElementById('profilePhotoInput').click()">
-                        <i class='bx bxs-camera'></i>
+                <div class="profile-photo-wrapper">
+                    <img id="profilePhoto"
+                        src="{{ url_for('static', filename='uploads/' + User.photo if User.photo else 'default_avatar.png') }}"
+                        alt="Profile Photo" class="profile-photo">
+                    <div class="edit-photo-btn" onclick="document.getElementById('profilePhotoInput').click()">
+                        <i class='bx bxs-camera-plus'></i>
                     </div>
                 </div>
-                <div class="profile-info">
-                    <h2 class="profile-name">{{ User.name }}</h2>
-                    <div class="profile-department">{{ User.department if User.department != 'null' else 'Department not
-                        set' }}</div>
-                </div>
+                <h2 class="profile-name">{{ User.name }}</h2>
+                <p class="profile-department">{{ User.department or 'Department not set' }}</p>
             </div>
 
-            <!-- Profile Content -->
             <div class="profile-content">
-                <!-- Interests Section -->
-                <div class="section-title">
-                    <i class='bx bx-star'></i> Your Interests
-                </div>
+                <div class="section-title"><i class='bx bxs-star'></i> Your Interests</div>
                 <div class="interests-container">
-                    {% for interest in current_interests %} <div class="interest-tag">{{ interest }}</div>
+                    {% for interest in current_interests %}
+                    <div class="interest-tag">{{ interest }}</div>
+                    {% else %}
+                    <p style="color: var(--text-muted);">No interests added yet. Edit your profile to add some!</p>
                     {% endfor %}
-                    {% if not current_interests %} <p>No interests added yet.</p>
-                    {% endif %}
                 </div>
-                <!-- Edit Profile Form -->
+
+                <hr style="border-color: var(--border-color); margin: 30px 0;">
+
                 <form action="/student/profile" method="POST" enctype="multipart/form-data">
-                    <div class="edit-section">
-                        <div class="section-title">
-                            <i class='bx bx-edit-alt'></i> Edit Profile
-                        </div>
+                    <div class="section-title"><i class='bx bxs-edit'></i> Edit Your Details</div>
+                    <input type="file" name="photo" id="profilePhotoInput" class="photo-input" accept="image/*">
 
-                        <!-- Hidden file input for photo -->
-                        <input type="file" name="photo" accept="image/*" id="profilePhotoInput" class="photo-input">
-
-                        <div class="photo-preview" id="photoPreview">
-                            <img src="" alt="Preview" id="photoPreviewImg">
-                        </div>
-
-                        <!-- Department Input -->
+                    <div class="form-grid">
                         <div class="form-group">
-                            <label for="profileNameInput">Name</label>
-                            <input type="text" name="name" id="profileNameInput" class="form-control"
-                                placeholder="Enter your name" value="{{ User.name }}">
+                            <label for="nameInput">Name</label>
+                            <input type="text" name="name" id="nameInput" class="form-control" value="{{ User.name }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="hostelInput">Hostel</label>
+                            <input type="text" name="hostel" id="hostelInput" class="form-control"
+                                value="{{ User.hostel or '' }}">
                         </div>
                         <div class="form-group">
                             <label for="currentYearInput">Current Year</label>
                             <input type="number" name="currentyear" id="currentYearInput" class="form-control"
-                                placeholder="Enter your current year" value="{{ User.currentyear }}">
+                                value="{{ User.currentyear or '' }}">
                         </div>
-
-                        <div class="form-group">
-                            <label for="hostelInput">Hostel</label>
-                            <input type="text" name="hostel" id="hostelInput" class="form-control"
-                                placeholder="Enter your hostel" value="{{ User.hostel }}">
-                        </div>
-
                         <div class="form-group">
                             <label for="exitYearInput">Exit Year</label>
                             <input type="number" name="exityear" id="exitYearInput" class="form-control"
-                                placeholder="Enter your expected exit year" value="{{ User.exityear }}">
+                                value="{{ User.exityear or '' }}">
                         </div>
-                        <!-- Predefined Interests -->
-                        <div class="form-group">
-                            <label>Select Interests</label>
+
+                        <div class="form-group full-width">
+                            <label>Update Interests</label>
                             <div class="interests-input-group">
                                 {% for interest in all_possible_interests %}
                                 <input type="checkbox" id="interest-{{ interest|lower }}" name="interests"
                                     value="{{ interest }}" class="interest-checkbox" {% if interest in current_interests
                                     %}checked{% endif %}>
-                                <label for="interest-{{ interest|lower }}" class="interest-label">{{ interest }}</label>
+                                <label for="interest-{{ interest|lower }}" class="interest-checkbox-label">{{ interest
+                                    }}</label>
                                 {% endfor %}
                             </div>
                         </div>
 
-                        <!-- Custom Interests -->
-                        <div class="form-group">
+                        <!-- RE-INTEGRATED CUSTOM INTERESTS FEATURE -->
+                        <div class="form-group full-width">
                             <label>Custom Interests</label>
                             <div class="custom-interests-container" id="customInterestsContainer">
                                 {% for interest in current_interests %}
@@ -530,25 +515,25 @@
                                 <div class="custom-interest-tag">
                                     <span>{{ interest }}</span>
                                     <input type="hidden" name="interests" value="{{ interest }}">
-                                    <div class="remove-interest" onclick="removeCustomInterest(this)">
-                                        <i class='bx bx-x'></i>
-                                    </div>
+                                    <div class="remove-interest" onclick="this.parentElement.remove()"><i
+                                            class='bx bx-x'></i></div>
                                 </div>
                                 {% endif %}
                                 {% endfor %}
                             </div>
-
-                            <div class="add-interest-btn" onclick="toggleCustomInterestInput()">
-                                <i class='bx bx-plus'></i> Add Custom Interest
+                            <div class="interests-input-group" style="margin-top: 15px;">
+                                <div class="add-interest-btn" onclick="toggleCustomInterestInput()">
+                                    <i class='bx bx-plus'></i> Add Custom Interest
+                                </div>
                             </div>
-
-                            <div class="custom-interest-input" id="customInterestInput">
-                                <input type="text" id="newInterestInput" placeholder="Enter a new interest">
-                                <button type="button" onclick="addCustomInterest()">Add</button>
+                            <div class="custom-interest-input-wrapper" id="customInterestInputWrapper">
+                                <input type="text" id="newInterestInput" class="form-control"
+                                    placeholder="Type interest and press Enter">
+                                <button type="button" onclick="addCustomInterest()"><i class='bx bx-check'></i></button>
                             </div>
                         </div>
 
-                        <button type="submit" class="btn">Save Changes</button>
+                        <button type="submit" class="btn-save">Save Changes</button>
                     </div>
                 </form>
             </div>
@@ -556,65 +541,55 @@
     </div>
 
     <script>
-        // Show file input when edit photo icon is clicked
-        document.querySelector('.edit-photo').addEventListener('click', function () {
-            document.getElementById('profilePhotoInput').click();
-        });
-
-        // Preview the selected image
         document.getElementById('profilePhotoInput').addEventListener('change', function (e) {
             if (e.target.files && e.target.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById('profilePhoto').src = e.target.result;
-                    document.getElementById('photoPreviewImg').src = e.target.result;
-                    document.getElementById('photoPreview').style.display = 'block';
+                reader.onload = (event) => {
+                    document.getElementById('profilePhoto').src = event.target.result;
                 };
                 reader.readAsDataURL(e.target.files[0]);
             }
         });
 
-        // Toggle custom interest input
+        // --- CUSTOM INTERESTS JAVASCRIPT ---
         function toggleCustomInterestInput() {
-            const inputDiv = document.getElementById('customInterestInput');
-            inputDiv.classList.toggle('active');
-            if (inputDiv.classList.contains('active')) {
+            const wrapper = document.getElementById('customInterestInputWrapper');
+            wrapper.classList.toggle('active');
+            if (wrapper.classList.contains('active')) {
                 document.getElementById('newInterestInput').focus();
             }
         }
 
-        // Add custom interest
         function addCustomInterest() {
             const inputField = document.getElementById('newInterestInput');
             const interestValue = inputField.value.trim();
 
             if (interestValue) {
                 const container = document.getElementById('customInterestsContainer');
+
+                // Prevent adding duplicates
+                const existing = container.querySelector(`input[value="${interestValue}"]`);
+                if (existing) {
+                    inputField.value = '';
+                    return;
+                }
+
                 const interestTag = document.createElement('div');
                 interestTag.className = 'custom-interest-tag';
-
                 interestTag.innerHTML = `
                     <span>${interestValue}</span>
                     <input type="hidden" name="interests" value="${interestValue}">
-                    <div class="remove-interest" onclick="removeCustomInterest(this)">
-                        <i class='bx bx-x'></i>
-                    </div>
+                    <div class="remove-interest" onclick="this.parentElement.remove()"><i class='bx bx-x'></i></div>
                 `;
-
                 container.appendChild(interestTag);
                 inputField.value = '';
                 inputField.focus();
             }
         }
 
-        // Remove custom interest
-        function removeCustomInterest(element) {
-            element.parentNode.remove();
-        }
-
-        // Handle Enter key in custom interest input
         document.getElementById('newInterestInput').addEventListener('keyup', function (e) {
             if (e.key === 'Enter') {
+                e.preventDefault(); // Prevent form submission
                 addCustomInterest();
             }
         });
