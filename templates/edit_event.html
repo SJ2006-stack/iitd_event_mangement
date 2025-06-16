@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Event - {{ event.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        :root {
+            --primary-bg: #1a1a2e;
+            --secondary-bg: #16213e;
+            --highlight-color: #e94560;
+            --text-color: #ffffff;
+            --muted-text: #a9a9a9;
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-border: rgba(255, 255, 255, 0.2);
+            --input-focus-border: var(--highlight-color);
+            --card-bg: #1e222d;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .edit-container {
+            background-color: var(--secondary-bg);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 800px;
+            padding: 30px 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .edit-container h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .edit-container h1 .event-name {
+            color: var(--highlight-color);
+        }
+
+        /* Important: enctype is needed for file uploads */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 15px;
+            color: var(--muted-text);
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="url"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.25);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .checkbox-label {
+            position: relative;
+            cursor: pointer;
+            padding-left: 30px;
+            font-size: 15px;
+            color: var(--text-color);
+        }
+
+        .checkbox-label::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .checkbox-label:hover::before {
+            border-color: var(--highlight-color);
+        }
+
+        input[type="checkbox"]:checked+.checkbox-label::before {
+            background-color: var(--highlight-color);
+            border-color: var(--highlight-color);
+        }
+
+        input[type="checkbox"]:checked+.checkbox-label::after {
+            content: '\ea5b';
+            /* Boxicons check icon */
+            font-family: 'Boxicons';
+            position: absolute;
+            left: 3px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: white;
+        }
+
+        .current-image-group {
+            margin-top: 10px;
+        }
+
+        .current-image-group p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--muted-text);
+        }
+
+        .current-image-group img {
+            margin-top: 10px;
+            max-width: 200px;
+            border-radius: 8px;
+            border: 1px solid var(--input-border);
+        }
+
+        .btn-submit {
+            background: var(--highlight-color);
+            color: var(--text-color);
+            font-size: 16px;
+            font-weight: 500;
+            padding: 14px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-submit:hover {
+            background: #d63a54;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .edit-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="edit-container">
+        <h1>Edit Event: <span class="event-name">{{ event.name }}</span></h1>
+
+        <!-- The form posts to the current URL, which is the correct edit route. -->
+        <!-- enctype="multipart/form-data" is ESSENTIAL for file uploads to work. -->
+        <form method="POST" enctype="multipart/form-data">
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea name="description" id="description" required>{{ event.description }}</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" name="date" id="date" value="{{ event.date }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="venue">Venue</label>
+                    <input type="text" name="venue" id="venue" value="{{ event.venue }}" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="starttime">Start Time</label>
+                    <input type="time" name="starttime" id="starttime" value="{{ event.starttime }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="endtime">End Time</label>
+                    <input type="time" name="endtime" id="endtime" value="{{ event.endtime }}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="link">Registration/Info Link (Optional)</label>
+                <input type="url" name="link" id="link" value="{{ event.link or '' }}"
+                    placeholder="https://example.com">
+            </div>
+
+            <div class="form-group">
+                <label for="tags">Tags (Comma-separated)</label>
+                <input type="text" name="tags" id="tags" value="{{ event.tags or '' }}"
+                    placeholder="Technical, Workshop, AI">
+            </div>
+            <div class="form-group">
+                <label for="modal_target_departments">Target Departments</label>
+                <select name="target_departments" id="modal_target_departments" multiple>
+                    {% for dept in all_departments %}
+                    <option value="{{ dept }}">{{ dept }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="target_years">Target Years</label>
+                    {% set selected_years = from_json(event.target_years) %}
+                    <select name="target_years" id="target_years" multiple>
+                        {% for year in all_years %}
+                        <option value="{{ year }}" {% if year in selected_years %}selected{% endif %}>Year {{ year }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="target_hostels">Target Hostels</label>
+                    {% set selected_hostels = from_json(event.target_hostels) %}
+                    <select name="target_hostels" id="target_hostels" multiple>
+                        {% for hostel in all_hostels %}
+                        <option value="{{ hostel }}" {% if hostel in selected_hostels %}selected{% endif %}>{{ hostel }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Add similar select boxes for target_years and target_hostels if you need them -->
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="is_private" name="is_private" value="true" {% if event.is_private
+                        %}checked{% endif %}>
+                    <label for="is_private" class="checkbox-label">Make this a private event for club members
+                        only</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="photo">Update Event Image (Optional)</label>
+                <input type="file" name="photo" id="photo" accept="image/*">
+                {% if event.photo %}
+                <div class="current-image-group">
+                    <p>Current image:</p>
+                    <img src="{{ url_for('uploaded_file', filename=event.photo) }}" alt="Current event image">
+                </div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn-submit">Save Changes</button>
+        </form>
+    </div>
+</body>
+
+</html>

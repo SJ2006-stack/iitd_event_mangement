@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- The title is now a block that child templates will fill in -->
+    <title>{% block title %}Synapse Portal{% endblock %}</title>
+
+    <!-- All common CSS and JS imports -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+    <!-- All common CSS styles -->
+    <style>
+        :root {
+            --primary-color: #1a1a2e;
+            --secondary-color: #16213e;
+            --sidebar-bg: rgba(20, 20, 40, 0.7);
+            --card-bg: rgba(35, 35, 65, 0.6);
+            --text-color: #f0f0f0;
+            --border-color: rgba(255, 255, 255, 0.2);
+            --input-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            transition: margin-left 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem 0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .sidebar-header img {
+            max-width: 60px;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-header h5 {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .sidebar .nav-pills .nav-link {
+            color: var(--text-color);
+            padding: 0.8rem 1.5rem;
+            margin: 0.2rem 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 500;
+            border-radius: 0;
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-pills .nav-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: var(--secondary-color);
+        }
+
+        .sidebar .nav-pills .nav-link.active {
+            background: rgba(37, 117, 252, 0.2);
+            border-left-color: var(--secondary-color);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.2rem;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .event-card {
+            background: var(--input-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .event-card-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .form-control,
+        .form-select {
+            background-color: var(--input-bg);
+            border-color: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background-color: var(--input-bg);
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.25rem rgba(37, 117, 252, 0.25);
+            color: var(--text-color);
+        }
+
+        select option {
+            background-color: #2c2f48;
+        }
+
+        .modal-content {
+            background: #2c2f48;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-header,
+        .modal-footer {
+            border-bottom-color: var(--border-color);
+            border-top-color: var(--border-color);
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                position: fixed;
+                margin-left: -260px;
+                z-index: 1030;
+                height: 100%;
+            }
+
+            .sidebar.active {
+                margin-left: 0;
+            }
+
+            .mobile-menu-toggle {
+                display: block !important;
+            }
+
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1029;
+            }
+
+            .sidebar.active~.overlay {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ logo_url }}" alt="Logo" class="rounded-circle">
+            <h5 class="mt-2 text-white">{{ portal_name }}</h5>
+        </div>
+
+        {% block nav_links %}{% endblock %}
+
+        <div class="mt-auto p-3 w-100">
+            <a class="nav-link" href="{{ url_for('logout') }}"><i
+                    class="bi bi-box-arrow-left"></i><span>Logout</span></a>
+        </div>
+    </div>
+
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <main class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <button class="btn btn-light d-lg-none mobile-menu-toggle" type="button" onclick="toggleSidebar()">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            <div class="position-absolute top-0 end-0 p-3" style="z-index: 1100">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
+                    role="alert" style="background-color: rgba(0,0,0,0.4); border-color: var(--border-color);">
+                    <strong>{{ category|title }}:</strong> {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                        aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+
+        {% block portal_content %}{% endblock %}
+    </main>
+
+    <!-- Modals are now defined once here -->
+    {% include '_modals.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const hash = window.location.hash;
+            if (hash) {
+                const tab = document.querySelector(`.nav-link[href="${hash}"]`);
+                if (tab) {
+                    new bootstrap.Tab(tab).show();
+                }
+            }
+            document.querySelectorAll('.event-card-img').forEach(img => {
+                img.onerror = () => { img.src = "{{ url_for('static', filename='default_event.jpg') }}"; };
+            });
+        });
+
+        const registrationsModal = new bootstrap.Modal(document.getElementById('registrationsModal'));
+        let activeCharts = [];
+
+        function viewRegistrations(eventName, apiEndpoint) {
+            activeCharts.forEach(chart => chart.destroy());
+            activeCharts = [];
+
+            registrationsModal.show();
+            document.getElementById('registrationsTitle').textContent = `${eventName} - Registrations`;
+            const table = document.getElementById('registrantListTable');
+            table.innerHTML = '<thead><tr><th><div class="spinner-border spinner-border-sm" role="status"></div> Loading...</th></tr></thead>';
+            new bootstrap.Tab(document.getElementById('list-tab')).show();
+
+            fetch(`${apiEndpoint}/${encodeURIComponent(eventName)}/registrations`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) throw new Error(data.error);
+                    renderRegistrations(data);
+                    if (data.analytics) {
+                        document.getElementById('analytics-tab').style.display = 'block';
+                        renderAnalytics(data.analytics);
+                    } else {
+                        document.getElementById('analytics-tab').style.display = 'none';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error fetching registrations:', err);
+                    table.innerHTML = `<thead><tr><th class="text-danger">Error</th></tr></thead><tbody><tr><td>${err.message}</td></tr></tbody>`;
+                });
+        }
+
+        function renderRegistrations(data) {
+            const table = document.getElementById('registrantListTable');
+            let headerHTML = '<tr><th>Name</th><th>Email</th><th>Entry No</th>';
+            let colspan = 3;
+            if (data.custom_fields && data.custom_fields.length > 0) {
+                data.custom_fields.forEach(f => { headerHTML += `<th>${f.text}</th>`; });
+                colspan += data.custom_fields.length;
+            }
+            headerHTML += '</tr>';
+
+            let bodyHTML = '';
+            if (data.registrants && data.registrants.length > 0) {
+                data.registrants.forEach(r => {
+                    let row = `<tr><td>${r.name}</td><td>${r.email}</td><td>${r.entryno}</td>`;
+                    if (data.custom_fields && data.custom_fields.length > 0) {
+                        data.custom_fields.forEach(f => { row += `<td>${(r.custom_answers && r.custom_answers[f.id]) || 'N/A'}</td>`; });
+                    }
+                    row += '</tr>';
+                    bodyHTML += row;
+                });
+            } else {
+                bodyHTML = `<tr><td colspan="${colspan}" class="text-center py-4">No one has registered yet.</td></tr>`;
+            }
+            table.innerHTML = `<thead>${headerHTML}</thead><tbody>${bodyHTML}</tbody>`;
+        }
+
+        function renderAnalytics(analytics) {
+            // Guard Clause: If no analytics data is provided, hide the tab and clear any old charts.
+            if (!analytics || Object.keys(analytics).length === 0) {
+                document.getElementById('analytics-tab-li').style.display = 'none';
+                const customChartsContainer = document.getElementById('customChartsContainer');
+                if (customChartsContainer) {
+                    customChartsContainer.innerHTML = '';
+                }
+                // The activeCharts array is cleared in the parent viewRegistrations function.
+                return;
+            }
+
+            // If analytics data exists, make sure the tab is visible.
+            document.getElementById('analytics-tab-li').style.display = 'block';
+
+            // Chart.js configuration
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#f0f0f0',
+                            font: {
+                                family: "'Poppins', sans-serif"
+                            }
+                        }
+                    }
+                }
+            };
+            const barChartOptions = {
+                ...chartOptions,
+                indexAxis: 'y',
+                scales: {
+                    y: { ticks: { color: '#f0f0f0' } },
+                    x: { ticks: { color: '#f0f0f0' } }
+                }
+            };
+            const colors = ['#5D3FD3', '#4cc9f0', '#7b68ee', '#f72585', '#4361ee', '#4895ef', '#b5179e'];
+
+            // Render Year Distribution Chart (Doughnut)
+            if (analytics.year_distribution && Object.keys(analytics.year_distribution).length > 0) {
+                activeCharts.push(new Chart(document.getElementById('yearChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(analytics.year_distribution),
+                        datasets: [{
+                            label: 'Year Distribution',
+                            data: Object.values(analytics.year_distribution),
+                            backgroundColor: colors
+                        }]
+                    },
+                    options: { ...chartOptions, plugins: { ...chartOptions.plugins, title: { display: true, text: 'Registrants by Year', color: '#fff' } } }
+                }));
+            }
+
+            // Render Department Distribution Chart (Bar)
+            if (analytics.department_distribution && Object.keys(analytics.department_distribution).length > 0) {
+                activeCharts.push(new Chart(document.getElementById('deptChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(analytics.department_distribution),
+                        datasets: [{
+                            label: 'Departments',
+                            data: Object.values(analytics.department_distribution),
+                            backgroundColor: '#7c5ce0'
+                        }]
+                    },
+                    options: { ...barChartOptions, plugins: { ...barChartOptions.plugins, title: { display: true, text: 'Registrants by Department', color: '#fff' } } }
+                }));
+            }
+
+            // Render Custom Question Charts
+            const customChartsContainer = document.getElementById('customChartsContainer');
+            customChartsContainer.innerHTML = ''; // Clear previous custom charts
+            if (analytics.custom_question_analytics) {
+                for (const fieldId in analytics.custom_question_analytics) {
+                    const chartData = analytics.custom_question_analytics[fieldId];
+                    if (chartData.responses && Object.keys(chartData.responses).length > 0) {
+                        const col = document.createElement('div');
+                        col.className = 'col-lg-6';
+                        col.innerHTML = `<div class="glass-card h-100 p-3"><canvas id="custom-chart-${fieldId}"></canvas></div>`;
+                        customChartsContainer.appendChild(col);
+
+                        activeCharts.push(new Chart(document.getElementById(`custom-chart-${fieldId}`), {
+                            type: 'pie',
+                            data: {
+                                labels: Object.keys(chartData.responses),
+                                datasets: [{
+                                    data: Object.values(chartData.responses),
+                                    backgroundColor: colors
+                                }]
+                            },
+                            options: { ...chartOptions, plugins: { ...chartOptions.plugins, title: { display: true, text: chartData.question, color: '#fff' } } }
+                        }));
+                    }
+                }
+            }
+        }
+
+        let questionCounter = 0;
+        function addQuestionField() {
+            const container = document.getElementById('custom-fields-container');
+            const i = questionCounter;
+            const newFieldHTML = `
+                <div class="glass-card p-3 mb-3" id="field-group-${i}">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold">Question ${i + 1}</span>
+                        <button type="button" class="btn-close btn-close-white" onclick="removeQuestionField(${i})"></button>
+                    </div>
+                    <div class="mb-2"><label class="form-label small">Question Text</label><input type="text" class="form-control" name="question_text_${i}" required></div>
+                    <div class="row g-2">
+                        <div class="col"><label class="form-label small">Question Type</label><select class="form-select" name="question_type_${i}" onchange="toggleOptionsInput(this,${i})"><option value="text">Short Answer</option><option value="textarea">Paragraph</option><option value="radio">Multiple Choice</option><option value="checkbox">Checkboxes</option></select></div>
+                        <div class="col-auto d-flex align-items-end"><div class="form-check"><input class="form-check-input" type="checkbox" name="is_required_${i}" id="is_required_${i}"><label class="form-check-label small" for="is_required_${i}">Required</label></div></div>
+                    </div>
+                    <div class="mt-2 d-none" id="options-input-${i}"><label class="form-label small">Choices (comma-separated)</label><input type="text" class="form-control" name="options_${i}" placeholder="Option A, Option B, Option C"></div>
+                </div>`;
+            container.insertAdjacentHTML('beforeend', newFieldHTML);
+            questionCounter++;
+            document.getElementById('custom_field_count').value = questionCounter;
+        }
+
+        function removeQuestionField(index) {
+            const fieldGroup = document.getElementById(`field-group-${index}`);
+            if (fieldGroup) {
+                fieldGroup.innerHTML = `<p class="text-center text-danger small p-2">Question removed.</p>`;
+                fieldGroup.querySelectorAll('input, select').forEach(el => el.removeAttribute('name'));
+            }
+        }
+
+        function toggleOptionsInput(select, index) {
+            const optionsInput = document.getElementById(`options-input-${index}`);
+            optionsInput.classList.toggle('d-none', !(select.value === 'radio' || select.value === 'checkbox'));
+        }
+
+        document.getElementById('addEventModal').addEventListener('hidden.bs.modal', function () {
+            document.getElementById('addEventForm').reset();
+            document.getElementById('custom-fields-container').innerHTML = '';
+            questionCounter = 0;
+            document.getElementById('custom_field_count').value = 0;
+        });
+        const addEventModal = document.getElementById('addEventModal');
+        if (addEventModal) {
+            addEventModal.addEventListener('show.bs.modal', function (event) {
+                // Get the button that triggered the modal
+                const button = event.relatedTarget;
+                // Extract the URL from the button's data-action attribute
+                const actionUrl = button.getAttribute('data-action');
+                // Find the form inside the modal
+                const form = addEventModal.querySelector('#addEventForm');
+                // Set the form's action attribute
+                form.setAttribute('action', actionUrl);
+            });
+        }
+    </script>
+</body>
+
+</html>

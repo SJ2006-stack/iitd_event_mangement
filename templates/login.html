@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KARS - Event Management Software</title>
+    <title>Synapse - Event Management Software</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -405,6 +405,8 @@
             display: none;
         }
 
+        /* Hide forms by default */
+        #login-section,
         #signup-section {
             display: none;
         }
@@ -485,10 +487,10 @@
         <div class="item">
             <div>
                 <div class="logo"><img src="{{ url_for('static', filename='logo.png') }}"
-                        alt="KARS Logo"><span>KARS</span></div>
+                        alt="Synapse Logo"><span>Synapse</span></div>
             </div>
             <div class="text-item">
-                <h2>Welcome to KARS</h2>
+                <h2>Welcome to Synapse</h2>
                 <p><b>Your complete event management software solution for academic institutions</b></p>
             </div>
             <div></div>
@@ -498,7 +500,7 @@
             <!-- LOGIN FORM -->
             <div class="form-box" id="login-section">
                 <h2>Login</h2>
-                <form action="/" method="POST" id="login-form" novalidate>
+                <form action="{{ url_for('login') }}" method="POST" id="login-form" novalidate>
                     <div class="input-box"><span class="icon"><i class='bx bxs-envelope'></i></span><input type="email"
                             name="email" required><label>Email</label></div>
                     <div class="input-box"><span class="icon"><i class='bx bxs-lock-alt'></i></span><input
@@ -522,13 +524,13 @@
                                 <div class="dropdown-option-item" data-value="admin"><i class='bx bxs-shield'></i>Admin
                                 </div>
                             </div>
-                            <input type="hidden" name="role" id="login-role-input" required>
+                            <input type="hidden" name="role" id="login-role-input" value="student" required>
                         </div>
                         <span class="error-message" id="login-role-error">Please select a role</span>
                     </div>
                     <button type="submit" class="btn">Login</button>
                     <div class="bottom-text">
-                        <p>Don't have an account? <a href="#" onclick="showSignup(event)">Sign up</a></p>
+                        <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a></p>
                     </div>
                 </form>
             </div>
@@ -536,7 +538,7 @@
             <!-- SIGNUP FORM -->
             <div class="form-box" id="signup-section">
                 <h2>Sign Up</h2>
-                <form action="/" method="POST" id="signup-form" novalidate>
+                <form action="{{ url_for('signup') }}" method="POST" id="signup-form" novalidate>
                     <div class="input-box"><span class="icon"><i class='bx bxs-user'></i></span><input type="text"
                             name="name" required><label>Full Name</label></div>
                     <div class="input-box"><span class="icon"><i class='bx bxs-envelope'></i></span><input type="email"
@@ -632,7 +634,7 @@
 
                     <button type="submit" class="btn">Send OTP</button>
                     <div class="bottom-text">
-                        <p>Already have an account? <a href="#" onclick="showLogin(event)">Login</a></p>
+                        <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
                     </div>
                 </form>
             </div>
@@ -640,26 +642,22 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const loginSection = document.getElementById('login-section');
-            const signupSection = document.getElementById('signup-section');
+            // --- Part 1: Show the correct form based on the URL ---
+            const formType = "{{ form_type|default('login') }}";
+            if (formType === 'signup') {
+                document.getElementById('signup-section').style.display = 'block';
+            } else {
+                document.getElementById('login-section').style.display = 'block';
+            }
 
-            window.showSignup = (e) => {
-                e.preventDefault();
-                loginSection.style.display = 'none';
-                signupSection.style.display = 'block';
-            };
-
-            window.showLogin = (e) => {
-                e.preventDefault();
-                signupSection.style.display = 'none';
-                loginSection.style.display = 'block';
-            };
-
+            // --- Part 2: Generic Dropdown Logic ---
             const setupDropdown = (displayId, inputId, errorId) => {
                 const display = document.getElementById(displayId);
                 const optionsContainer = display.nextElementSibling;
                 const input = document.getElementById(inputId);
                 const error = document.getElementById(errorId);
+
+                if (!display) return;
 
                 display.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -679,66 +677,45 @@
                         input.value = value;
                         if (error) error.style.display = 'none';
                         optionsContainer.classList.remove('show');
+                        // Trigger a custom event to notify that the value has changed
+                        input.dispatchEvent(new Event('change'));
                     }
                 });
             };
 
+            // Initialize all dropdowns
             setupDropdown('login-role-display', 'login-role-input', 'login-role-error');
             setupDropdown('signup-course-display', 'signup-course-input', 'signup-course-error');
             setupDropdown('signup-hostel-display', 'signup-hostel-input', 'signup-hostel-error');
 
+            // Close dropdowns when clicking outside
             document.addEventListener('click', () => {
                 document.querySelectorAll('.dropdown-options.show').forEach(el => el.classList.remove('show'));
             });
 
-            const validateAndSubmit = (form, validations) => {
-                form.addEventListener('submit', (e) => {
-                    let isFormValid = true;
-                    for (const validation of validations) {
-                        const { input, validator, errorElement, errorMessage } = validation;
-                        if (!validator(input.value)) {
-                            errorElement.textContent = errorMessage;
-                            errorElement.style.display = 'block';
-                            isFormValid = false;
-                        } else {
-                            errorElement.style.display = 'none';
-                        }
+            // --- Part 3: Login Form Usability Improvement ---
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) {
+                const loginRoleInput = document.getElementById('login-role-input');
+                const loginRoleDisplay = document.getElementById('login-role-display');
+                const loginButton = loginForm.querySelector('button[type="submit"]');
+
+                // Set initial state for login form
+                loginRoleInput.value = ''; // Ensure role is not pre-selected
+                loginButton.disabled = true; // Disable login button initially
+
+                // The function to check if a role has been selected
+                const validateRoleSelection = () => {
+                    if (loginRoleInput.value) {
+                        loginButton.disabled = false;
+                    } else {
+                        loginButton.disabled = true;
                     }
-                    if (!isFormValid) e.preventDefault();
-                });
-            };
+                };
 
-            const loginValidations = [
-                { input: document.getElementById('login-role-input'), validator: val => val !== '', errorElement: document.getElementById('login-role-error'), errorMessage: 'Please select a role' }
-            ];
-            validateAndSubmit(document.getElementById('login-form'), loginValidations);
-
-            const signupValidations = [
-                { input: document.getElementById('signup-name'), validator: val => val.trim() !== '', errorElement: document.getElementById('signup-name').parentElement.nextElementSibling, errorMessage: 'Name is required' },
-                { input: document.getElementById('signup-email'), validator: val => /^[a-zA-Z0-9._-]+@iitd\.ac\.in$/.test(val), errorElement: document.getElementById('signup-email').parentElement.nextElementSibling, errorMessage: 'Must be a valid @iitd.ac.in email' },
-                { input: document.getElementById('signup-password'), validator: val => val.length >= 8, errorElement: document.getElementById('signup-password').parentElement.nextElementSibling, errorMessage: 'Password must be 8+ characters' },
-                { input: document.getElementById('signup-confirm-password'), validator: val => val === document.getElementById('signup-password').value, errorElement: document.getElementById('signup-confirm-password').parentElement.nextElementSibling, errorMessage: 'Passwords do not match' },
-                { input: document.getElementById('signup-course-input'), validator: val => val !== '', errorElement: document.getElementById('signup-course-error'), errorMessage: 'Please select a course' },
-                { input: document.getElementById('signup-hostel-input'), validator: val => val !== '', errorElement: document.getElementById('signup-hostel-error'), errorMessage: 'Please select a hostel' }
-            ];
-            // Note: A more robust way would be to create error elements via JS, but this works for the given HTML structure. I will assume error elements are correctly placed for this example. For signup, the structure is a bit different so I'll adjust.
-            // A simple validation for demonstration:
-            document.getElementById('signup-form').addEventListener('submit', (e) => {
-                let isValid = true;
-                if (document.getElementById('signup-name').value.trim() === '') isValid = false;
-                if (!/^[a-zA-Z0-9._-]+@iitd\.ac\.in$/.test(document.getElementById('signup-email').value)) isValid = false;
-                if (document.getElementById('signup-password').value.length < 8) isValid = false;
-                if (document.getElementById('signup-password').value !== document.getElementById('signup-confirm-password').value) isValid = false;
-                if (document.getElementById('signup-course-input').value === '') isValid = false;
-                if (document.getElementById('signup-hostel-input').value === '') isValid = false;
-
-                if (!isValid) {
-                    e.preventDefault();
-                    // You would typically show specific error messages here
-                    console.log("Signup form invalid");
-                }
-            });
-
+                // Listen for our custom 'change' event from the dropdown logic
+                loginRoleInput.addEventListener('change', validateRoleSelection);
+            }
         });
     </script>
 </body>

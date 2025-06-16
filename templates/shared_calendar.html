@@ -232,7 +232,7 @@
         </div>
 
         <div class="footer">
-            <p>Powered by the KARS Student Portal.</p>
+            <p>Powered by the Synapse Student Portal.</p>
         </div>
     </div>
 
@@ -270,10 +270,12 @@
         });
 
         function copyToClipboard(text) {
+            // This now correctly receives the URL string
             navigator.clipboard.writeText(text).then(() => {
                 showToast('Calendar subscription URL copied!');
             }).catch(err => {
                 console.error('Could not copy text: ', err);
+                // Fallback for older browsers or insecure contexts
                 alert('Failed to copy. Please copy the link manually.');
             });
         }

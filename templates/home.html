@@ -1,0 +1,198 @@
+{% extends "base_public.html" %}
+
+{% block title %}Synapse - Your Campus, Connected{% endblock %}
+
+{% block head_extra %}
+<style>
+    .hero-section {
+        padding: 8rem 0;
+        text-align: center;
+        color: var(--text-color);
+    }
+    .hero-section h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        text-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+    .hero-section .lead {
+        font-size: 1.25rem;
+        max-width: 600px;
+        margin: 1.5rem auto;
+        color: var(--muted-text);
+    }
+    .hero-section .btn {
+        padding: 0.75rem 2rem;
+        font-weight: 500;
+        font-size: 1.1rem;
+    }
+
+    .features-section .feature-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        padding: 2rem;
+        border-radius: 1rem;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .features-section .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    .feature-card .icon {
+        font-size: 3rem;
+        color: var(--highlight-color);
+        margin-bottom: 1.5rem;
+    }
+
+    .stats-section {
+        background: rgba(0,0,0,0.2);
+        padding: 4rem 0;
+    }
+    .stat-item h3 {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--highlight-color);
+    }
+
+    /* Use the existing event card styles from portal_base.html */
+    .event-card { background: var(--card-bg); border-radius: 12px; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; border: 1px solid var(--border-color); }
+    .event-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4); }
+    .event-card-img { width: 100%; height: 180px; object-fit: cover; }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <h1 class="display-3">Your Campus, Connected.</h1>
+        <p class="lead">Welcome to Synapse, the all-in-one platform for discovering events, managing academic schedules, and leading student organizations at IIT Delhi.</p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">Login</a>
+            <a href="{{ url_for('signup') }}" class="btn btn-danger btn-lg" style="background-color: var(--highlight-color);">Get Started</a>
+        </div>
+    </section>
+</div>
+
+<!-- Features Section -->
+<section class="features-section py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="feature-card h-100">
+                    <div class="icon"><i class="bi bi-calendar-star-fill"></i></div>
+                    <h4 class="mb-3">Discover & Join Events</h4>
+                    <p class="text-white-50">Explore a centralized calendar of all club, fest, and department events. Register with a single click and never miss an opportunity.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="feature-card h-100">
+                    <div class="icon"><i class="bi bi-people-fill"></i></div>
+                    <h4 class="mb-3">Manage Your Organization</h4>
+                    <p class="text-white-50">Create events, track analytics, and build your team. Our portals give you the tools you need to succeed.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="feature-card h-100">
+                    <div class="icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+                    <h4 class="mb-3">Streamline Academics</h4>
+                    <p class="text-white-50">Subscribe to your courses to get a personalized academic calendar with all important deadlines, quizzes, and exams in one place.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section my-5">
+    <div class="container text-center">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="stat-item">
+                    <h3 class="counter" data-target="{{ stats.users }}">0</h3>
+                    <p class="text-white-50">Verified Users</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-item">
+                    <h3 class="counter" data-target="{{ stats.events }}">0</h3>
+                    <p class="text-white-50">Events Hosted</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-item">
+                    <h3 class="counter" data-target="{{ stats.orgs }}">0</h3>
+                    <p class="text-white-50">Active Organizations</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- Featured Events Section -->
+<section class="featured-events py-5">
+    <div class="container">
+        <h2 class="text-center display-5 fw-bold mb-5">What's Happening on Campus?</h2>
+        <div class="row g-4">
+            {% if featured_events %}
+                {% for event in featured_events %}
+                    {% include '_event_card.html' %}
+                {% endfor %}
+            {% else %}
+                <div class="col">
+                    <div class="text-center p-5 rounded" style="background: var(--card-bg);">
+                        <h4 class="text-white-50">No upcoming public events.</h4>
+                        <p class="text-white-50">Check back soon for more!</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{{ url_for('login') }}" class="btn btn-outline-light">Login to See More & Register</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+    // Counter Animation
+    document.addEventListener('DOMContentLoaded', () => {
+        const counters = document.querySelectorAll('.counter');
+        const speed = 200; // The lower the number, the faster the count
+
+        const animateCounter = (counter) => {
+            const target = +counter.getAttribute('data-target');
+            const updateCount = () => {
+                const count = +counter.innerText;
+                const increment = target / speed;
+
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + increment);
+                    setTimeout(updateCount, 1);
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            updateCount();
+        };
+
+        // Intersection Observer to trigger animation on scroll
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounter(entry.target);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        counters.forEach(counter => {
+            observer.observe(counter);
+        });
+    });
+</script>
+{% endblock %}

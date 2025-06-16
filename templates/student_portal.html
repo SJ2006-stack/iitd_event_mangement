@@ -403,11 +403,25 @@
                 <ul class="events-list">
                     {% for event in recommend_events %}
                     <li>
-                        <div class="event-title">{{ event.name }}</div>
-                        <div class="event-details">
-                            <i class='bx bx-calendar'></i> {{ event.date }} at {{ event.starttime }}<br>
-                            <i class='bx bx-map'></i> {{ event.venue }}<br>
-                            <i class='bx bx-buildings'></i> {{ event.organiser }}
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="event-title">{{ event.name }}</div>
+                                <div class="event-details">
+                                    <i class='bx bx-calendar'></i> {{ event.date }} at {{ event.starttime }}<br>
+                                    <i class='bx bx-map'></i> {{ event.venue }}<br>
+                                    <i class='bx bx-buildings'></i> {{ event.organiser }}
+                                </div>
+                            </div>
+                            <!-- ADD THIS FORM -->
+                            <div class="ms-3">
+                                <form action="{{ url_for('register_from_recommendation', event_id=event.id) }}"
+                                    method="POST">
+                                    <button type="submit" class="action-btn"
+                                        style="padding: 5px 12px; font-size: 0.9rem;">
+                                        <i class='bx bx-check-circle'></i> Register
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </li>
                     {% else %}
