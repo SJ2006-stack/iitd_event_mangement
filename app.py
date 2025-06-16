@@ -363,7 +363,6 @@ def send_otp_email(receiver_email, otp_code):
     my_email = os.getenv("email")
     app_pass = os.getenv("app_pass")
     if not my_email or not app_pass:
-        print("Email credentials not configured. Skipping OTP email.")
         return False
     subject = "OTP for Synapse Registration"
     message = f"Your OTP for Synapse registration is: {otp_code}"
@@ -376,7 +375,6 @@ def send_otp_email(receiver_email, otp_code):
         server.quit()
         return True
     except Exception as e:
-        print(f"Error sending OTP email: {e}")
         return False
 
 def to_entryno(username):
@@ -907,13 +905,13 @@ def Synapse_profile():
                     photo_file.save(file_path)
                     user.photo = filename
                 except Exception as e:
-                    print(f"Error saving photo: {e}")
+
         try:
             db.session.commit()
             return redirect(url_for('Synapse_profile'))
         except Exception as e:
             db.session.rollback()
-            print(f"Error updating profile: {e}")
+
 
     current_interests = json_to_list(user.interest)
     all_possible_interests = ["Coding", "Music", "Sports", "Dance", "Literature", "Gaming", "Art", "Photography"]
@@ -1020,7 +1018,6 @@ def register_for_event_page(event_name):
 
         except Exception as e:
             db.session.rollback()
-            print(f"Error during registration submission: {e}")
             flash("An error occurred during registration. Please try again.", "error")
             return redirect(url_for('student_events_to_join'))
 
@@ -1053,7 +1050,6 @@ def submit_event_feedback(event_name):
             flash("Invalid feedback value.", "error")
         except Exception as e:
             db.session.rollback()
-            print(f"Error submitting feedback: {e}")
             flash("Error submitting feedback.", "error")
     else:
         flash("Registration not found for this event to submit feedback.", "warning")
@@ -1207,7 +1203,6 @@ def register_from_recommendation(event_id):
         flash(f"Successfully registered for '{event_to_join.name}'!", "success")
     except Exception as e:
         db.session.rollback()
-        print(f"Error during recommendation registration: {e}")
         flash("An error occurred while trying to register.", "error")
     
     return redirect(url_for('Synapse_student'))
@@ -1344,7 +1339,6 @@ def create_fest_event():
         flash(f"Event '{name}' created successfully!", "success")
     except Exception as e:
         db.session.rollback()
-        print(f"Error creating fest event: {e}")
         flash("An error occurred while creating the event.", "error")
     return redirect(url_for('fest_dashboard'))
 
@@ -1381,7 +1375,6 @@ def edit_fest_event(event_name):
             flash("Event updated successfully!", "success")
         except Exception as e:
             db.session.rollback()
-            print(f"Error editing fest event: {e}")
             flash("Error updating event.", "error")
         return redirect(url_for('fest_dashboard'))
     
@@ -1561,7 +1554,6 @@ def create_club_event():
 
     except Exception as e:
         db.session.rollback()
-        print(f"Error creating club event: {e}")
         flash("An error occurred while creating the event. Please check your inputs and try again.", "error")
 
     return redirect(url_for('club_dashboard'))
@@ -1615,7 +1607,6 @@ def edit_club_event(event_name):
             flash(f"Event '{event_to_edit.name}' updated successfully!", "success")
         except Exception as e:
             db.session.rollback()
-            print(f"Error editing club event: {e}")
             flash("An error occurred while updating the event.", "error")
         
         return redirect(url_for('club_dashboard'))
@@ -1817,7 +1808,6 @@ def create_department_activity():
         flash("Activity created successfully!", "success")
     except Exception as e:
         db.session.rollback()
-        print(f"Error creating department activity: {e}")
         flash("Error creating activity.", "error")
     return redirect(url_for('department_dashboard'))
 
@@ -1842,7 +1832,6 @@ def edit_department_activity(activity_name):
         except Exception as e:
             db.session.rollback()
             flash("Error updating activity.", "error")
-            print(f"Error editing department activity: {e}")
         return redirect(url_for('department_dashboard'))
     
     return render_template('edit_event.html', event=activity_to_edit, event_type='department_activity')
@@ -1920,7 +1909,6 @@ def create_academic_event():
         flash(f"Academic event '{new_academic_event.name}' created successfully for {course_code}.", "success")
     except Exception as e:
         db.session.rollback()
-        print(f"Error creating academic event: {e}")
         flash("An error occurred while creating the event.", "error")
 
     return redirect(url_for('course_coordinator_dashboard'))
@@ -1952,7 +1940,6 @@ def update_course_structure():
         flash(f"Structure for {course_code} updated successfully.", "success")
     except Exception as e:
         db.session.rollback()
-        print(f"Error updating course structure: {e}")
         flash("An error occurred while updating the course structure.", "error")
         
     return redirect(url_for('course_coordinator_dashboard'))
