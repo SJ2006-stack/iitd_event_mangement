@@ -905,7 +905,8 @@ def Synapse_profile():
                     photo_file.save(file_path)
                     user.photo = filename
                 except Exception as e:
-
+                    flash("Failed to upload photo. Please try again.", "error")
+                    return redirect(url_for('Synapse_profile'))
         try:
             db.session.commit()
             return redirect(url_for('Synapse_profile'))
