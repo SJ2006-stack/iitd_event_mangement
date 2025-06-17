@@ -156,6 +156,53 @@
             border-top-color: var(--border-color);
         }
 
+        .form-group select[multiple] {
+            background-color: var(--input-bg);
+            /* From portal_base.html */
+            border: 1px solid var(--border-color);
+            /* From portal_base.html */
+            color: var(--text-color);
+            /* From portal_base.html */
+            border-radius: 8px;
+            padding: 10px;
+            min-height: 120px;
+            /* Give it some default height */
+            max-height: 200px;
+            /* Prevent it from getting too tall */
+            overflow-y: auto;
+            /* Add scroll if content overflows */
+        }
+
+        .form-group select[multiple]:focus {
+            border-color: var(--secondary-color);
+            /* Or your accent color */
+            box-shadow: 0 0 0 0.25rem rgba(37, 117, 252, 0.25);
+            /* Or your accent color with opacity */
+            outline: none;
+        }
+
+        .form-group select[multiple] option {
+            padding: 8px 10px;
+            background-color: #2c2f48;
+            /* Darker background for options, consistent with other selects */
+            color: var(--text-color);
+        }
+
+        .form-group select[multiple] option:checked {
+            background-color: var(--secondary-color) !important;
+            /* Or your accent color */
+            color: white !important;
+        }
+
+        .target-audience-info {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            /* From portal_base.html */
+            margin-top: 5px;
+            display: block;
+            /* Make it a block to appear on its own line */
+        }
+
         @media (max-width: 992px) {
             .sidebar {
                 position: fixed;

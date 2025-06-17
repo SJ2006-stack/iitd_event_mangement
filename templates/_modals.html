@@ -40,32 +40,38 @@
                                 class="form-control" name="tags" placeholder="Coding, Music, Fun" required></div>
                         <div class="col-md-6"><label class="form-label">Registration Link (Optional)</label><input
                                 type="url" class="form-control" name="link"></div>
-                        <div class="form-group">
-                            <label for="modal_target_departments">Target Departments</label>
-                            <select name="target_departments" id="modal_target_departments" multiple>
+
+                        <!-- Target Departments -->
+                        <div class="col-12 form-group">
+                            <label for="modal_target_departments" class="form-label">Target Departments</label>
+                            <select class="form-select" name="target_departments" id="modal_target_departments" multiple>
                                 {% for dept in all_departments %}
                                 <option value="{{ dept }}">{{ dept }}</option>
                                 {% endfor %}
                             </select>
+                            <small class="target-audience-info">Leave blank to target all departments.</small>
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="modal_target_years">Target Years</label>
-                                <select name="target_years" id="modal_target_years" multiple>
-                                    {% for year in all_years %}
-                                    <option value="{{ year }}">Year {{ year }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="modal_target_hostels">Target Hostels</label>
-                                <select name="target_hostels" id="modal_target_hostels" multiple>
-                                    {% for hostel in all_hostels %}
-                                    <option value="{{ hostel }}">{{ hostel }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
+                        <!-- Target Years -->
+                        <div class="col-md-6 form-group">
+                            <label for="modal_target_years" class="form-label">Target Years</label>
+                            <select class="form-select" name="target_years" id="modal_target_years" multiple>
+                                {% for year in all_years %}
+                                <option value="{{ year }}">Year {{ year }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="target-audience-info">Leave blank to target all years.</small>
+                        </div>
+
+                        <!-- Target Hostels -->
+                        <div class="col-md-6 form-group">
+                            <label for="modal_target_hostels" class="form-label">Target Hostels</label>
+                            <select class="form-select" name="target_hostels" id="modal_target_hostels" multiple>
+                                {% for hostel in all_hostels %}
+                                <option value="{{ hostel }}">{{ hostel }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="target-audience-info">Leave blank to target all hostels.</small>
                         </div>
                         <!-- This section will be included only if the portal type is 'club' -->
                         {% if portal_type == 'club' %}
