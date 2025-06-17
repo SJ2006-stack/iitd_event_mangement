@@ -21,420 +21,99 @@
             --border-color: rgba(255, 255, 255, 0.15);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: linear-gradient(to bottom right, var(--primary-bg), var(--secondary-bg)); display: flex; min-height: 100vh; color: var(--text-color); }
+        body.body-no-scroll { overflow: hidden; }
 
-        body {
-            min-height: 100vh;
-            width: 100%;
-            background: linear-gradient(to bottom right, var(--primary-bg), var(--secondary-bg));
-            display: flex;
-            color: var(--text-color);
-        }
+        .sidebar { width: 250px; background: var(--sidebar-bg); padding: 30px 0; display: flex; flex-direction: column; align-items: center; backdrop-filter: blur(10px); border-right: 1px solid var(--border-color); transition: width 0.3s ease; flex-shrink: 0; }
+        .sidebar img { width: 80px; margin-bottom: 30px; }
+        .sidebar a { text-decoration: none; color: var(--text-muted); padding: 12px 20px; margin: 5px 15px; width: calc(100% - 30px); text-align: left; transition: all 0.3s ease; border-radius: 8px; display: flex; align-items: center; gap: 15px; }
+        .sidebar a i { font-size: 1.2rem; }
+        .sidebar a:hover, .sidebar a.active { background: var(--accent-color); color: var(--text-color); transform: translateX(5px); }
+        
+        .hamburger-menu { display: none; position: fixed; top: 15px; left: 15px; z-index: 1002; background: var(--accent-color); color: var(--text-color); border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.3s ease; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; transition: opacity 0.3s ease; }
+        .sidebar-overlay.show { display: block; opacity: 1; }
 
-        /* Sidebar Styles */
-        .sidebar {
-            width: 250px;
-            background: var(--sidebar-bg);
-            padding: 30px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            backdrop-filter: blur(10px);
-            border-right: 1px solid var(--border-color);
-            transition: width 0.3s ease;
-        }
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; max-height: 100vh; }
+        .main-header { margin-bottom: 30px; }
+        .main-header h1 { font-size: 2rem; font-weight: 600; }
 
-        .sidebar img {
-            width: 80px;
-            margin-bottom: 30px;
-        }
+        .profile-container { background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); border-radius: 16px; overflow: hidden; max-width: 900px; margin: 0 auto; border: 1px solid var(--border-color); }
+        .profile-header { padding: 40px 30px; text-align: center; position: relative; background: linear-gradient(135deg, rgba(123, 104, 238, 0.2), rgba(72, 61, 139, 0.3)); }
+        .profile-photo-wrapper { position: relative; width: 120px; height: 120px; border-radius: 50%; margin: 0 auto 20px; border: 4px solid var(--accent-color); }
+        .profile-photo { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .edit-photo-btn { position: absolute; bottom: 0; right: 0; width: 35px; height: 35px; background: var(--accent-color); border: 2px solid var(--primary-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; }
+        .edit-photo-btn:hover { transform: scale(1.1); background: var(--highlight-color); }
+        .edit-photo-btn i { font-size: 18px; }
+        .profile-name { font-size: 1.8rem; font-weight: 600; }
+        .profile-department { font-size: 1.1rem; color: var(--text-muted); }
 
-        .sidebar a {
-            text-decoration: none;
-            color: var(--text-muted);
-            padding: 12px 20px;
-            margin: 5px 15px;
-            width: calc(100% - 30px);
-            text-align: left;
-            transition: all 0.3s ease;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .sidebar a i {
-            font-size: 1.2rem;
-        }
-
-        .sidebar a:hover,
-        .sidebar a.active {
-            background: var(--accent-color);
-            color: var(--text-color);
-            transform: translateX(5px);
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-            max-height: 100vh;
-        }
-
-        .main-header {
-            margin-bottom: 30px;
-        }
-
-        .main-header h1 {
-            font-size: 2rem;
-            font-weight: 600;
-        }
-
-        .profile-container {
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            overflow: hidden;
-            max-width: 900px;
-            margin: 0 auto;
-            border: 1px solid var(--border-color);
-        }
-
-        .profile-header {
-            padding: 40px 30px;
-            text-align: center;
-            position: relative;
-            background: linear-gradient(135deg, rgba(123, 104, 238, 0.2), rgba(72, 61, 139, 0.3));
-        }
-
-        .profile-photo-wrapper {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            border: 4px solid var(--accent-color);
-        }
-
-        .profile-photo {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .edit-photo-btn {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 35px;
-            height: 35px;
-            background: var(--accent-color);
-            border: 2px solid var(--primary-bg);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .edit-photo-btn:hover {
-            transform: scale(1.1);
-            background: var(--highlight-color);
-        }
-
-        .edit-photo-btn i {
-            font-size: 18px;
-        }
-
-        .profile-name {
-            font-size: 1.8rem;
-            font-weight: 600;
-        }
-
-        .profile-department {
-            font-size: 1.1rem;
-            color: var(--text-muted);
-        }
-
-        .profile-content {
-            padding: 30px;
-        }
-
-        .section-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: var(--accent-color);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .interests-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-
-        .interest-tag {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .form-control {
-            width: 100%;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px 15px;
-            color: var(--text-color);
-            font-size: 1rem;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 2px rgba(123, 104, 238, 0.3);
-        }
-
-        .interests-input-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .interest-checkbox-label {
-            display: block;
-            position: relative;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .interest-checkbox-label:hover {
-            border-color: var(--accent-color);
-        }
-
-        .interest-checkbox {
-            display: none;
-        }
-
-        .interest-checkbox:checked+.interest-checkbox-label {
-            background: var(--accent-color);
-            border-color: var(--accent-color);
-            color: var(--text-color);
-        }
-
-        /* --- Custom Interests --- */
-        .custom-interests-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .custom-interest-tag {
-            background: var(--highlight-color);
-            color: var(--text-color);
-            padding: 8px 10px 8px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-        }
-
-        .custom-interest-tag .remove-interest {
-            margin-left: 8px;
-            cursor: pointer;
-            width: 20px;
-            height: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-
-        .custom-interest-tag .remove-interest:hover {
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .add-interest-btn {
-            background: transparent;
-            border: 1px dashed var(--border-color);
-            color: var(--text-muted);
-            padding: 8px 15px;
-            border-radius: 20px;
-            display: inline-flex;
-            align-items: center;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
-
-        .add-interest-btn i {
-            margin-right: 5px;
-        }
-
-        .add-interest-btn:hover {
-            color: var(--text-color);
-            border-color: var(--accent-color);
-        }
-
-        .custom-interest-input-wrapper {
-            display: none;
-            margin-top: 15px;
-        }
-
-        .custom-interest-input-wrapper.active {
-            display: flex;
-        }
-
-        .custom-interest-input-wrapper input {
-            flex-grow: 1;
-            border-radius: 8px 0 0 8px;
-            border-right: none;
-        }
-
-        .custom-interest-input-wrapper button {
-            background: var(--accent-color);
-            color: var(--text-color);
-            border: none;
-            padding: 0 15px;
-            border-radius: 0 8px 8px 0;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .custom-interest-input-wrapper button:hover {
-            background: var(--highlight-color);
-        }
-
-
-        .photo-input {
-            display: none;
-        }
-
-        .btn-save {
-            background: var(--highlight-color);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 25px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: 0.3s;
-            grid-column: 1 / -1;
-        }
-
-        .btn-save:hover {
-            background: #ff7991;
-        }
-
-        @media (max-width: 992px) {
-            .sidebar {
-                width: 70px;
-            }
-
-            .sidebar a span {
-                display: none;
-            }
-
-            .sidebar a {
-                justify-content: center;
-            }
-        }
-
+        .profile-content { padding: 30px; }
+        .section-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 20px; color: var(--accent-color); display: flex; align-items: center; gap: 10px; }
+        
+        .interests-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; }
+        .interest-tag { background: var(--card-bg); border: 1px solid var(--border-color); padding: 8px 15px; border-radius: 20px; font-size: 0.9rem; }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-control { width: 100%; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 15px; color: var(--text-color); font-size: 1rem; }
+        .form-control:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(123, 104, 238, 0.3); }
+        
+        .interests-input-group { display: flex; flex-wrap: wrap; gap: 10px; }
+        .interest-checkbox-label { display: block; position: relative; background: var(--card-bg); border: 1px solid var(--border-color); padding: 8px 15px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease; }
+        .interest-checkbox-label:hover { border-color: var(--accent-color); }
+        .interest-checkbox { display: none; }
+        .interest-checkbox:checked+.interest-checkbox-label { background: var(--accent-color); border-color: var(--accent-color); color: var(--text-color); }
+        
+        .custom-interests-container { display: flex; flex-wrap: wrap; gap: 10px; }
+        .custom-interest-tag { background: var(--highlight-color); color: var(--text-color); padding: 8px 10px 8px 15px; border-radius: 20px; font-size: 0.9rem; display: flex; align-items: center; }
+        .custom-interest-tag .remove-interest { margin-left: 8px; cursor: pointer; width: 20px; height: 20px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .custom-interest-tag .remove-interest:hover { background: rgba(0, 0, 0, 0.3); }
+        .add-interest-btn { background: transparent; border: 1px dashed var(--border-color); color: var(--text-muted); padding: 8px 15px; border-radius: 20px; display: inline-flex; align-items: center; cursor: pointer; font-size: 0.9rem; transition: all 0.2s ease; }
+        .add-interest-btn i { margin-right: 5px; }
+        .add-interest-btn:hover { color: var(--text-color); border-color: var(--accent-color); }
+        .custom-interest-input-wrapper { display: none; margin-top: 15px; }
+        .custom-interest-input-wrapper.active { display: flex; }
+        .custom-interest-input-wrapper input { flex-grow: 1; border-radius: 8px 0 0 8px; border-right: none; }
+        .custom-interest-input-wrapper button { background: var(--accent-color); color: var(--text-color); border: none; padding: 0 15px; border-radius: 0 8px 8px 0; cursor: pointer; transition: background 0.2s; }
+        .custom-interest-input-wrapper button:hover { background: var(--highlight-color); }
+        
+        .photo-input { display: none; }
+        .btn-save { background: var(--highlight-color); color: #fff; border: none; border-radius: 8px; padding: 12px 25px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; transition: 0.3s; grid-column: 1 / -1; }
+        .btn-save:hover { background: #ff7991; }
+        
         @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                height: auto;
-                flex-direction: row;
-                justify-content: space-around;
-                padding: 10px;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-            }
-
-            .sidebar img {
-                display: none;
-            }
-
-            .sidebar a {
-                flex-direction: column;
-                padding: 8px 5px;
-                gap: 4px;
-                flex-grow: 1;
-                width: auto;
-            }
-
-            .sidebar a span {
-                display: block;
-                font-size: 0.7rem;
-            }
-
-            .main-content {
-                padding: 20px;
-                max-height: none;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
+            body { display: block; }
+            .hamburger-menu { display: flex; align-items: center; justify-content: center; }
+            .sidebar { position: fixed; left: 0; top: 0; height: 100vh; width: 250px; z-index: 1000; transform: translateX(-100%); transition: transform 0.3s ease-in-out; }
+            .sidebar.show { transform: translateX(0); box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+            .sidebar img { display: block; margin-top: 20px; }
+            .sidebar a { flex-direction: row; padding: 12px 20px; gap: 15px; width: calc(100% - 30px); flex-grow: 0; }
+            .sidebar a span { font-size: 1rem; }
+            .main-content { padding: 15px; padding-top: 80px; max-height: none; overflow-y: visible; }
+            .form-grid { grid-template-columns: 1fr; }
+            .profile-header { padding: 30px 20px; }
+            .profile-content { padding: 20px; }
         }
     </style>
 </head>
 
 <body>
-    <div class="sidebar">
+    <button class="hamburger-menu" id="hamburger-menu">
+        <i class='bx bx-menu'></i>
+    </button>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="sidebar" id="sidebar">
         <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" />
-        <a href="/student"><i class='bx bxs-dashboard'></i> <span>Dashboard</span></a>
-        <a href="/student/profile" class="active"><i class='bx bxs-user'></i> <span>Profile</span></a>
-        <a href="/student/events_to_join"><i class='bx bxs-calendar-event'></i> <span>Events</span></a>
-        <a href="/student/academic_schedule"><i class='bx bxs-book'></i> <span>Academics</span></a>
-        <a href="/logout"><i class='bx bx-log-out'></i> <span>Logout</span></a>
+        <a href="{{ url_for('Synapse_student') }}"><i class='bx bxs-dashboard'></i> <span>Dashboard</span></a>
+        <a href="{{ url_for('Synapse_profile') }}" class="active"><i class='bx bxs-user'></i> <span>Profile</span></a>
+        <a href="{{ url_for('student_events_to_join') }}"><i class='bx bxs-calendar-event'></i> <span>Events</span></a>
+        <a href="{{ url_for('Synapse_schedule') }}"><i class='bx bxs-book'></i> <span>Academics</span></a>
+        <a href="{{ url_for('logout') }}"><i class='bx bx-log-out'></i> <span>Logout</span></a>
     </div>
 
     <div class="main-content">
@@ -446,7 +125,7 @@
             <div class="profile-header">
                 <div class="profile-photo-wrapper">
                     <img id="profilePhoto"
-                        src="{{ url_for('static', filename='uploads/' + User.photo if User.photo else 'default_avatar.png') }}"
+                        src="{{ url_for('uploaded_file', filename=User.photo) if User.photo else url_for('static', filename='default_avatar.png') }}"
                         alt="Profile Photo" class="profile-photo">
                     <div class="edit-photo-btn" onclick="document.getElementById('profilePhotoInput').click()">
                         <i class='bx bxs-camera-plus'></i>
@@ -468,7 +147,7 @@
 
                 <hr style="border-color: var(--border-color); margin: 30px 0;">
 
-                <form action="/student/profile" method="POST" enctype="multipart/form-data">
+                <form action="{{ url_for('Synapse_profile') }}" method="POST" enctype="multipart/form-data">
                     <div class="section-title"><i class='bx bxs-edit'></i> Edit Your Details</div>
                     <input type="file" name="photo" id="profilePhotoInput" class="photo-input" accept="image/*">
 
@@ -506,7 +185,6 @@
                             </div>
                         </div>
 
-                        <!-- RE-INTEGRATED CUSTOM INTERESTS FEATURE -->
                         <div class="form-group full-width">
                             <label>Custom Interests</label>
                             <div class="custom-interests-container" id="customInterestsContainer">
@@ -541,6 +219,27 @@
     </div>
 
     <script>
+        // --- SIDEBAR LOGIC ---
+        const hamburger = document.getElementById('hamburger-menu');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const sidebarLinks = document.querySelectorAll('.sidebar a');
+        function toggleSidebar() {
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+            document.body.classList.toggle('body-no-scroll');
+            const icon = hamburger.querySelector('i');
+            if (sidebar.classList.contains('show')) {
+                icon.classList.remove('bx-menu'); icon.classList.add('bx-x');
+            } else {
+                icon.classList.remove('bx-x'); icon.classList.add('bx-menu');
+            }
+        }
+        hamburger.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+        sidebarLinks.forEach(link => { link.addEventListener('click', () => { if (sidebar.classList.contains('show')) { toggleSidebar(); } }); });
+
+        // --- PAGE-SPECIFIC LOGIC ---
         document.getElementById('profilePhotoInput').addEventListener('change', function (e) {
             if (e.target.files && e.target.files[0]) {
                 const reader = new FileReader();
@@ -551,7 +250,6 @@
             }
         });
 
-        // --- CUSTOM INTERESTS JAVASCRIPT ---
         function toggleCustomInterestInput() {
             const wrapper = document.getElementById('customInterestInputWrapper');
             wrapper.classList.toggle('active');
@@ -563,34 +261,21 @@
         function addCustomInterest() {
             const inputField = document.getElementById('newInterestInput');
             const interestValue = inputField.value.trim();
-
             if (interestValue) {
                 const container = document.getElementById('customInterestsContainer');
-
-                // Prevent adding duplicates
                 const existing = container.querySelector(`input[value="${interestValue}"]`);
-                if (existing) {
-                    inputField.value = '';
-                    return;
-                }
-
+                if (existing) { inputField.value = ''; return; }
                 const interestTag = document.createElement('div');
                 interestTag.className = 'custom-interest-tag';
-                interestTag.innerHTML = `
-                    <span>${interestValue}</span>
-                    <input type="hidden" name="interests" value="${interestValue}">
-                    <div class="remove-interest" onclick="this.parentElement.remove()"><i class='bx bx-x'></i></div>
-                `;
+                interestTag.innerHTML = `<span>${interestValue}</span><input type="hidden" name="interests" value="${interestValue}"><div class="remove-interest" onclick="this.parentElement.remove()"><i class='bx bx-x'></i></div>`;
                 container.appendChild(interestTag);
-                inputField.value = '';
-                inputField.focus();
+                inputField.value = ''; inputField.focus();
             }
         }
 
         document.getElementById('newInterestInput').addEventListener('keyup', function (e) {
             if (e.key === 'Enter') {
-                e.preventDefault(); // Prevent form submission
-                addCustomInterest();
+                e.preventDefault(); addCustomInterest();
             }
         });
     </script>

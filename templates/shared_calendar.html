@@ -70,45 +70,6 @@
             color: #333;
         }
 
-        .instructions {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 25px;
-            margin-top: 30px;
-        }
-
-        .instructions h3 {
-            margin-bottom: 15px;
-            color: var(--highlight-color);
-            font-size: 1.3rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .instructions ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .instructions li {
-            margin-bottom: 12px;
-            padding-left: 15px;
-            position: relative;
-        }
-
-        .instructions li::before {
-            content: '✓';
-            color: var(--highlight-color);
-            position: absolute;
-            left: 0;
-            font-weight: bold;
-        }
-
-        .instructions strong {
-            color: var(--text-color);
-        }
-
         .subscribe-section {
             background: var(--card-bg);
             border-radius: 15px;
@@ -197,6 +158,18 @@
                 width: 100%;
                 justify-content: center;
             }
+
+            /* Mobile Calendar Styles */
+            .fc .fc-toolbar.fc-header-toolbar { display: flex; flex-direction: column; gap: 5px !important; margin-bottom: 10px !important; }
+            .fc .fc-toolbar-chunk:nth-child(2) { order: 1; text-align: center; }
+            .fc .fc-toolbar-chunk:nth-child(3) { order: 2; display: flex; justify-content: center; }
+            .fc .fc-toolbar-chunk:nth-child(1) { order: 3; display: flex; justify-content: center; }
+            .fc .fc-toolbar-title { font-size: 1.2rem !important; }
+            .fc .fc-button { font-size: 0.8rem !important; padding: 4px 8px !important; }
+            .fc .fc-button-group { margin: 0 !important; }
+            .fc-list-day-text, .fc-list-day-side-text { font-size: 0.9rem !important; }
+            .fc-list-event-title a { font-size: 0.85rem !important; }
+            .fc-list-event-time { font-size: 0.8rem !important; }
         }
     </style>
 </head>
@@ -218,7 +191,6 @@
                     <i class='bx bxs-calendar-plus'></i> Subscribe in App
                 </a>
 
-                <!-- THE CORRECTION IS HERE: The URL is placed in a data-* attribute -->
                 <button class="subscribe-btn"
                     data-url="{{ url_for('shared_calendar_ics', token=token, _external=True) }}"
                     onclick="copyToClipboard(this.dataset.url)">
@@ -262,20 +234,20 @@
                     if (window.innerWidth < 768) {
                         calendar.changeView('listWeek');
                     } else {
-                        calendar.changeView('dayGridMonth');
+                        if (calendar.view.type !== 'dayGridMonth') {
+                           calendar.changeView('dayGridMonth');
+                        }
                     }
                 }
             });
             calendar.render();
         });
 
-        function copyToClipboard(text) {
-            // This now correctly receives the URL string
-            navigator.clipboard.writeText(text).then(() => {
+        function copyToClipboard(url) {
+            navigator.clipboard.writeText(url).then(() => {
                 showToast('Calendar subscription URL copied!');
             }).catch(err => {
                 console.error('Could not copy text: ', err);
-                // Fallback for older browsers or insecure contexts
                 alert('Failed to copy. Please copy the link manually.');
             });
         }
