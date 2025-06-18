@@ -194,6 +194,27 @@
             background: #4a32a8;
         }
 
+        .btn:disabled {
+            background: #7c7c7c;
+            cursor: not-allowed;
+        }
+
+        .password-forgot-btn {
+            display: block;
+            margin: 10px auto 0 auto;
+            background-color: transparent;
+            color: #5D3FD3;
+            border: none;
+            font-size: 14px;
+            text-decoration: underline;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .password-forgot-btn:hover {
+            color: #fff;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
@@ -530,6 +551,7 @@
                         <span class="error-message" id="login-role-error">Please select a role</span>
                     </div>
                     <button type="submit" class="btn">Login</button>
+                    <a href="{{ url_for('forgot_password') }}" class="password-forgot-btn">Forgot password?</a>
                     <div class="bottom-text">
                         <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a></p>
                     </div>

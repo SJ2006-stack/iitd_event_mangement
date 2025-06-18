@@ -404,6 +404,25 @@ def send_otp_email(receiver_email, otp_code):
         app.logger.error(f"Failed to send OTP email to {receiver_email}: {e}")
         return False
 
+def send_reset_email(to_email, reset_url):
+    subject = "Password Reset Link - Synapse"
+    message = f"Click the link below to reset your password:\n\n{reset_url}\n\nThis link will expire in 30 minutes."
+
+    try:
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+        sender_email = os.getenv("email")
+        app_password = os.getenv("app_pass")
+
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(sender_email, app_password)
+            server.sendmail(sender_email, to_email, f"Subject: {subject}\n\n{message}")
+            app.logger.info(f"Password reset email sent to {to_email}")
+    except Exception as e:
+        app.logger.error(f"Failed to send reset email: {e}")
+
+
 def to_entryno(username):
     return "20"+username[3:5]+username[:3].upper()+username[5:]
 
@@ -640,8 +659,8 @@ def signup():
             flash("Passwords do not match.", "error")
             return render_template('login.html', form_type='signup', name=request.form.get('name'), email=email, hostel=request.form.get('hostel'), course=request.form.get('course'))
         
-        if not email.endswith("@iitd.ac.in"):
-            flash("Only @iitd.ac.in emails are allowed.", "error")
+        if not email.endswith("iitd.ac.in"):
+            flash("Only iitd.ac.in emails are allowed.", "error")
             return render_template('login.html', form_type='signup', name=request.form.get('name'), email=email, hostel=request.form.get('hostel'), course=request.form.get('course'))
 
         existing_user = Registration.query.filter_by(email=email).first()
@@ -701,6 +720,57 @@ def signup():
             return render_template('login.html', form_type='signup', name=request.form.get('name'), email=email, hostel=request.form.get('hostel'), course=request.form.get('course'))
             
     return render_template('login.html', form_type='signup')
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form['email'].lower()
+        user = Registration.query.filter_by(email=email).first()
+        if not user:
+            flash("Email not found.", "error")
+            return redirect(url_for('forgot_password'))
+
+        # Generate reset token
+        token = str(uuid.uuid4())
+        expiry = datetime.utcnow() + timedelta(minutes=30)
+        user.otp_token = token
+        user.otp_expiry = expiry
+        db.session.commit()
+
+        # Send email with reset link
+        reset_url = url_for('reset_password', token=token, _external=True)
+        send_reset_email(user.email, reset_url)
+
+        flash("A password reset link has been sent to your email.", "success")
+        return redirect(url_for('login'))
+
+    return render_template('forgot_password.html')
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    user = Registration.query.filter_by(otp_token=token).first()
+    if not user or user.otp_expiry < datetime.utcnow():
+        flash("Reset link is invalid or has expired.", "error")
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        password = request.form['password']
+        confirm = request.form['confirm_password']
+        if password != confirm:
+            flash("Passwords do not match.", "error")
+            return redirect(request.url)
+
+        user.password = generate_password_hash(password)
+        user.otp_token = None
+        user.otp_expiry = None
+        db.session.commit()
+
+        flash("Password updated successfully. Please login.", "success")
+        return redirect(url_for('login'))
+
+    return render_template('reset_password.html')
+
+
 
 @app.route('/choose_organization', methods=['GET', 'POST'])
 def choose_organization():
