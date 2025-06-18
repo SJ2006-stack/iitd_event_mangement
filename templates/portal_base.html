@@ -260,20 +260,23 @@
             <button class="btn btn-light d-lg-none mobile-menu-toggle" type="button" onclick="toggleSidebar()">
                 <i class="bi bi-list fs-4"></i>
             </button>
-            <div class="position-absolute top-0 end-0 p-3" style="z-index: 1100">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
-                    role="alert" style="background-color: rgba(0,0,0,0.4); border-color: var(--border-color);">
-                    <strong>{{ category|title }}:</strong> {{ message }}
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
-                        aria-label="Close"></button>
-                </div>
-                {% endfor %}
-                {% endif %}
-                {% endwith %}
+            <!-- The flash message container is now correctly placed below -->
+        </div>
+
+        <!-- THIS IS THE PERFECT PLACEMENT FOR FLASH MESSAGES -->
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-dark alert-dismissible fade show" role="alert"
+                style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
+                <strong>{{ category|title }}:</strong> {{ message }}
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                    aria-label="Close"></button>
             </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
         </div>
 
         {% block portal_content %}{% endblock %}

@@ -146,7 +146,7 @@ class EventAuthorization(db.Model):
 
 class events(db.Model): # Represents all types of events/activities
     id = db.Column(db.Integer, primary_key=True) # Auto-incrementing ID is generally better
-    name = db.Column(db.String(100), nullable=False, unique=True) # Event/Activity Name, ensure uniqueness
+    name = db.Column(db.String(100), nullable=False) # Event/Activity Name, ensure uniqueness
     event_manager = db.Column(db.String(100), nullable=False) # Name of the person creating/managing
     organiser = db.Column(db.String(100), nullable=False) # Club, Fest, or Department Name
     description = db.Column(db.Text, nullable=False)
@@ -177,7 +177,7 @@ class students_events(db.Model):
 
 class course_events(db.Model): # Academic schedule items
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True) # e.g., "CSL303 Midsem"
+    name = db.Column(db.String(100), nullable=False) # e.g., "CSL303 Midsem"
     course = db.Column(db.String(50), nullable=False) # e.g., "CSL303"
     description = db.Column(db.Text, nullable=False)
     day = db.Column(db.String(20), nullable=True) # YYYY-MM-DD
