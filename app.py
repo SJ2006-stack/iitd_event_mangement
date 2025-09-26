@@ -281,10 +281,11 @@ def get_recommendations(user, all_events, registered_events, count=5):
         all_events (list): A list of all event objects in the system.
         registered_events (list): A list of event objects the user is already registered for.
         count (int): The number of recommendations to return.
-
+ 
     Returns:
         list: A list of recommended event objects.
     """
+    print(all_events)
     if not all_events:
         return []
 
@@ -313,7 +314,7 @@ def get_recommendations(user, all_events, registered_events, count=5):
         # If user has no interests or rated events, we can't recommend.
         # Fallback: could return most popular or most recent events.
         # For now, we return nothing.
-        return []
+        return all_events[:count]
 
     user_profile_str = " ".join(list(user_profile_tags))
 
@@ -356,7 +357,7 @@ def get_recommendations(user, all_events, registered_events, count=5):
     
     # Return the event objects corresponding to those indices
     recommended_events = [available_events[i] for i in top_event_indices]
-    
+    print(recommended_events)
     return recommended_events
 
 def json_to_list(json_str):
@@ -983,6 +984,7 @@ def Synapse_student():
             registered_events=all_student_registered_activities,
             count=5
         )
+        print(recommended_events_list)
     except Exception as e:
         app.logger.error(f"Error loading student dashboard for user {user_id}: {e}")
         flash("An error occurred while loading your dashboard. Some features might be unavailable.", "error")
@@ -2486,4 +2488,4 @@ if __name__ == "__main__":
     is_debug_mode = os.environ.get('FLASK_DEBUG', '1') == '1'
     
     app.logger.info(f"Starting Flask app in {'DEBUG' if is_debug_mode else 'PRODUCTION'} mode (locally).")
-    app.run(debug=is_debug_mode, port=5000, host='0.0.0.0')
+    app.run(debug=is_debug_mode, port=5000, host='0.0.0.0') 
