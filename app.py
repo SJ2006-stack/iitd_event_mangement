@@ -21,7 +21,9 @@ import pandas as pd
 from functools import wraps
 import io
 import csv
-
+import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 # Place this in the "Helper Functions" section of app.py
 
@@ -385,24 +387,18 @@ def get_user_authorization(user_email, expected_role_prefix, organisation):
     ).first()
 
 def send_otp_email(receiver_email, otp_code):
-    my_email = os.getenv("email")
-    app_pass = os.getenv("app_pass")
-    if not my_email or not app_pass:
-        app.logger.error("Email credentials (email/app_pass) not configured for OTP.")
-        return False
-    subject = "OTP for Synapse Registration"
-    message = f"Your OTP for Synapse registration is: {otp_code}"
-    text = f"Subject: {subject}\n\n{message}"
+    message = Mail(
+        from_email=os.getenv("email"),
+        to_emails=receiver_email,
+        subject="OTP for Synapse Registration",
+        plain_text_content=f"Your OTP is: {otp_code}"
+    )
     try:
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(my_email, app_pass)
-        server.sendmail(my_email, receiver_email, text)
-        server.quit()
-        app.logger.info(f"OTP email sent to {receiver_email}")
-        return True
+        sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
+        response = sg.send(message)
+        return response.status_code == 202
     except Exception as e:
-        app.logger.error(f"Failed to send OTP email to {receiver_email}: {e}")
+        print(f"Error sending email: {e}")
         return False
 
 def send_reset_email(to_email, reset_url):
